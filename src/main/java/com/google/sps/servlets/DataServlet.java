@@ -24,6 +24,4 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/data")
-public class DataServlet extends HttpServlet {
-    
-}
+public class DataServlet extends HttpServlet {}
