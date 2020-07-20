@@ -26,22 +26,15 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/api/post")
 public class RecipeServlet extends HttpServlet {
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    
-  }
+  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {}
 
   @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    
-  }
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {}
 
   @Override
-  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    
-  }
+  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {}
 
   @Override
-  public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    
-  }
+  public void doDelete(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {}
 }
