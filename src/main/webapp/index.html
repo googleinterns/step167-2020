@@ -5,5 +5,32 @@
     <title>Melting Pot</title>
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body></body>
+  <body>
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
+
+    <!-- If you enabled Analytics in your project, add the Firebase SDK for Analytics -->
+    <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-analytics.js"></script>
+
+    <!-- Add Firebase products that you want to use -->
+    <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-auth.js"></script>
+
+    <script>
+      // Your web app's Firebase configuration
+      var firebaseConfig = {
+        apiKey: "AIzaSyAe5HlFZFuhzMimXrKW1z3kglajbdHf_Rc",
+        authDomain: "meltingpot-step-2020.firebaseapp.com",
+        databaseURL: "https://meltingpot-step-2020.firebaseio.com",
+        projectId: "meltingpot-step-2020",
+        storageBucket: "meltingpot-step-2020.appspot.com",
+        messagingSenderId: "495013387451",
+        appId: "1:495013387451:web:9827c75184cf5510749d9e",
+        measurementId: "G-8YRW8QZ2XG",
+      }
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig)
+      firebase.analytics()
+      firebase.auth()
+    </script>
+  </body>
 </html>
