@@ -1,10 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Melting Pot</title>
-    <link rel="stylesheet" href="style.css"></link>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- Recipe form -->
+    <div>
+      <form id="recipe-form" action="/api/post" method="POST" enctype="multipart/form-data">
+        <label for="recipe-title">Recipe Title</label><br />
+        <input
+          type="text"
+          id="recipe-title"
+          name="recipe-title"
+          placeholder="e.g. Grandma's Zucchini Florentine"
+        /><br />
+        <label for="ingredients">Ingredients</label><br />
+        <textarea id="ingredients" name="ingredients" placeholder="e.g. 1/2 cup of flour..."></textarea><br />
+        <label for="instructions">Recipe Instructions</label><br />
+        <textarea
+          type="text"
+          name="instructions"
+          id="instructions"
+          placeholder="e.g. Preheat the oven to 350 degrees."
+        ></textarea
+        ><br />
+        <input type="submit" value="Submit" />
+      </form>
+    </div>
   </body>
 </html>

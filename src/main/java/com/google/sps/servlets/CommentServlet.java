@@ -23,9 +23,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet("/comment")
+@WebServlet("/api/comment")
 public class CommentServlet extends HttpServlet {
-
-  @Override 
+  @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+
+  @Override
+  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+
+  @Override
+  public void doDelete(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {}
 }
