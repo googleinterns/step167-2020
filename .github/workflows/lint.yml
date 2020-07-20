@@ -33,7 +33,7 @@ jobs:
       run: diff -u <(cat src/main/webapp/*.js) <(node_modules/clang-format/bin/linux_x64/clang-format --style=Google src/main/webapp/*.js)
     - name: Check Java Formatting
       if: always()
-      run: diff -u <(cat src/main/java/com/google/sps/servlets/*.java) <(node_modules/clang-format/bin/linux_x64/clang-format --style=Google portfolio/src/main/java/com/google/sps/servlets/*.java)
+      run: diff -u <(cat src/main/java/com/google/sps/servlets/*.java) <(node_modules/clang-format/bin/linux_x64/clang-format --style=Google src/main/java/com/google/sps/servlets/*.java)
     - name: Notify on failure
       if: failure()
       run: echo 'run "make validate" and "make pretty" to see/fix errors locally'
