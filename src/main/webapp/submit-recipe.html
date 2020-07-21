@@ -8,7 +8,7 @@
   <body>
     <!-- Recipe form -->
     <div>
-      <form id="recipe-form" action="/api/post" method="POST" enctype="multipart/form-data">
+      <form id="recipe-form" action="/api/post" method="post" enctype="multipart/form-data">
         <label for="recipe-title">Recipe Title</label><br />
         <input
           type="text"
@@ -26,7 +26,7 @@
           placeholder="e.g. Preheat the oven to 350 degrees."
         ></textarea
         ><br />
-        <input type="submit" value="Submit" />
+        <button type="submit">Submit</button>
       </form>
     </div>
   </body>
