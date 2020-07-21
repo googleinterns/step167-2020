@@ -5,5 +5,14 @@
     <title>Melting Pot</title>
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body></body>
+  <body>
+    <!-- Login form -->
+    <form id="login-form" action="/login" method="POST" enctype="multipart/form-data">
+      <label for="email">Email</label>
+      <input id="email" name="email" placeholder="e.g., example@example.com"/>
+      <label for="password">Password</label>
+      <input id="password" name="password"/>
+      <button type="submit" value="submit">Login</button>
+    </form>
+  </body>
 </html>
