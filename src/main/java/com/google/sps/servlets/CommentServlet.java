@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/** Handles comment requests. */
 @WebServlet("/api/comment")
 public class CommentServlet extends HttpServlet {
   @Override

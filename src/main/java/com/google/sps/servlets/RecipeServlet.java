@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/** Handles recipe post requests. */
 @WebServlet("/api/post")
 public class RecipeServlet extends HttpServlet {
   @Override

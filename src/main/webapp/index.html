@@ -4,17 +4,20 @@
     <meta charset="UTF-8" />
     <title>Melting Pot</title>
     <link rel="stylesheet" href="style.css" />
+    <script src="scripts/script.js"></script>
   </head>
   <body>
     <!-- Login form -->
-    <form id="login-form" action="/login" method="POST" enctype="multipart/form-data">
+    <div id="login-form">
       <label for="email">Email</label>
-      <input id="email" name="email" placeholder="e.g., example@example.com"/>
+      <input type="text" id="email" name="email" placeholder="e.g., example@example.com" />
       <label for="password">Password</label>
-      <input id="password" name="password"/>
-      <button type="submit" value="submit">Login</button>
-    </form>
-    
+      <input type="password" id="password" name="password" />
+      <button type="button" id="login" name="login">Login</button>
+      <button type="button" id="signup" name="signup">Sign up</button>
+      <p id="login-status">Unknown</p>
+    </div>
+
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
 
@@ -24,22 +27,6 @@
     <!-- Add Firebase products that you want to use -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-auth.js"></script>
 
-    <script>
-      // Your web app's Firebase configuration
-      var firebaseConfig = {
-        apiKey: "AIzaSyAe5HlFZFuhzMimXrKW1z3kglajbdHf_Rc",
-        authDomain: "meltingpot-step-2020.firebaseapp.com",
-        databaseURL: "https://meltingpot-step-2020.firebaseio.com",
-        projectId: "meltingpot-step-2020",
-        storageBucket: "meltingpot-step-2020.appspot.com",
-        messagingSenderId: "495013387451",
-        appId: "1:495013387451:web:9827c75184cf5510749d9e",
-        measurementId: "G-8YRW8QZ2XG",
-      }
-      // Initialize Firebase
-      firebase.initializeApp(firebaseConfig)
-      firebase.analytics()
-      firebase.auth()
-    </script>
+    <script src="/scripts/init.js"></script>
   </body>
 </html>

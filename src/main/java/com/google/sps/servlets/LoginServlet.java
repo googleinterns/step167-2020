@@ -23,5 +23,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/** Handles Authentication SDK login tokens from the client side. */
 @WebServlet("/login")
-public class LoginServlet extends HttpServlet {}
+public class LoginServlet extends HttpServlet {
+  // TODO: handle token from the client side.
+}

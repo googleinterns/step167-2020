@@ -4,14 +4,18 @@
     <meta charset="UTF-8" />
     <title>Melting Pot</title>
     <link rel="stylesheet" href="style.css" />
+    <script src="scripts/script.js"></script>
   </head>
   <body>
-    <form id="login-form" action="/login" method="POST" enctype="multipart/form-data">
+    <!-- Login form -->
+    <div id="login-form">
       <label for="email">Email</label>
-      <input id="email" name="email" placeholder="e.g., example@example.com"/>
+      <input type="text" id="email" name="email" placeholder="e.g., example@example.com" />
       <label for="password">Password</label>
-      <input id="password" name="password"/>
-      <button type="submit" value="submit">Login</button>
-    </form>
+      <input type="password" id="password" name="password" />
+      <button type="button" id="login" name="login">Login</button>
+      <button type="button" id="signup" name="signup">Sign up</button>
+      <p id="login-status">Unknown</p>
+    </div>
   </body>
 </html>
