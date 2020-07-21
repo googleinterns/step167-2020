@@ -110,6 +110,9 @@
         <artifactId>maven-pmd-plugin</artifactId>
         <version>3.13.0</version>
         <configuration>
+          <rulesets>
+            <ruleset>custom-ruleset.xml</ruleset>
+          </rulesets>
           <printFailingErrors>true</printFailingErrors>
         </configuration>
       </plugin>
