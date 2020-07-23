@@ -26,7 +26,17 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/api/post")
 public class RecipeServlet extends HttpServlet {
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    // Retrieve JSON and write to frontend
+    JSONArray recipeList = new JSONArray();
+    try {
+      recipeList = retrieveJson("../../database.json");
+    } catch (Exception e) {
+      System.out.println("Caught exception: " + e);
+    }
+    response.setContentType("application/json;");
+    response.getWriter().println(recipeList);
+  }
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {}
