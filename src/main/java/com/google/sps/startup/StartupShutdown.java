@@ -27,6 +27,7 @@ public class StartupShutdown implements ServletContextListener
             System.out.println("FirebaseApp initialized");
         } catch (IOException e) {
             System.out.println("IOException while initializing");
+            e.printStackTrace();
         }
     }
     public void contextDestroyed(ServletContextEvent event)
