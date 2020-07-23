@@ -1,19 +1,32 @@
-// When the HTML file using this script loads all of its content, including
-// images, CSS, scripts.
+/**
+ * When the HTML file using this script loads all of its content, including
+ * images, CSS, scripts.
+ */
 window.onload = function() {
   initApp();
 };
 
-// Set up listeners for button clicks, authentication state change (user signs
-// in or out). The auth state listener is called whenever user signs in or out &
-// updates the UI.
+/**
+ * Set up listeners for button clicks, authentication state change (user signs
+ * in or out). The auth state listener is called whenever user signs in or out &
+ * updates the UI.
+ */
 function initApp() {
   document.getElementById('login').addEventListener('click', toggleLogin);
   document.getElementById('signup').addEventListener('click', onSignup);
+  document.getElementById('password-reset').addEventListener('click', sendPasswordResetEmail);
 
   firebase.auth().onAuthStateChanged(function(user) {
     // User is signed in.
     if (user) {
+      var displayName = user.displayName;
+      var email = user.email;
+      var emailVerified = user.emailVerified;
+      var photoURL = user.photoURL;
+      var isAnonymous = user.isAnonymous;
+      var uid = user.uid;
+      var providerData = user.providerData;
+
       document.getElementById('login').textContent = 'Log out';
       document.getElementById('login-status').textContent = 'Signed in.';
     } else {  // User signed out.
@@ -24,6 +37,9 @@ function initApp() {
   });
 }
 
+/** 
+ * If user is currently logged in, log them out; if logged out, log them in.
+ */
 function toggleLogin() {
   // If the user is signed in, sign them out.
   if (firebase.auth().currentUser) {
@@ -51,8 +67,8 @@ function toggleLogin() {
                 // Body type defaults to JSON.
                 fetch('/login', {method: 'POST', body: idToken});
               })
-              .catch(function(error) {
-                alert('Token retrieval failed.');
+              .catch(function onFailure(error) {
+                alert('Token retrieval failed: ' + error);
               });
         })
         .catch(function onFailure(error) {
@@ -69,6 +85,48 @@ function toggleLogin() {
   }
 }
 
+/**
+ * Attempt to create a new user account using the email/password HTML fields.
+ */
 function onSignup() {
-  // TODO
+  var email = document.getElementById("email").value;
+  var password = document.getElementById("password").value;
+
+  if (email == null || email.length < 2) {
+    alert("Please enter a valid email address.");
+  }
+  if (password == null || password.length < 2) {
+    alert("Please enter a valid password.");
+  }
+  
+  // If email/pass are of appropriate length, try to create a new account.
+  firebase.auth().createUserWithEmailAndPassword(email, password)
+      .catch(function onFailure(error) {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+
+        if (errorCode == 'auth/weak-password') {
+          alert('The password is too weak.');
+        } else {
+          alert(errorMessage);
+        }
+  });
+}
+
+function sendPasswordResetEmail() {
+  var email = document.getElementById("email").value;
+    
+  firebase.auth().sendPasswordResetEmail(email).then(function onSuccess() {
+    alert('Password Reset Email Sent!');
+    }).catch(function(error) {
+      // Handle errors.
+      var errorCode = error.code;
+      var errorMessage = error.message;
+    
+      if (errorCode == 'auth/invalid-email') {
+        alert(errorMessage);
+      } else if (errorCode == 'auth/user-not-found') {
+        alert(errorMessage);
+      }
+    });
 }
