@@ -18,23 +18,51 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.lang.StringBuilder;
+import java.io.BufferedReader;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.DatabaseReference;
+import com.google.sps.data.Post;
+import com.google.sps.data.DatabaseReferences;
 
 @WebServlet("/api/post")
-public class RecipeServlet extends HttpServlet {
-  @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+public class RecipeServlet extends HttpServlet
+{
 
-  @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+    private Gson gson;
 
-  @Override
-  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+    @Override
+    public void init()
+    {
+        gson = new Gson();
+    }
 
-  @Override
-  public void doDelete(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {}
+    @Override
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+
+    @Override
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException
+    {
+        String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+        Post newPost = gson.fromJson(data, Post.class);
+        if(newPost.title == null || newPost.content == null) {
+          response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+          return;
+        }
+
+        DatabaseReferences.POSTS.push().setValueAsync(newPost);
+        response.setStatus(HttpServletResponse.SC_ACCEPTED);
+    }
+
+    @Override
+    public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+
+    @Override
+    public void doDelete(HttpServletRequest request, HttpServletResponse response)
+    throws IOException {}
 }
