@@ -22,6 +22,8 @@ public class StartupShutdown implements ServletContextListener
             .setDatabaseUrl("https://meltingpot-step-2020.firebaseio.com/")
             .build();
 
+            FirebaseApp.initializeApp(options);
+
             System.out.println("FirebaseApp initialized");
         } catch (IOException e) {
             System.out.println("IOException while initializing");
