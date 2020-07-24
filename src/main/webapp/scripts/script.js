@@ -59,18 +59,6 @@ function toggleLogin() {
 
     firebase.auth()
         .signInWithEmailAndPassword(email, password)
-        .then(function onSuccess() {
-          // TODO: send token to server
-            // firebase.auth()
-            //   .currentUser.getIdToken(/* forceRefresh */ true)
-            //   .then(function(idToken) {
-            //     // Body type defaults to JSON.
-            //     fetch('/login', {method: 'POST', body: idToken});
-            //   })
-            //   .catch(function onFailure(error) {
-            //     alert('Token retrieval failed: ' + error);
-            //   }); 
-        })
         .catch(function onFailure(error) {
           var errorCode = error.code;
           var errorMessage = error.message;
@@ -81,7 +69,6 @@ function toggleLogin() {
             alert(errorMessage);
           }
         });
-    // document.getElementById("login").disabled = true;
   }
 }
 
@@ -106,10 +93,12 @@ function onSignup() {
         var errorMessage = error.message;
 
         if (errorCode == 'auth/weak-password') {
-          alert('The password is too weak.');
-        } else {
-          alert(errorMessage);
-        }
+          alert('The password is too weak. Passwords must be at least 6 characters long.');
+        } else if (errorCode == 'auth/invalid-email') {
+          alert('Please enter a valid email address.');
+        } else if (errorCode == 'auth/email-already-in-use') {
+          alert('This email address is already associated with a user.');
+        } else { alert(errorMessage); }
   });
 }
 
@@ -124,9 +113,9 @@ function sendPasswordResetEmail() {
       var errorMessage = error.message;
     
       if (errorCode == 'auth/invalid-email') {
-        alert(errorMessage);
+        alert("Please enter a valid email address.");
       } else if (errorCode == 'auth/user-not-found') {
-        alert(errorMessage);
-      }
+        alert("This user was not found.");
+      } else { alert(errorMessage); }
     });
 }
