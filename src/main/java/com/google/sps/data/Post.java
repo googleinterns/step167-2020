@@ -1,22 +1,13 @@
 package com.google.sps.data;
 
+import java.util.List;
+
 public class Post {
 
-	public static final String TITLE_KEY = "title";
 	public static final String CONTENT_KEY = "content";
+	public static final String COMMENT_IDS_KEY = "commentIds";
 
 	public String uid;
-	public String title;
 	public String content;
-
-	public Post(String title, String content) {
-		this.title = title;
-		this.content = content;
-	}
-
-	public Post(String uid, String title, String content) {
-		this.uid = uid;
-		this.title = title;
-		this.content = content;
-	}
+	public List<String> commentIds;
 }

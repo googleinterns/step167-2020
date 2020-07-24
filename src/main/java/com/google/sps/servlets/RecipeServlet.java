@@ -15,47 +15,84 @@
 package com.google.sps.servlets;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.lang.StringBuilder;
 import java.io.BufferedReader;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.sps.data.Post;
-import com.google.sps.data.DatabaseReferences;
+import com.google.sps.data.PostMetadata;
+import com.google.sps.data.Comment;
+import com.google.sps.data.DBReferences;
 
-@WebServlet("/api/post")
+@WebServlet(urlPatterns = "/api/post", asyncSupported = true)
 public class RecipeServlet extends HttpServlet
 {
 
-    private Gson gson;
+    private Gson gson = new Gson();
 
     @Override
-    public void init()
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException
     {
-        gson = new Gson();
-    }
 
-    @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+        final AsyncContext asyncContext = request.startAsync();
+
+        DBReferences.COMMENTS
+            .orderByChild(Comment.POST_ID_KEY)
+            .equalTo(Integer.parseInt(request.getParameter("id")))
+            .addListenerForSingleValueEvent(new ValueEventListener() {
+                public void onDataChange(DataSnapshot dataSnapshot)
+                {
+                    try{
+                        response.getWriter().println(dataSnapshot.toString());
+                        System.out.println("Read Succeeded");
+                    } catch (Exception e) {
+                        System.out.println("IOexception");
+                    }
+                    asyncContext.complete();
+                }
+                public void onCancelled(DatabaseError databaseError)
+                {
+                    System.out.println("The read failed: " + databaseError.getCode());
+                }
+            }
+        );
+    }
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException
     {
         String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-        Post newPost = gson.fromJson(data, Post.class);
-        if(newPost.title == null || newPost.content == null) {
-          response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-          return;
+        Map<String, String> newPost = gson.fromJson(data, new TypeToken<Map<String, String>>(){}.getType());
+        if(newPost.get(Post.CONTENT_KEY) == null || newPost.get(PostMetadata.TITLE_KEY) == null)
+        {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
         }
 
-        DatabaseReferences.POSTS.push().setValueAsync(newPost);
+        DatabaseReference postRef = DBReferences.POST_DATA.push();
+
+        postRef.setValueAsync(Collections.singletonMap(Post.CONTENT_KEY, newPost.get(Post.CONTENT_KEY)));
+
+        String postUid = postRef.getKey();
+
+        DatabaseReference postMetadataRef = DBReferences.POST_METADATA.child(postUid);
+        postMetadataRef.setValueAsync(Collections.singletonMap(PostMetadata.TITLE_KEY, newPost.get(PostMetadata.TITLE_KEY)));
+
         response.setStatus(HttpServletResponse.SC_ACCEPTED);
     }
 
