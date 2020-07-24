@@ -61,15 +61,15 @@ function toggleLogin() {
         .signInWithEmailAndPassword(email, password)
         .then(function onSuccess() {
           // TODO: send token to server
-          firebase.auth()
-              .currentUser.getIdToken(/* forceRefresh */ true)
-              .then(function(idToken) {
-                // Body type defaults to JSON.
-                fetch('/login', {method: 'POST', body: idToken});
-              })
-              .catch(function onFailure(error) {
-                alert('Token retrieval failed: ' + error);
-              });
+            // firebase.auth()
+            //   .currentUser.getIdToken(/* forceRefresh */ true)
+            //   .then(function(idToken) {
+            //     // Body type defaults to JSON.
+            //     fetch('/login', {method: 'POST', body: idToken});
+            //   })
+            //   .catch(function onFailure(error) {
+            //     alert('Token retrieval failed: ' + error);
+            //   }); 
         })
         .catch(function onFailure(error) {
           var errorCode = error.code;

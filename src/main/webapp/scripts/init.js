@@ -15,6 +15,8 @@ var firebaseConfig = {
   measurementId: 'G-8YRW8QZ2XG',
 }
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig)
+var app = firebase.initializeApp(firebaseConfig)
 firebase.analytics()
 firebase.auth()
+
+export {app};

@@ -7,18 +7,6 @@
     <script src="scripts/script.js"></script>
   </head>
   <body>
-    <!-- Login form -->
-    <div id="login-form">
-      <label for="email">Email</label>
-      <input type="text" id="email" name="email" placeholder="e.g., example@example.com" />
-      <label for="password">Password</label>
-      <input type="password" id="password" name="password" />
-      <button type="button" id="login" name="login">Login</button>
-      <button type="button" id="signup" name="signup">Sign up</button>
-      <button type="button" id="password-reset" name="password-reset">Reset password</button>
-      <p id="login-status">Unknown</p>
-    </div>
-
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
 
@@ -27,5 +15,8 @@
 
     <!-- Add Firebase products that you want to use -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-auth.js"></script>
+
+    <!-- Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   </body>
 </html>
