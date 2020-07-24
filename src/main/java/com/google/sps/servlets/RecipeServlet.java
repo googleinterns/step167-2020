@@ -14,11 +14,13 @@
 
 package com.google.sps.servlets;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.CollectionReference;
+import com.google.cloud.firestore.DocumentSnapshot;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.Query;
+import com.google.cloud.firestore.QuerySnapshot;
+import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
 import com.google.sps.data.DatabaseReferences;
 import com.google.sps.data.Post;
@@ -44,39 +46,22 @@ public class RecipeServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    DatabaseReferences.ROOT.child("post-metadata/0").addListenerForSingleValueEvent(new ValueEventListener() {
-      @Override
-      public void onDataChange(DataSnapshot dataSnapshot) {
-        String json = gson.toJson(dataSnapshot.getValue());
-        response.setContentType("application/json;");
-        try {
-          response.getWriter().println(json);
-        }
-        catch(IOException e) {
-          System.out.println("IO Exception when attempting to write to HTTPServletResponse");
-        }
-        System.out.println(dataSnapshot.getValue());
-      }
+    Query query = DatabaseReferences.POSTS;
+    ApiFuture<QuerySnapshot> querySnapshot = query.get();
 
-      @Override
-      public void onCancelled(DatabaseError databaseError) {
-        System.out.println("The read failed: " + databaseError.getCode());
+    try {
+      for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+        String json = gson.toJson(document.getData());
+        response.setContentType("application/json;");
+        response.getWriter().println(json);
       }
-    });
+    } catch (Exception e) {
+      System.out.println("Recipe GET threw exception: " + e);
+    }
   }
 
   @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-    Post newPost = gson.fromJson(data, Post.class);
-    if (newPost.title == null || newPost.content == null) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      return;
-    }
-
-    DatabaseReferences.POSTS.push().setValueAsync(newPost);
-    response.setStatus(HttpServletResponse.SC_ACCEPTED);
-  }
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {}
 
   @Override
   public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {}
@@ -85,3 +70,28 @@ public class RecipeServlet extends HttpServlet {
   public void doDelete(HttpServletRequest request, HttpServletResponse response)
       throws IOException {}
 }
+
+/*
+
+DatabaseReferences.ROOT.child("post-metadata")
+        .addListenerForSingleValueEvent(new ValueEventListener() {
+          @Override
+          public void onDataChange(DataSnapshot dataSnapshot) {
+            String json = gson.toJson(dataSnapshot.getValue());
+            response.setContentType("application/json;");
+            try {
+              response.getWriter().println(json);
+            } catch (IOException e) {
+              System.out.println("IO Exception when attempting to write to HTTPServletResponse");
+            }
+            System.out.println(dataSnapshot.getValue());
+          }
+
+          @Override
+          public void onCancelled(DatabaseError databaseError) {
+            System.out.println("The read failed: " + databaseError.getCode());
+          }
+        });
+
+
+*/

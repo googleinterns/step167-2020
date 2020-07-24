@@ -3,6 +3,7 @@ package com.google.sps.startup;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.cloud.firestore.FirestoreOptions;
 import java.io.IOException;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -17,7 +18,7 @@ public class StartupShutdown implements ServletContextListener {
     try {
       FirebaseOptions options = new FirebaseOptions.Builder()
                                     .setCredentials(GoogleCredentials.getApplicationDefault())
-                                    .setDatabaseUrl("https://meltingpot-step-2020.firebaseio.com/")
+                                    .setFirestoreOptions(FirestoreOptions.getDefaultInstance())
                                     .build();
 
       FirebaseApp.initializeApp(options);

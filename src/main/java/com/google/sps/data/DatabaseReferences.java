@@ -1,10 +1,11 @@
 package com.google.sps.data;
 
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.cloud.firestore.CollectionReference;
+import com.google.cloud.firestore.Firestore;
+import com.google.firebase.cloud.FirestoreClient;
 
 public class DatabaseReferences {
-  public static final FirebaseDatabase DB = FirebaseDatabase.getInstance();
-  public static final DatabaseReference ROOT = DB.getReference();
-  public static final DatabaseReference POSTS = DB.getReference("posts");
+  public static final Firestore DB = FirestoreClient.getFirestore();
+  // public static final CollectionReference ROOT = DB.collection();
+  public static final CollectionReference POSTS = DB.collection("recipes");
 }
