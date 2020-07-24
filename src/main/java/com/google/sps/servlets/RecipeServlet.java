@@ -14,9 +14,9 @@
 
 package com.google.sps.servlets;
 
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
@@ -44,11 +44,18 @@ public class RecipeServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    DatabaseReferences.POSTS.addListenerForSingleValueEvent(new ValueEventListener() {
+    DatabaseReferences.ROOT.child("post-metadata/0").addListenerForSingleValueEvent(new ValueEventListener() {
       @Override
       public void onDataChange(DataSnapshot dataSnapshot) {
-        Post post = dataSnapshot.getValue(Post.class);
-        System.out.println(post);
+        String json = gson.toJson(dataSnapshot.getValue());
+        response.setContentType("application/json;");
+        try {
+          response.getWriter().println(json);
+        }
+        catch(IOException e) {
+          System.out.println("IO Exception when attempting to write to HTTPServletResponse");
+        }
+        System.out.println(dataSnapshot.getValue());
       }
 
       @Override
