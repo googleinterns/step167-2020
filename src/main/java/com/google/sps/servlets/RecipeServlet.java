@@ -29,11 +29,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
+import com.google.cloud.firestore.CollectionReference;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.api.core.ApiFuture;
 import com.google.sps.data.Post;
 import com.google.sps.data.PostMetadata;
 import com.google.sps.data.Comment;
@@ -46,32 +44,7 @@ public class RecipeServlet extends HttpServlet
     private Gson gson = new Gson();
 
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException
-    {
-
-        final AsyncContext asyncContext = request.startAsync();
-
-        DBReferences.COMMENTS
-            .orderByChild(Comment.POST_ID_KEY)
-            .equalTo(Integer.parseInt(request.getParameter("id")))
-            .addListenerForSingleValueEvent(new ValueEventListener() {
-                public void onDataChange(DataSnapshot dataSnapshot)
-                {
-                    try{
-                        response.getWriter().println(dataSnapshot.toString());
-                        System.out.println("Read Succeeded");
-                    } catch (Exception e) {
-                        System.out.println("IOexception");
-                    }
-                    asyncContext.complete();
-                }
-                public void onCancelled(DatabaseError databaseError)
-                {
-                    System.out.println("The read failed: " + databaseError.getCode());
-                }
-            }
-        );
-    }
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {}
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException
@@ -84,14 +57,11 @@ public class RecipeServlet extends HttpServlet
             return;
         }
 
-        DatabaseReference postRef = DBReferences.POST_DATA.push();
-
-        postRef.setValueAsync(Collections.singletonMap(Post.CONTENT_KEY, newPost.get(Post.CONTENT_KEY)));
-
-        String postUid = postRef.getKey();
-
-        DatabaseReference postMetadataRef = DBReferences.POST_METADATA.child(postUid);
-        postMetadataRef.setValueAsync(Collections.singletonMap(PostMetadata.TITLE_KEY, newPost.get(PostMetadata.TITLE_KEY)));
+        DocumentReference postRef = DBReferences.recipeData.document();
+        postRef.set(Collections.singletonMap(Post.CONTENT_KEY, newPost.get(Post.CONTENT_KEY)));
+        String postId = postRef.getId();
+        DocumentReference postMetadataRef = DBReferences.recipeMetadata.document(postId);
+        postMetadataRef.set(Collections.singletonMap(PostMetadata.TITLE_KEY, newPost.get(PostMetadata.TITLE_KEY)));
 
         response.setStatus(HttpServletResponse.SC_ACCEPTED);
     }
