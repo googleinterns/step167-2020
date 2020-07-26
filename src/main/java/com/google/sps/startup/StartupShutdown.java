@@ -19,7 +19,6 @@ public class StartupShutdown implements ServletContextListener
         try {
             FirebaseOptions options = new FirebaseOptions.Builder()
             .setCredentials(GoogleCredentials.getApplicationDefault())
-            .setDatabaseUrl("https://meltingpot-step-2020.firebaseio.com/")
             .build();
 
             FirebaseApp.initializeApp(options);
