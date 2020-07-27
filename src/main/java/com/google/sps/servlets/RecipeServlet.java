@@ -22,7 +22,7 @@ import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
-import com.google.sps.data.DatabaseReferences;
+import com.google.sps.data.DBReferences;
 import com.google.sps.data.Post;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -46,15 +46,18 @@ public class RecipeServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    Query query = DatabaseReferences.POSTS;
+    Query query = DBReferences.recipes;
     ApiFuture<QuerySnapshot> querySnapshot = query.get();
+    ArrayList<Object> recipeList = new ArrayList<>();
 
     try {
-      for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
-        String json = gson.toJson(document.getData());
-        response.setContentType("application/json;");
-        response.getWriter().println(json);
-      }
+      for (DocumentSnapshot document : querySnapshot.get().getDocuments())
+        recipeList.add(document.getData());
+
+      String json = gson.toJson(recipeList);
+      response.setContentType("application/json;");
+      response.getWriter().println(json);
+      System.out.println(json);
     } catch (Exception e) {
       System.out.println("Recipe GET threw exception: " + e);
     }
