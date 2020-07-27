@@ -1,4 +1,4 @@
-package com.google.sps.startup;
+package com.google.sps.meltingpot.startup;
 
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.FirebaseApp;

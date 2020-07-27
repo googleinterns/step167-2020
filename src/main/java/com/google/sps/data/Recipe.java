@@ -1,4 +1,4 @@
-package com.google.sps.data;
+package com.google.sps.meltingpot.data;
 
 import java.util.List;
 

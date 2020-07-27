@@ -1,4 +1,4 @@
-package com.google.sps.data;
+package com.google.sps.meltingpot.data;
 
 import com.google.cloud.firestore.Firestore;
 import com.google.firebase.cloud.FirestoreClient;
