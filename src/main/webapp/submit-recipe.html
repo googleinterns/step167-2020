@@ -29,7 +29,7 @@
           oninput="renderRecipe()"
         ></textarea>
         <br />
-        <input type="button" onclick="submitRecipe()" value="Submit"></input>
+        <button type="button" onclick="submitRecipe()" value="Submit">Submit</button>
       </form>
     </div>
     <div id="recipe-preview">
@@ -38,34 +38,34 @@
     </div>
     <script type="text/javascript">
       function renderRecipe() {
-        let titleInput = document.getElementById("recipe-title");
-        let instructionsInput = document.getElementById("instructions");
-        let titlePreview = document.getElementById("title-preview");
-        let instructionsPreview = document.getElementById("instructions-preview");
+        let titleInput = document.getElementById("recipe-title")
+        let instructionsInput = document.getElementById("instructions")
+        let titlePreview = document.getElementById("title-preview")
+        let instructionsPreview = document.getElementById("instructions-preview")
 
-        titlePreview.innerText = titleInput.value;
-        instructionsPreview.innerHTML = marked(instructions.value);
+        titlePreview.innerText = titleInput.value
+        instructionsPreview.innerHTML = marked(instructions.value)
       }
 
       function submitRecipe() {
-        let titleInput = document.getElementById("recipe-title");
-        let instructionsInput = document.getElementById("instructions");
-        fetch('/api/post', {
-          method: 'POST',
+        let titleInput = document.getElementById("recipe-title")
+        let instructionsInput = document.getElementById("instructions")
+        fetch("/api/post", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             title: titleInput.value,
-            content: instructionsInput.value
-          })
+            content: instructionsInput.value,
+          }),
         }).then((response) => {
-          if(response.status === 202) {
-            window.location.href = '/feed.html';
+          if (response.status === 202) {
+            window.location.href = "/feed.html"
           } else {
-            alert('Error ' + response.status.toString());
+            alert("Error " + response.status.toString())
           }
-        });
+        })
       }
     </script>
   </body>

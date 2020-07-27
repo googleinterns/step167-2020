@@ -22,26 +22,26 @@
 
     <!-- TODO: replace this script with whatever needs to be done on index.html -->
     <script type="module">
-      import {app} from "/scripts/init.js"
-    
-      function signInStatus() {
-        app.auth().onAuthStateChanged(function(user){
-          if (user) {
-            document.getElementById("signed-in").textContent = "Signed in";
-          } else {
-            document.getElementById("signed-in").textContent = "Signed out";
-          }
-        });
+      import { app } from "/scripts/init.js"
 
-        if (app == null){
-          return;
+      function signInStatus() {
+        app.auth().onAuthStateChanged(function (user) {
+          if (user) {
+            document.getElementById("signed-in").textContent = "Signed in"
+          } else {
+            document.getElementById("signed-in").textContent = "Signed out"
+          }
+        })
+
+        if (app == null) {
+          return
+        } else if (app.auth().currentUser) {
+          document.getElementById("signed-in").textContent = "Signed in"
+        } else {
+          document.getElementById("signed-in").textContent = "Signed out"
         }
-        else if (app.auth().currentUser) {
-          document.getElementById("signed-in").textContent = "Signed in";
-        }
-        else { document.getElementById("signed-in").textContent = "Signed out"}
       }
-      signInStatus();
+      signInStatus()
     </script>
   </body>
 </html>

@@ -14,7 +14,8 @@ window.onload = function() {
 function initApp() {
   document.getElementById('login').addEventListener('click', toggleLogin);
   document.getElementById('signup').addEventListener('click', onSignup);
-  document.getElementById('password-reset').addEventListener('click', sendPasswordResetEmail);
+  document.getElementById('password-reset')
+      .addEventListener('click', sendPasswordResetEmail);
 
   firebase.auth().onAuthStateChanged(function(user) {
     // User is signed in.
@@ -37,7 +38,7 @@ function initApp() {
   });
 }
 
-/** 
+/**
  * If user is currently logged in, log them out; if logged out, log them in.
  */
 function toggleLogin() {
@@ -76,46 +77,97 @@ function toggleLogin() {
  * Attempt to create a new user account using the email/password HTML fields.
  */
 function onSignup() {
-  var email = document.getElementById("email").value;
-  var password = document.getElementById("password").value;
+  var email = document.getElementById('email').value;
+  var password = document.getElementById('password').value;
 
   if (email == null || email.length < 2) {
-    alert("Please enter a valid email address.");
+    alert('Please enter a valid email address.');
   }
   if (password == null || password.length < 2) {
-    alert("Please enter a valid password.");
+    alert('Please enter a valid password.');
   }
-  
+
   // If email/pass are of appropriate length, try to create a new account.
-  firebase.auth().createUserWithEmailAndPassword(email, password)
+  firebase.auth()
+      .createUserWithEmailAndPassword(email, password)
       .catch(function onFailure(error) {
         var errorCode = error.code;
         var errorMessage = error.message;
 
         if (errorCode == 'auth/weak-password') {
-          alert('The password is too weak. Passwords must be at least 6 characters long.');
+          alert(
+              'The password is too weak. Passwords must be at least 6 characters long.');
         } else if (errorCode == 'auth/invalid-email') {
           alert('Please enter a valid email address.');
         } else if (errorCode == 'auth/email-already-in-use') {
           alert('This email address is already associated with a user.');
-        } else { alert(errorMessage); }
-  });
+        } else {
+          alert(errorMessage);
+        }
+      });
 }
 
 function sendPasswordResetEmail() {
-  var email = document.getElementById("email").value;
-    
-  firebase.auth().sendPasswordResetEmail(email).then(function onSuccess() {
-    alert('Password Reset Email Sent!');
-    }).catch(function(error) {
-      // Handle errors.
-      var errorCode = error.code;
-      var errorMessage = error.message;
-    
-      if (errorCode == 'auth/invalid-email') {
-        alert("Please enter a valid email address.");
-      } else if (errorCode == 'auth/user-not-found') {
-        alert("This user was not found.");
-      } else { alert(errorMessage); }
+  var email = document.getElementById('email').value;
+
+  firebase.auth()
+      .sendPasswordResetEmail(email)
+      .then(function onSuccess() {
+        alert('Password Reset Email Sent!');
+      })
+      .catch(function(error) {
+        // Handle errors.
+        var errorCode = error.code;
+        var errorMessage = error.message;
+
+        if (errorCode == 'auth/invalid-email') {
+          alert('Please enter a valid email address.');
+        } else if (errorCode == 'auth/user-not-found') {
+          alert('This user was not found.');
+        } else {
+          alert(errorMessage);
+        }
+      });
+}
+
+function getRecipeList() {  // eslint-disable-line no-unused-vars
+  fetch('/api/post').then((response) => response.json()).then((recipes) => {
+    const recipeEl = document.getElementById('recipe-list');
+    removeAllChildNodes(recipeEl);
+    recipes.forEach((recipe) => {
+      recipeEl.appendChild(createRecipeListElement(recipe));
     });
+  });
+}
+
+function getDetailedRecipe(ID) {  // eslint-disable-line no-unused-vars
+  fetch('/api/post?recipeID=' + ID)
+      .then((response) => response.json())
+      .then((recipe) => {
+        const recipeEl = document.getElementById('recipe');
+        removeAllChildNodes(recipeEl);
+        recipeEl.appendChild(createRecipeListElement(recipe));
+      });
+}
+
+function getComments() {  // eslint-disable-line no-unused-vars
+}
+
+function removeAllChildNodes(parent) {
+  while (parent.firstChild) {
+    parent.removeChild(parent.firstChild);
+  }
+}
+
+function createRecipeListElement(recipe) {
+  const recipeElement = document.createElement('div');
+  recipeElement.appendChild(createBasicElement(recipe.title, 'h4'));
+  recipeElement.appendChild(createBasicElement(recipe.content, 'p'));
+  return recipeElement;
+}
+
+function createBasicElement(text, type) {
+  const basicElement = document.createElement(type);
+  if (text != '') basicElement.innerText = text;
+  return basicElement;
 }

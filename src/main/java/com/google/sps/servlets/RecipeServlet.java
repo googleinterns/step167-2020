@@ -14,53 +14,111 @@
 
 package com.google.sps.meltingpot.servlets;
 
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.CollectionReference;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.Query;
+import com.google.cloud.firestore.QuerySnapshot;
+import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.google.sps.meltingpot.data.DBReferences;
+import com.google.sps.meltingpot.data.Recipe;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import java.lang.StringBuilder;
-import java.io.BufferedReader;
+import javax.servlet.AsyncContext;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.sps.data.Recipe;
-import com.google.sps.data.DBReferences;
 
 /** Handles recipe post requests. */
 @WebServlet("/api/post")
-public class RecipeServlet extends HttpServlet
-{
+public class RecipeServlet extends HttpServlet {
+  private Gson gson = new Gson();
+  private boolean documentNotFound = false;
 
-    private Gson gson = new Gson();
+  @Override
+  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String recipeID = request.getParameter("recipeID");
+    String json;
 
-    @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+    if (recipeID == null)
+      json = getRecipeList(response);
+    else
+      json = getDetailedRecipe(recipeID, response);
 
-    @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException
-    {
-        String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-        Recipe newRecipe = gson.fromJson(data, Recipe.class);
-        if(newRecipe.content == null || newRecipe.title == null) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-        DBReferences.recipes.document().set(newRecipe);
-        response.setStatus(HttpServletResponse.SC_ACCEPTED);
+    if (documentNotFound || json == "Exception") {
+      return;
     }
 
-    @Override
-    public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+    response.setContentType("application/json;");
+    response.getWriter().println(json);
+  }
 
-    @Override
-    public void doDelete(HttpServletRequest request, HttpServletResponse response)
-    throws IOException {}
+  @Override
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+    Recipe newRecipe = gson.fromJson(data, Recipe.class);
+    if (newRecipe.content == null || newRecipe.title == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+    DBReferences.recipes().document().set(newRecipe);
+    response.setStatus(HttpServletResponse.SC_ACCEPTED);
+  }
+
+  @Override
+  public void doDelete(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {}
+
+  private String getRecipeList(HttpServletResponse response) {
+    Query query = DBReferences.recipes();
+    ApiFuture<QuerySnapshot> querySnapshot = query.get();
+    ArrayList<Object> recipeList = new ArrayList<>();
+
+    try {
+      for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+        recipeList.add(document.getData());
+      }
+      return gson.toJson(recipeList);
+    } catch (InterruptedException e) {
+      System.out.println("Attempt to query recipes raised exception: " + e);
+    } catch (ExecutionException e) {
+      System.out.println("Attempt to query recipes raised exception: " + e);
+    }
+
+    return "Exception";
+  }
+
+  private String getDetailedRecipe(String recipeID, HttpServletResponse response)
+      throws IOException {
+    DocumentReference recipeRef = DBReferences.recipes().document(recipeID);
+    ApiFuture<DocumentSnapshot> future = recipeRef.get();
+
+    try {
+      DocumentSnapshot document = future.get();
+      if (document.exists())
+        return gson.toJson(document.getData());
+      else {
+        documentNotFound = true;
+        return "";
+      }
+    } catch (InterruptedException e) {
+      System.out.println("Attempt to query single recipe raised exception: " + e);
+    } catch (ExecutionException e) {
+      System.out.println("Attempt to query single recipe raised exception: " + e);
+    }
+
+    return "Exception";
+  }
 }
