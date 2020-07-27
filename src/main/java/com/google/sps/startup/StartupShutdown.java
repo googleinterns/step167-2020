@@ -11,7 +11,6 @@ import javax.servlet.annotation.WebListener;
 
 @WebListener
 public class StartupShutdown implements ServletContextListener {
-  private final String DB_URL = "https://meltingpot-step-2020.firebaseio.com/";
 
   @Override
   public void contextInitialized(ServletContextEvent event) {

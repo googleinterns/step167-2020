@@ -140,8 +140,8 @@ function getRecipeList() {  // eslint-disable-line no-unused-vars
   });
 }
 
-function getDetailedRecipe() {  // eslint-disable-line no-unused-vars
-  fetch('/api/post?recipeID=zElvE9jKb1BX2CDN608O')
+function getDetailedRecipe(ID) {  // eslint-disable-line no-unused-vars
+  fetch('/api/post?recipeID=' + ID)
       .then((response) => response.json())
       .then((recipe) => {
         const recipeEl = document.getElementById('recipe');
