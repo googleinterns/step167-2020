@@ -31,10 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
-import com.google.api.core.ApiFuture;
-import com.google.sps.data.Post;
-import com.google.sps.data.PostMetadata;
-import com.google.sps.data.Comment;
+import com.google.sps.data.Recipe;
 import com.google.sps.data.DBReferences;
 
 @WebServlet(urlPatterns = "/api/post", asyncSupported = true)
@@ -50,18 +47,14 @@ public class RecipeServlet extends HttpServlet
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException
     {
         String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-        Map<String, String> newPost = gson.fromJson(data, new TypeToken<Map<String, String>>(){}.getType());
-        if(newPost.get(Post.CONTENT_KEY) == null || newPost.get(PostMetadata.TITLE_KEY) == null)
+        Recipe newRecipe = gson.fromJson(data, Recipe.class);
+        if(newRecipe.content == null || newRecipe.title == null)
         {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
 
-        DocumentReference postRef = DBReferences.recipeData.document();
-        postRef.set(Collections.singletonMap(Post.CONTENT_KEY, newPost.get(Post.CONTENT_KEY)));
-        String postId = postRef.getId();
-        DocumentReference postMetadataRef = DBReferences.recipeMetadata.document(postId);
-        postMetadataRef.set(Collections.singletonMap(PostMetadata.TITLE_KEY, newPost.get(PostMetadata.TITLE_KEY)));
+        DBReferences.recipes.document().set(newRecipe);
 
         response.setStatus(HttpServletResponse.SC_ACCEPTED);
     }
