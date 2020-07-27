@@ -1,4 +1,4 @@
-package com.google.sps.startup;
+package com.google.sps.meltingpot.startup;
 
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.FirebaseApp;
@@ -21,7 +21,6 @@ public class StartupShutdown implements ServletContextListener
         try {
             FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.getApplicationDefault())
-                .setDatabaseUrl(DB_URL)
                 .build();
 
             FirebaseApp.initializeApp(options);
