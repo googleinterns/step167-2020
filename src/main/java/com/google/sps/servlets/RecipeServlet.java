@@ -37,26 +37,15 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/api/post")
 public class RecipeServlet extends HttpServlet {
-
   private Gson gson = new Gson();
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    Query query = DBReferences.recipes;
-    ApiFuture<QuerySnapshot> querySnapshot = query.get();
-    ArrayList<Object> recipeList = new ArrayList<>();
-
-    try {
-      for (DocumentSnapshot document : querySnapshot.get().getDocuments())
-        recipeList.add(document.getData());
-
-      String json = gson.toJson(recipeList);
-      response.setContentType("application/json;");
-      response.getWriter().println(json);
-      System.out.println(json);
-    } catch (Exception e) {
-      System.out.println("Recipe GET threw exception: " + e);
-    }
+    String recipeID = request.getParameter("recipeID");
+    if (recipeID == null)
+      getRecipeList(response);
+    else
+      getDetailedRecipe(recipeID, response);
   }
 
   @Override
@@ -68,29 +57,34 @@ public class RecipeServlet extends HttpServlet {
   @Override
   public void doDelete(HttpServletRequest request, HttpServletResponse response)
       throws IOException {}
+
+  private void getRecipeList(HTTPServletResponse response) throws IOException {
+    Query query = DBReferences.recipes;
+    ApiFuture<QuerySnapshot> querySnapshot = query.get();
+    ArrayList<Object> recipeList = new ArrayList<>();
+
+    try {
+      for (DocumentSnapshot document : querySnapshot.get().getDocuments())
+        recipeList.add(document.getData());
+
+      String json = gson.toJson(recipeList);
+      response.setContentType("application/json;");
+      response.getWriter().println(json);
+    } catch (Exception e) {
+      System.out.println("Recipe GET threw exception: " + e);
+    }
+  }
+
+  private void getDetailedRecipe(String recipeID, HTTPServletResponse response) throws IOException {
+    DocumentReference recipeRef = DBReferences.recipes.document(recipeID);
+    ApiFuture<DocumentSnapshot> future = recipeRef.get();
+    DocumentSnapshot document = future.get();
+    if (document.exists()) {
+      String json = gson.toJson(document.getData());
+      response.setContentType("application/json;");
+      response.getWriter().println(json);
+    } else {
+      System.out.println("No such document!");
+    }
+  }
 }
-
-/*
-
-DatabaseReferences.ROOT.child("post-metadata")
-        .addListenerForSingleValueEvent(new ValueEventListener() {
-          @Override
-          public void onDataChange(DataSnapshot dataSnapshot) {
-            String json = gson.toJson(dataSnapshot.getValue());
-            response.setContentType("application/json;");
-            try {
-              response.getWriter().println(json);
-            } catch (IOException e) {
-              System.out.println("IO Exception when attempting to write to HTTPServletResponse");
-            }
-            System.out.println(dataSnapshot.getValue());
-          }
-
-          @Override
-          public void onCancelled(DatabaseError databaseError) {
-            System.out.println("The read failed: " + databaseError.getCode());
-          }
-        });
-
-
-*/
