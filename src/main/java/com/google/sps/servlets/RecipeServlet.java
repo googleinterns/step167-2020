@@ -63,7 +63,6 @@ public class RecipeServlet extends HttpServlet {
 
     response.setContentType("application/json;");
     response.getWriter().println(json);
-    System.out.println("Recipe GET threw exception: " + e);
   }
 
   @Override
