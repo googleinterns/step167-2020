@@ -59,7 +59,13 @@
             title: titleInput.value,
             content: instructionsInput.value
           })
-        }).then(() => window.location.href = "/feed.html");
+        }).then((response) => {
+          if(response.status === 202) {
+            window.location.href = '/feed.html';
+          } else {
+            alert('Error ' + response.status.toString());
+          }
+        });
       }
     </script>
   </body>
