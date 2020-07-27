@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.sps.servlets;
+package com.google.sps.meltingpot.servlets;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.CollectionReference;
@@ -23,20 +23,25 @@ import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
-import com.google.meltingpot.DBReferences;
-import com.google.meltingpot.Recipe;
+import com.google.gson.reflect.TypeToken;
+import com.google.sps.meltingpot.data.DBReferences;
+import com.google.sps.meltingpot.data.Recipe;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.StringBuilder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import javax.servlet.AsyncContext;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/** Handles recipe post requests. */
 @WebServlet("/api/post")
 public class RecipeServlet extends HttpServlet {
   private Gson gson = new Gson();
@@ -53,7 +58,7 @@ public class RecipeServlet extends HttpServlet {
       json = getDetailedRecipe(recipeID, response);
 
     if (documentNotFound || json == "Exception") {
-        return;
+      return;
     }
 
     try {
@@ -65,10 +70,16 @@ public class RecipeServlet extends HttpServlet {
   }
 
   @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {}
-
-  @Override
-  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+    Recipe newRecipe = gson.fromJson(data, Recipe.class);
+    if (newRecipe.content == null || newRecipe.title == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+    DBReferences.recipes().document().set(newRecipe);
+    response.setStatus(HttpServletResponse.SC_ACCEPTED);
+  }
 
   @Override
   public void doDelete(HttpServletRequest request, HttpServletResponse response)

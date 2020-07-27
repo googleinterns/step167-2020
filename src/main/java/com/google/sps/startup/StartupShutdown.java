@@ -1,4 +1,4 @@
-package com.google.sps.startup;
+package com.google.sps.meltingpot.startup;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.FirestoreOptions;
@@ -11,6 +11,8 @@ import javax.servlet.annotation.WebListener;
 
 @WebListener
 public class StartupShutdown implements ServletContextListener {
+  private final String DB_URL = "https://meltingpot-step-2020.firebaseio.com/";
+
   @Override
   public void contextInitialized(ServletContextEvent event) {
     System.out.println("Server starting up...");
@@ -18,7 +20,6 @@ public class StartupShutdown implements ServletContextListener {
     try {
       FirebaseOptions options = new FirebaseOptions.Builder()
                                     .setCredentials(GoogleCredentials.getApplicationDefault())
-                                    .setFirestoreOptions(FirestoreOptions.getDefaultInstance())
                                     .build();
 
       FirebaseApp.initializeApp(options);
@@ -29,6 +30,7 @@ public class StartupShutdown implements ServletContextListener {
       e.printStackTrace();
     }
   }
+
   public void contextDestroyed(ServletContextEvent event) {
     System.out.println("Server shutting down...");
   }

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.sps.servlets;
+package com.google.sps.meltingpot.servlets;
 
 import com.google.gson.Gson;
 import java.io.IOException;
@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/** Handles comment requests. */
 @WebServlet("/api/comment")
 public class CommentServlet extends HttpServlet {
   @Override

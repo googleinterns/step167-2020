@@ -1,4 +1,4 @@
-package com.google.meltingpot;
+package com.google.sps.meltingpot.data;
 
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.Firestore;

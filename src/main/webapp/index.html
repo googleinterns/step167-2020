@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <p id="signed-in">Unknown</p>
+
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
 
@@ -15,22 +17,31 @@
     <!-- Add Firebase products that you want to use -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-auth.js"></script>
 
-    <script>
-      // Your web app's Firebase configuration
-      var firebaseConfig = {
-        apiKey: "AIzaSyAe5HlFZFuhzMimXrKW1z3kglajbdHf_Rc",
-        authDomain: "meltingpot-step-2020.firebaseapp.com",
-        databaseURL: "https://meltingpot-step-2020.firebaseio.com",
-        projectId: "meltingpot-step-2020",
-        storageBucket: "meltingpot-step-2020.appspot.com",
-        messagingSenderId: "495013387451",
-        appId: "1:495013387451:web:9827c75184cf5510749d9e",
-        measurementId: "G-8YRW8QZ2XG",
+    <!-- Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- TODO: replace this script with whatever needs to be done on index.html -->
+    <script type="module">
+      import { app } from "/scripts/init.js"
+
+      function signInStatus() {
+        app.auth().onAuthStateChanged(function (user) {
+          if (user) {
+            document.getElementById("signed-in").textContent = "Signed in"
+          } else {
+            document.getElementById("signed-in").textContent = "Signed out"
+          }
+        })
+
+        if (app == null) {
+          return
+        } else if (app.auth().currentUser) {
+          document.getElementById("signed-in").textContent = "Signed in"
+        } else {
+          document.getElementById("signed-in").textContent = "Signed out"
+        }
       }
-      // Initialize Firebase
-      firebase.initializeApp(firebaseConfig)
-      firebase.analytics()
-      firebase.auth()
+      signInStatus()
     </script>
   </body>
 </html>
