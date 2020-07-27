@@ -11,6 +11,8 @@ import java.io.IOException;
 @WebListener
 public class StartupShutdown implements ServletContextListener
 {
+    private final String DB_URL = "https://meltingpot-step-2020.firebaseio.com/";
+
     @Override
     public void contextInitialized(ServletContextEvent event)
     {
@@ -18,8 +20,8 @@ public class StartupShutdown implements ServletContextListener
 
         try {
             FirebaseOptions options = new FirebaseOptions.Builder()
-            .setCredentials(GoogleCredentials.getApplicationDefault())
-            .build();
+                .setCredentials(GoogleCredentials.getApplicationDefault())
+                .build();
 
             FirebaseApp.initializeApp(options);
 
@@ -29,6 +31,7 @@ public class StartupShutdown implements ServletContextListener
             e.printStackTrace();
         }
     }
+    
     public void contextDestroyed(ServletContextEvent event)
     {
         System.out.println("Server shutting down...");

@@ -34,7 +34,8 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.sps.data.Recipe;
 import com.google.sps.data.DBReferences;
 
-@WebServlet(urlPatterns = "/api/post", asyncSupported = true)
+/** Handles recipe post requests. */
+@WebServlet("/api/post")
 public class RecipeServlet extends HttpServlet
 {
 
