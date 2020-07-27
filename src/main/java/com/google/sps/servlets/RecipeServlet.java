@@ -49,14 +49,11 @@ public class RecipeServlet extends HttpServlet
     {
         String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
         Recipe newRecipe = gson.fromJson(data, Recipe.class);
-        if(newRecipe.content == null || newRecipe.title == null)
-        {
+        if(newRecipe.content == null || newRecipe.title == null) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-
         DBReferences.recipes.document().set(newRecipe);
-
         response.setStatus(HttpServletResponse.SC_ACCEPTED);
     }
 
