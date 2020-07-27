@@ -16,20 +16,21 @@ package com.google.sps.servlets;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
-import com.google.sps.data.DBReferences;
-import com.google.sps.data.Recipe;
+import com.google.meltingpot.DBReferences;
+import com.google.meltingpot.Recipe;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -39,14 +40,28 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/api/post")
 public class RecipeServlet extends HttpServlet {
   private Gson gson = new Gson();
+  private boolean documentNotFound = false;
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String recipeID = request.getParameter("recipeID");
+    String json;
+
     if (recipeID == null)
-      getRecipeList(response);
+      json = getRecipeList(response);
     else
-      getDetailedRecipe(recipeID, response);
+      json = getDetailedRecipe(recipeID, response);
+
+    if (documentNotFound || json == "Exception") {
+        return;
+    }
+
+    try {
+      response.setContentType("application/json;");
+      response.getWriter().println(json);
+    } catch (IOException e) {
+      System.out.println("Recipe GET threw exception: " + e);
+    }
   }
 
   @Override
@@ -59,38 +74,44 @@ public class RecipeServlet extends HttpServlet {
   public void doDelete(HttpServletRequest request, HttpServletResponse response)
       throws IOException {}
 
-  private void getRecipeList(HttpServletResponse response) throws IOException {
-    Query query = DBReferences.recipes;
+  private String getRecipeList(HttpServletResponse response) {
+    Query query = DBReferences.recipes();
     ApiFuture<QuerySnapshot> querySnapshot = query.get();
     ArrayList<Object> recipeList = new ArrayList<>();
 
     try {
-      for (DocumentSnapshot document : querySnapshot.get().getDocuments())
+      for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
         recipeList.add(document.getData());
-
-      String json = gson.toJson(recipeList);
-      response.setContentType("application/json;");
-      response.getWriter().println(json);
-    } catch (Exception e) {
-      System.out.println("Recipe GET threw exception: " + e);
+      }
+      return gson.toJson(recipeList);
+    } catch (InterruptedException e) {
+      System.out.println("Attempt to query recipes raised exception: " + e);
+    } catch (ExecutionException e) {
+      System.out.println("Attempt to query recipes raised exception: " + e);
     }
+
+    return "Exception";
   }
 
-  private void getDetailedRecipe(String recipeID, HttpServletResponse response) throws IOException {
-    DocumentReference recipeRef = DBReferences.recipes.document(recipeID);
+  private String getDetailedRecipe(String recipeID, HttpServletResponse response)
+      throws IOException {
+    DocumentReference recipeRef = DBReferences.recipes().document(recipeID);
     ApiFuture<DocumentSnapshot> future = recipeRef.get();
 
     try {
-        DocumentSnapshot document = future.get();
-        if (document.exists()) {
-            String json = gson.toJson(document.getData());
-            response.setContentType("application/json;");
-            response.getWriter().println(json);
-        } else {
-            System.out.println("No such document!");
-        }
-    } catch (Exception e) {
-        System.out.println("Exception on getDetailedRecipe: " + e);
+      DocumentSnapshot document = future.get();
+      if (document.exists())
+        return gson.toJson(document.getData());
+      else {
+        documentNotFound = true;
+        return "";
+      }
+    } catch (InterruptedException e) {
+      System.out.println("Attempt to query single recipe raised exception: " + e);
+    } catch (ExecutionException e) {
+      System.out.println("Attempt to query single recipe raised exception: " + e);
     }
+
+    return "Exception";
   }
 }
