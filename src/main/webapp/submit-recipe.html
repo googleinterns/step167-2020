@@ -9,7 +9,7 @@
   <body>
     <!-- Recipe form -->
     <div>
-      <form id="recipe-form" action="/api/post" method="post" enctype="multipart/form-data">
+      <form id="recipe-form">
         <label for="recipe-title">Recipe Title</label><br />
         <input
           type="text"
@@ -19,8 +19,6 @@
           oninput="renderRecipe()"
         />
         <br />
-        <label for="ingredients">Ingredients</label><br />
-        <textarea id="ingredients" name="ingredients" placeholder="e.g. 1/2 cup of flour..."></textarea><br />
         <label for="instructions">Recipe Instructions</label><br />
         <textarea
           rows="10"
@@ -31,7 +29,7 @@
           oninput="renderRecipe()"
         ></textarea>
         <br />
-        <button type="submit">Submit</button>
+        <input type="button" onclick="submitRecipe()" value="Submit"></input>
       </form>
     </div>
     <div id="recipe-preview">
@@ -47,6 +45,21 @@
 
         titlePreview.innerText = titleInput.value;
         instructionsPreview.innerHTML = marked(instructions.value);
+      }
+
+      function submitRecipe() {
+        let titleInput = document.getElementById("recipe-title");
+        let instructionsInput = document.getElementById("instructions");
+        fetch('/api/post', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            title: titleInput.value,
+            content: instructionsInput.value
+          })
+        }).then(() => window.location.href = "/feed.html");
       }
     </script>
   </body>
