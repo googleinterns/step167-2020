@@ -23,7 +23,7 @@ import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
 import com.google.sps.data.DBReferences;
-import com.google.sps.data.Post;
+import com.google.sps.data.Recipe;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.StringBuilder;
@@ -37,12 +37,8 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/api/post")
 public class RecipeServlet extends HttpServlet {
-  private Gson gson;
 
-  @Override
-  public void init() {
-    gson = new Gson();
-  }
+  private Gson gson = new Gson();
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
