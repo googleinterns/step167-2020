@@ -17,6 +17,7 @@ package com.google.sps.servlets;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentSnapshot;
+import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
@@ -58,7 +59,7 @@ public class RecipeServlet extends HttpServlet {
   public void doDelete(HttpServletRequest request, HttpServletResponse response)
       throws IOException {}
 
-  private void getRecipeList(HTTPServletResponse response) throws IOException {
+  private void getRecipeList(HttpServletResponse response) throws IOException {
     Query query = DBReferences.recipes;
     ApiFuture<QuerySnapshot> querySnapshot = query.get();
     ArrayList<Object> recipeList = new ArrayList<>();
@@ -75,16 +76,21 @@ public class RecipeServlet extends HttpServlet {
     }
   }
 
-  private void getDetailedRecipe(String recipeID, HTTPServletResponse response) throws IOException {
+  private void getDetailedRecipe(String recipeID, HttpServletResponse response) throws IOException {
     DocumentReference recipeRef = DBReferences.recipes.document(recipeID);
     ApiFuture<DocumentSnapshot> future = recipeRef.get();
-    DocumentSnapshot document = future.get();
-    if (document.exists()) {
-      String json = gson.toJson(document.getData());
-      response.setContentType("application/json;");
-      response.getWriter().println(json);
-    } else {
-      System.out.println("No such document!");
+
+    try {
+        DocumentSnapshot document = future.get();
+        if (document.exists()) {
+            String json = gson.toJson(document.getData());
+            response.setContentType("application/json;");
+            response.getWriter().println(json);
+        } else {
+            System.out.println("No such document!");
+        }
+    } catch (Exception e) {
+        System.out.println("Exception on getDetailedRecipe: " + e);
     }
   }
 }
