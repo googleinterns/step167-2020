@@ -73,7 +73,9 @@ public class RecipeServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
-    DBReferences.recipes().document().set(newRecipe);
+    DocumentReference recipeRef = DBReferences.recipes().document();
+    newRecipe.id = recipeRef.getId(); 
+    recipeRef.set(newRecipe);
     response.setStatus(HttpServletResponse.SC_ACCEPTED);
   }
 
