@@ -59,9 +59,8 @@
           }),
         }).then((response) => {
           if (response.status === 202) {
-            const recipeID = response.text()
-            window.location.href = "/recipe-display.html?recipeID=" + recipeID
-          } else {
+            window.location.href = "/feed.html"
+          } else {   
             alert("Error " + response.status.toString())
           }
         })
