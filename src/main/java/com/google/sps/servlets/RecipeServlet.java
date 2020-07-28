@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.*;
 import java.util.stream.Collectors;
 import javax.servlet.AsyncContext;
 import javax.servlet.annotation.WebServlet;
@@ -46,6 +47,9 @@ import javax.servlet.http.HttpServletResponse;
 public class RecipeServlet extends HttpServlet {
   private Gson gson = new Gson();
   private boolean documentNotFound = false;
+
+  // For logs.
+  private final Logger logger = Logger.getLogger(RecipeServlet.class.getName());
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -63,6 +67,7 @@ public class RecipeServlet extends HttpServlet {
 
     response.setContentType("application/json;");
     response.getWriter().println(json);
+    logger.log(Level.INFO, json);
   }
 
   @Override
@@ -73,7 +78,15 @@ public class RecipeServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
-    DBReferences.recipes().document().set(newRecipe);
+    // Add the recipe to the DB recipes collection as a new document.
+    DocumentReference recipeDoc = DBReferences.recipes().document();
+    recipeDoc.set(newRecipe);
+
+    // Return the recipe's ID in the HTTP response.
+    response.setContentType("text/plain");
+    response.getWriter().println(recipeDoc.getId());
+    logger.log(Level.INFO, recipeDoc.getId().toString());
+
     response.setStatus(HttpServletResponse.SC_ACCEPTED);
   }
 

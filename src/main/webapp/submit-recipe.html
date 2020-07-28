@@ -33,10 +33,10 @@
       </form>
     </div>
     <div id="recipe-preview">
-      <h1 id="title-preview"></h1>
+      <h1 id="title-preview"> </h1>
       <div id="instructions-preview"></div>
     </div>
-    <script type="text/javascript">
+    <script>
       function renderRecipe() {
         let titleInput = document.getElementById("recipe-title")
         let instructionsInput = document.getElementById("instructions")
@@ -61,8 +61,9 @@
           }),
         }).then((response) => {
           if (response.status === 202) {
-            window.location.href = "/feed.html"
-          } else {
+            const recipeID = response.text();
+            window.location.href = "/recipe-display.html?recipeID=" + recipeID;
+          } else {   
             alert("Error " + response.status.toString())
           }
         })

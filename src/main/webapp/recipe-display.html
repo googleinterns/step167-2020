@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Melting Pot</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body onload="getDetailedRecipe(getRecipeID()); getComments(getRecipeID())">
+    <div id="recipe"></div>
+    <!-- Comment submission form -->
+    <div>
+      <form id="comment-form">
+        <label for="comment-content">Message</label><br />
+        <input type="text" id="comment-content" name="comment-content" placeholder="Leave a comment..." />
+        <br />
+        <button type="button" onclick="submitComment()" value="Submit">Submit</button>
+      </form>
+    </div>
+    <div id="comments"></div>
+
+    <!-- Page scripts -->
+    <script>
+      /** Returns the recipe ID in the query string for this page. */
+      function getRecipeID() {
+        const params = new URLSearchParams(window.location.search)
+        return params.get("recipeID")
+      }
+
+      function submitComment(recipeID) {
+        var commentContent = document.getElementById("comment-content")
+        fetch("/api/comment?recipeID=" + recipeID, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            content: commentContent.value,
+          }),
+        }).then((response) => {
+          if (response.status === 202) {
+            getComments()
+          } else {
+            alert("Error " + response.status.toString())
+          }
+        })
+      }
+
+      /** Adds comments associated with a recipe to the UI. */
+      function getComments(recipeID) {
+        fetch("api/comment?recipeID=" + recipeID)
+          .then((response) => response.json())
+          .then((comments) => {
+            const commentEl = document.getElementById("comments")
+            comments.forEach((comment) => {
+              commentEl.appendChild(createCommentElement(comment))
+            })
+          })
+      }
+
+      function getRecipeList() {
+        // eslint-disable-line no-unused-vars
+        fetch("/api/post")
+          .then((response) => response.json())
+          .then((recipes) => {
+            const recipeEl = document.getElementById("recipe-list")
+            removeAllChildNodes(recipeEl)
+            recipes.forEach((recipe) => {
+              recipeEl.appendChild(createRecipeListElement(recipe))
+            })
+          })
+      }
+
+      function getDetailedRecipe(ID) {
+        // eslint-disable-line no-unused-vars
+        fetch("/api/post?recipeID=" + ID)
+          .then((response) => response.json())
+          .then((recipe) => {
+            const recipeEl = document.getElementById("recipe")
+            removeAllChildNodes(recipeEl)
+            recipeEl.appendChild(createRecipeListElement(recipe))
+          })
+      }
+
+      function removeAllChildNodes(parent) {
+        while (parent.firstChild) {
+          parent.removeChild(parent.firstChild)
+        }
+      }
+
+      function createCommentElement(comment) {
+        const commentEl = document.createElement("div")
+        commentEl.appendChild(createBasicElement(comment.content, "p"))
+        commentEl.appendChild(document.createElement("hr"))
+        return commentEl
+      }
+
+      function createRecipeListElement(recipe) {
+        const recipeElement = document.createElement("div")
+        recipeElement.appendChild(createBasicElement(recipe.title, "h4"))
+        recipeElement.appendChild(createBasicElement(recipe.content, "p"))
+        return recipeElement
+      }
+
+      function createBasicElement(text, type) {
+        const basicElement = document.createElement(type)
+        if (text != "") basicElement.innerText = text
+        return basicElement
+      }
+    </script>
+  </body>
+</html>
