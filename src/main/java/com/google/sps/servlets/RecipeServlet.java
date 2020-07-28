@@ -24,9 +24,9 @@ import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.google.sps.meltingpot.data.DBObject;
 import com.google.sps.meltingpot.data.DBReferences;
 import com.google.sps.meltingpot.data.Recipe;
-import com.google.sps.meltingpot.data.DBObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.StringBuilder;
@@ -75,7 +75,7 @@ public class RecipeServlet extends HttpServlet {
       return;
     }
     DocumentReference recipeRef = DBReferences.recipes().document();
-    newRecipe.id = recipeRef.getId(); 
+    newRecipe.id = recipeRef.getId();
     recipeRef.set(newRecipe);
 
     response.setContentType("application/json");

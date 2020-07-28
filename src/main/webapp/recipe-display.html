@@ -9,12 +9,10 @@
     <div id="recipe"></div>
     <!-- Comment submission form -->
     <div>
-      <form id="comment-form">
-        <label for="comment-content">Message</label><br />
-        <input type="text" id="comment-content" name="comment-content" placeholder="Leave a comment..." />
-        <br />
-        <button type="button" onclick="submitComment()" value="Submit">Submit</button>
-      </form>
+      <label for="comment-content">Message</label><br />
+      <input type="text" id="comment-content" name="comment-content" placeholder="Leave a comment..." />
+      <br />
+      <button type="button" onclick="submitComment(getRecipeID())" value="Submit">Submit</button>
     </div>
     <div id="comments"></div>
 
@@ -51,6 +49,7 @@
           .then((response) => response.json())
           .then((comments) => {
             const commentEl = document.getElementById("comments")
+            commentEl.innerHTML = ""
             comments.forEach((comment) => {
               commentEl.appendChild(createCommentElement(comment))
             })

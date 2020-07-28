@@ -14,5 +14,5 @@ public class Comment {
     this.date = new Date();
   }
 
-  // TODO: get date, user display name (or username) from db collection.
+  // TODO: get user display name (or username) from db collection.
 }

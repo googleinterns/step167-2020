@@ -9,31 +9,29 @@
   <body>
     <!-- Recipe form -->
     <div>
-      <form id="recipe-form">
-        <label for="recipe-title">Recipe Title</label><br />
-        <input
-          type="text"
-          id="recipe-title"
-          name="recipe-title"
-          placeholder="e.g. Grandma's Zucchini Florentine"
-          oninput="renderRecipe()"
-        />
-        <br />
-        <label for="instructions">Recipe Instructions</label><br />
-        <textarea
-          rows="10"
-          cols="70"
-          name="instructions"
-          id="instructions"
-          placeholder="e.g. Preheat the oven to 350 degrees."
-          oninput="renderRecipe()"
-        ></textarea>
-        <br />
-        <button type="button" onclick="submitRecipe()" value="Submit">Submit</button>
-      </form>
+      <label for="recipe-title">Recipe Title</label><br />
+      <input
+        type="text"
+        id="recipe-title"
+        name="recipe-title"
+        placeholder="e.g. Grandma's Zucchini Florentine"
+        oninput="renderRecipe()"
+      />
+      <br />
+      <label for="instructions">Recipe Instructions</label><br />
+      <textarea
+        rows="10"
+        cols="70"
+        name="instructions"
+        id="instructions"
+        placeholder="e.g. Preheat the oven to 350 degrees."
+        oninput="renderRecipe()"
+      ></textarea>
+      <br />
+      <button type="button" onclick="submitRecipe()" value="Submit">Submit</button>
     </div>
     <div id="recipe-preview">
-      <h1 id="title-preview"> </h1>
+      <h1 id="title-preview"></h1>
       <div id="instructions-preview"></div>
     </div>
     <script>
@@ -61,9 +59,9 @@
           }),
         }).then((response) => {
           if (response.status === 202) {
-            const recipeID = response.text();
-            window.location.href = "/recipe-display.html?recipeID=" + recipeID;
-          } else {   
+            const recipeID = response.text()
+            window.location.href = "/recipe-display.html?recipeID=" + recipeID
+          } else {
             alert("Error " + response.status.toString())
           }
         })

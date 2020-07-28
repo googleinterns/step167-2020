@@ -58,6 +58,7 @@ public class CommentServlet extends HttpServlet {
     }
 
     response.setContentType("application/json");
+    System.out.println(json);
     response.getWriter().println(json);
   }
 
@@ -84,7 +85,7 @@ public class CommentServlet extends HttpServlet {
     return "Exception";
   }
 
-  @Override // TODO
+  @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String commentData =
         request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));

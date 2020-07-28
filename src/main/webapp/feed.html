@@ -27,17 +27,18 @@
     <ul id="recipe-list"></ul>
 
     <script>
-      let recipeList = document.getElementById("recipe-list");
+      let recipeList = document.getElementById("recipe-list")
       fetch("/api/post").then(async (response) => {
-        if(response.status < 200 || response.status >= 300) {
-          alert("Error " + response.status.toString());
+        if (response.status < 200 || response.status >= 300) {
+          alert("Error " + response.status.toString())
         } else {
-          let recipes = await response.json();
-          recipes.forEach(recipe => {
-            recipeList.innerHTML += "<li><a href=\"recipe-display.html?recipeID=" + recipe.id + "\">" + recipe.title + "</a></li>";
-          });
+          let recipes = await response.json()
+          recipes.forEach((recipe) => {
+            recipeList.innerHTML +=
+              '<li><a href="recipe-display.html?recipeID=' + recipe.id + '">' + recipe.title + "</a></li>"
+          })
         }
-      });
+      })
     </script>
   </body>
 </html>
