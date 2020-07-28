@@ -26,6 +26,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.sps.meltingpot.data.DBReferences;
 import com.google.sps.meltingpot.data.Recipe;
+import com.google.sps.meltingpot.data.DBObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.StringBuilder;
@@ -61,7 +62,7 @@ public class RecipeServlet extends HttpServlet {
       return;
     }
 
-    response.setContentType("application/json;");
+    response.setContentType("application/json");
     response.getWriter().println(json);
   }
 
@@ -73,7 +74,12 @@ public class RecipeServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
-    DBReferences.recipes().document().set(newRecipe);
+    DocumentReference recipeRef = DBReferences.recipes().document();
+    newRecipe.id = recipeRef.getId(); 
+    recipeRef.set(newRecipe);
+
+    response.setContentType("application/json");
+    response.getWriter().println(gson.toJson(new DBObject(newRecipe.id)));
     response.setStatus(HttpServletResponse.SC_ACCEPTED);
   }
 

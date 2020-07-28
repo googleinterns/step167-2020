@@ -17,5 +17,27 @@
 
     <!-- Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <h1>
+      Recipes
+    </h1>
+    <br />
+    <br />
+
+    <ul id="recipe-list"></ul>
+
+    <script>
+      let recipeList = document.getElementById("recipe-list");
+      fetch("/api/post").then(async (response) => {
+        if(response.status < 200 || response.status >= 300) {
+          alert("Error " + response.status.toString());
+        } else {
+          let recipes = await response.json();
+          recipes.forEach(recipe => {
+            recipeList.innerHTML += "<li><a href=\"recipe-display.html?recipeID=" + recipe.id + "\">" + recipe.title + "</a></li>";
+          });
+        }
+      });
+    </script>
   </body>
 </html>
