@@ -20,4 +20,8 @@ public class DBReferences {
   public static CollectionReference comments(String recipeID) {
     return recipesReference.document(recipeID).collection(DB_COMMENTS);
   }
+
+  public static String commentsCollectionName() {
+    return DB_COMMENTS;
+  }
 }

@@ -40,7 +40,6 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/api/comment")
 public class CommentServlet extends HttpServlet {
   private Gson gson = new Gson();
-  private final String DB_COMMENTS = "comments-collection";
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -48,17 +47,18 @@ public class CommentServlet extends HttpServlet {
     String json;
 
     if (recipeID == null) {
+      System.err.println("No recipe ID was provided.");
       return;
     } else {
       json = getComments(recipeID, response);
     }
 
-    if (json == "Exception") {
+    if (json == null) {
+      // Error message is printed by getComments().
       return;
     }
 
     response.setContentType("application/json");
-    System.out.println(json);
     response.getWriter().println(json);
   }
 
@@ -82,7 +82,7 @@ public class CommentServlet extends HttpServlet {
       System.out.println("Attempt to query recipes raised exception: " + e);
     }
 
-    return "Exception";
+    return null;
   }
 
   @Override

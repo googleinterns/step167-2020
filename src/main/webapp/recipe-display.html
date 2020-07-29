@@ -60,21 +60,7 @@
           })
       }
 
-      function getRecipeList() {
-        // eslint-disable-line no-unused-vars
-        fetch("/api/post")
-          .then((response) => response.json())
-          .then((recipes) => {
-            const recipeEl = document.getElementById("recipe-list")
-            removeAllChildNodes(recipeEl)
-            recipes.forEach((recipe) => {
-              recipeEl.appendChild(createRecipeListElement(recipe))
-            })
-          })
-      }
-
       function getDetailedRecipe(ID) {
-        // eslint-disable-line no-unused-vars
         fetch("/api/post?recipeID=" + ID)
           .then((response) => response.json())
           .then((recipe) => {
