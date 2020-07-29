@@ -58,7 +58,8 @@ public class RecipeServlet extends HttpServlet {
     else
       json = getDetailedRecipe(recipeID, response);
 
-    if (documentNotFound || json == "Exception") {
+    if (documentNotFound || json == null) {
+      response.setStatus(HttpServletResponse.SC_NO_CONTENT);
       return;
     }
 
@@ -103,7 +104,7 @@ public class RecipeServlet extends HttpServlet {
       System.out.println("Attempt to query recipes raised exception: " + e);
     }
 
-    return "Exception";
+    return null;
   }
 
   private String getDetailedRecipe(String recipeID, HttpServletResponse response)

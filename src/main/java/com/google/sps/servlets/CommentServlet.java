@@ -48,6 +48,7 @@ public class CommentServlet extends HttpServlet {
 
     if (recipeID == null) {
       System.err.println("No recipe ID was provided.");
+      response.setStatus(HttpServletResponse.SC_NO_CONTENT);
       return;
     } else {
       json = getComments(recipeID, response);
