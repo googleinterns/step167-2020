@@ -94,7 +94,7 @@ public class RecipeServlet extends HttpServlet {
     }
 
     deleteComments(recipeID);
-    deleteRecipe(recipeID, response);
+    ApiFuture<WriteResult> writeResult = DBReferences.recipes().document(recipeID).delete();
   }
 
   private String getRecipeList(HttpServletResponse response) {
@@ -150,17 +150,5 @@ public class RecipeServlet extends HttpServlet {
     } catch (ExecutionException e) {
       System.out.println("Attempt to delete post comments raised exception: " + e);
     }
-  }
-
-  private void deleteRecipe(String recipeID, HttpServletResponse response) throws IOException {
-    //try {
-      ApiFuture<WriteResult> writeResult = DBReferences.recipes().document(recipeID).delete();
-      //response.sendRedirect("feed.html");
-   //  }
-    //} catch (InterruptedException e) {
-    //  System.out.println("Attempt to delete post comments raised exception: " + e);
-    //} catch (ExecutionException e) {
-    //  System.out.println("Attempt to delete post comments raised exception: " + e);
-    //}
   }
 }
