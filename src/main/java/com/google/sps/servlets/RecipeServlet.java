@@ -29,7 +29,6 @@ import com.google.sps.meltingpot.data.DBReferences;
 import com.google.sps.meltingpot.data.Recipe;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -54,9 +53,9 @@ public class RecipeServlet extends HttpServlet {
     String json;
 
     if (recipeID == null)
-      json = getRecipeList(response);
+      json = getRecipeList();
     else
-      json = getDetailedRecipe(recipeID, response);
+      json = getDetailedRecipe(recipeID);
 
     if (documentNotFound || json == null) {
       response.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -78,7 +77,7 @@ public class RecipeServlet extends HttpServlet {
     DocumentReference recipeRef = DBReferences.recipes().document();
     newRecipe.id = recipeRef.getId();
     ApiFuture future = recipeRef.set(newRecipe);
-    try{
+    try {
       future.get();
     } catch (InterruptedException e) {
       System.out.println("Attempt to add recipe raised exception: " + e);
@@ -100,21 +99,20 @@ public class RecipeServlet extends HttpServlet {
     }
     DocumentReference recipeRef = DBReferences.recipe(newRecipe.id);
     ApiFuture future = recipeRef.set(newRecipe);
-    try{
+    try {
       future.get();
     } catch (InterruptedException e) {
       System.out.println("Attempt to edit recipe raised exception: " + e);
     } catch (ExecutionException e) {
       System.out.println("Attempt to edit recipe raised exception: " + e);
     }
-    return;
   }
 
   @Override
   public void doDelete(HttpServletRequest request, HttpServletResponse response)
       throws IOException {}
 
-  private String getRecipeList(HttpServletResponse response) {
+  private String getRecipeList() {
     Query query = DBReferences.recipes();
     ApiFuture<QuerySnapshot> querySnapshot = query.get();
     ArrayList<Object> recipeList = new ArrayList<>();
@@ -133,7 +131,7 @@ public class RecipeServlet extends HttpServlet {
     return null;
   }
 
-  private String getDetailedRecipe(String recipeID, HttpServletResponse response)
+  private String getDetailedRecipe(String recipeID)
       throws IOException {
     DocumentReference recipeRef = DBReferences.recipes().document(recipeID);
     ApiFuture<DocumentSnapshot> future = recipeRef.get();

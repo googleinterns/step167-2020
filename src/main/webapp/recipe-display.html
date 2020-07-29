@@ -28,7 +28,7 @@
 
       function submitComment(recipeID) {
         var commentContent = document.getElementById("comment-content")
-        console.log(recipeID);
+        console.log(recipeID)
         fetch("/api/comment?recipeID=" + recipeID, {
           method: "POST",
           headers: {
