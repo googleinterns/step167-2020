@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <title>Melting Pot</title>
     <link rel="stylesheet" href="style.css" />
-    <script src="scripts/script.js"></script>
   </head>
   <body>
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
@@ -18,5 +17,29 @@
 
     <!-- Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <h1>
+      Recipes
+    </h1>
+    <br />
+    <a href="/submit-recipe.html">Add your own recipe!</a>
+    <br />
+
+    <ul id="recipe-list"></ul>
+
+    <script>
+      let recipeList = document.getElementById("recipe-list")
+      fetch("/api/post").then(async (response) => {
+        if (response.status < 200 || response.status >= 300) {
+          alert("Error " + response.status.toString())
+        } else {
+          let recipes = await response.json()
+          recipes.forEach((recipe) => {
+            recipeList.innerHTML +=
+              '<li><a href="recipe-display.html?recipeID=' + recipe.id + '">' + recipe.title + "</a></li>"
+          })
+        }
+      })
+    </script>
   </body>
 </html>

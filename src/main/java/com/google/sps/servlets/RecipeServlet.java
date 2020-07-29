@@ -24,6 +24,7 @@ import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.google.sps.meltingpot.data.DBObject;
 import com.google.sps.meltingpot.data.DBReferences;
 import com.google.sps.meltingpot.data.Recipe;
 import java.io.BufferedReader;
@@ -57,11 +58,12 @@ public class RecipeServlet extends HttpServlet {
     else
       json = getDetailedRecipe(recipeID, response);
 
-    if (documentNotFound || json == "Exception") {
+    if (documentNotFound || json == null) {
+      response.setStatus(HttpServletResponse.SC_NO_CONTENT);
       return;
     }
 
-    response.setContentType("application/json;");
+    response.setContentType("application/json");
     response.getWriter().println(json);
   }
 
@@ -73,7 +75,12 @@ public class RecipeServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
-    DBReferences.recipes().document().set(newRecipe);
+    DocumentReference recipeRef = DBReferences.recipes().document();
+    newRecipe.id = recipeRef.getId();
+    recipeRef.set(newRecipe);
+
+    response.setContentType("application/json");
+    response.getWriter().println(gson.toJson(new DBObject(newRecipe.id)));
     response.setStatus(HttpServletResponse.SC_ACCEPTED);
   }
 
@@ -97,7 +104,7 @@ public class RecipeServlet extends HttpServlet {
       System.out.println("Attempt to query recipes raised exception: " + e);
     }
 
-    return "Exception";
+    return null;
   }
 
   private String getDetailedRecipe(String recipeID, HttpServletResponse response)

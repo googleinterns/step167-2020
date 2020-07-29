@@ -11,7 +11,6 @@ import javax.servlet.annotation.WebListener;
 
 @WebListener
 public class StartupShutdown implements ServletContextListener {
-
   @Override
   public void contextInitialized(ServletContextEvent event) {
     System.out.println("Server starting up...");
