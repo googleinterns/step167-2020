@@ -77,11 +77,17 @@ public class RecipeServlet extends HttpServlet {
     }
     DocumentReference recipeRef = DBReferences.recipes().document();
     newRecipe.id = recipeRef.getId();
-    recipeRef.set(newRecipe);
+    ApiFuture future = recipeRef.set(newRecipe);
+    try{
+      future.get();
+    } catch (InterruptedException e) {
+      System.out.println("Attempt to add recipe raised exception: " + e);
+    } catch (ExecutionException e) {
+      System.out.println("Attempt to add recipe raised exception: " + e);
+    }
 
     response.setContentType("application/json");
     response.getWriter().println(gson.toJson(new DBObject(newRecipe.id)));
-    response.setStatus(HttpServletResponse.SC_ACCEPTED);
   }
 
   @Override
