@@ -21,6 +21,7 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
 import com.google.sps.meltingpot.data.Comment;
@@ -116,5 +117,7 @@ public class CommentServlet extends HttpServlet {
       return;
     }
 
-    ApiFuture<WriteResult> writeResult = DBReferences.comments(recipeID).document(commentID).delete();
+    ApiFuture<WriteResult> writeResult =
+        DBReferences.comments(recipeID).document(commentID).delete();
   }
+}
