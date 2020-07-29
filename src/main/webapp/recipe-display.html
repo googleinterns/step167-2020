@@ -17,6 +17,7 @@
       <button type="button" onclick="submitComment(getRecipeID())" value="Submit">Submit</button>
     </div>
     <div id="comments"></div>
+    <button type="button" onclick="deleteComments(getRecipeID())">Delete All</button>
 
     <!-- Page scripts -->
     <script>
@@ -28,7 +29,7 @@
 
       function submitComment(recipeID) {
         var commentContent = document.getElementById("comment-content")
-        console.log(recipeID);
+        console.log(recipeID)
         fetch("/api/comment?recipeID=" + recipeID, {
           method: "POST",
           headers: {
@@ -82,6 +83,14 @@
             removeAllChildNodes(recipeEl)
             recipeEl.appendChild(createRecipeListElement(recipe))
           })
+      }
+
+      function deleteComments(recipeID) {
+        // eslint-disable-line no-unused-vars
+        const request = new Request("/api/post?recipeID=" + recipeID, { method: "DELETE" })
+        fetch(request).then(() => {
+            getComments(recipeID)
+        })
       }
 
       function removeAllChildNodes(parent) {
