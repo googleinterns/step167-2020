@@ -85,6 +85,26 @@ public class RecipeServlet extends HttpServlet {
   }
 
   @Override
+  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+    Recipe newRecipe = gson.fromJson(data, Recipe.class);
+    if (newRecipe.id == null || newRecipe.content == null || newRecipe.title == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+    DocumentReference recipeRef = DBReferences.recipe(newRecipe.id);
+    ApiFuture future = recipeRef.set(newRecipe);
+    try{
+      future.get();
+    } catch (InterruptedException e) {
+      System.out.println("Attempt to edit recipe raised exception: " + e);
+    } catch (ExecutionException e) {
+      System.out.println("Attempt to edit recipe raised exception: " + e);
+    }
+    return;
+  }
+
+  @Override
   public void doDelete(HttpServletRequest request, HttpServletResponse response)
       throws IOException {}
 
