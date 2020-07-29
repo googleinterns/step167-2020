@@ -72,9 +72,9 @@
       }
 
       function deletePost(recipeID) {
-        // eslint-disable-line no-unused-vars
-        const request = new Request("/api/post?recipeID=" + recipeID, { method: "DELETE" })
-        fetch(request).then((response) => {
+        fetch("/api/post?recipeID=" + recipeID, {
+          method: "DELETE",
+        }).then((response) => {
           if (response.status === 200) {
             window.location.href = "/feed.html"
           } else {

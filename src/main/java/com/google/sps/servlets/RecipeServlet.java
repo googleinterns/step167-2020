@@ -91,6 +91,7 @@ public class RecipeServlet extends HttpServlet {
       throws IOException {
     String recipeID = request.getParameter("recipeID");
     if (recipeID == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
 
