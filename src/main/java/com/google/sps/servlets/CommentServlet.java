@@ -106,5 +106,13 @@ public class CommentServlet extends HttpServlet {
 
   @Override
   public void doDelete(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {}
-}
+      throws IOException {
+    String recipeID = request.getParameter("recipeID");
+    String commentID = request.getParameter("commentID");
+    String json;
+
+    if (recipeID == null || commentID == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+  }
