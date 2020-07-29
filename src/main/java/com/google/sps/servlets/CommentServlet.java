@@ -115,4 +115,6 @@ public class CommentServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
+
+    ApiFuture<WriteResult> writeResult = DBReferences.comments(recipeID).document(commentID).delete();
   }
