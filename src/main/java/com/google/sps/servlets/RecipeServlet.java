@@ -153,6 +153,13 @@ public class RecipeServlet extends HttpServlet {
 
     deleteComments(recipeID);
     ApiFuture<WriteResult> writeResult = DBReferences.recipes().document(recipeID).delete();
+    try {
+      writeResult.get();
+    } catch (InterruptedException e) {
+      System.out.println("Attempt to add recipe raised exception: " + e);
+    } catch (ExecutionException e) {
+      System.out.println("Attempt to add recipe raised exception: " + e);
+    }
   }
 
   private String getRecipeList() {
