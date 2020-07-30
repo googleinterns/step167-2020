@@ -25,6 +25,13 @@
     <a href="/submit-recipe.html">Add your own recipe!</a>
     <br />
 
+    <select onchange="getComments()" id="tag-select">
+      <option value="american">5</option>
+      <option value="mediterranean">10</option>
+      <option value="salt">25</option>
+      <option value="sugar">50</option>
+    </select>
+
     <ul id="recipe-list"></ul>
 
     <script>
@@ -40,6 +47,23 @@
           })
         }
       })
+
+      function getRecipes() {
+        const tagName = document.getElementById("tag-select").value
+        let recipeList = document.getElementById("recipe-list")
+        fetch("/api/post?tagName=" + tagName).then(async (response) => {
+          if (response.status < 200 || response.status >= 300) {
+            alert("Error " + response.status.toString())
+          } else {
+            let recipes = await response.json()
+            recipeList.innerHTML = ""
+            recipes.forEach((recipe) => {
+              recipeList.innerHTML +=
+                '<li><a href="recipe-display.html?recipeID=' + recipe.id + '">' + recipe.title + "</a></li>"
+            })
+          }
+        })
+      }
     </script>
   </body>
 </html>
