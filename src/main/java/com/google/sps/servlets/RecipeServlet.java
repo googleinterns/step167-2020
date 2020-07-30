@@ -50,7 +50,6 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/api/post")
 public class RecipeServlet extends HttpServlet {
   private Gson gson = new Gson();
-  private boolean documentNotFound = false;
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -62,7 +61,7 @@ public class RecipeServlet extends HttpServlet {
     else
       json = getDetailedRecipe(recipeID);
 
-    if (documentNotFound || json == null) {
+    if (json == null) {
       response.setStatus(HttpServletResponse.SC_NO_CONTENT);
       return;
     }
@@ -171,8 +170,7 @@ public class RecipeServlet extends HttpServlet {
       if (document.exists())
         return gson.toJson(document.getData());
       else {
-        documentNotFound = true;
-        return "";
+        return null;
       }
     } catch (InterruptedException e) {
       System.out.println("Attempt to query single recipe raised exception: " + e);
