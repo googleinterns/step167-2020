@@ -22,11 +22,14 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
+import com.google.firebase.auth.FirebaseToken;
+import com.google.sps.meltingpot.auth.Auth;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.sps.meltingpot.data.DBObject;
 import com.google.sps.meltingpot.data.DBReferences;
 import com.google.sps.meltingpot.data.Recipe;
+import com.google.sps.meltingpot.data.User;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -69,16 +72,32 @@ public class RecipeServlet extends HttpServlet {
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+
+    String token = request.getParameter("token");
+    FirebaseToken decodedToken = Auth.verifyIdToken(token);
+    if(decodedToken == null) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return;
+    }
+
     Recipe newRecipe = gson.fromJson(data, Recipe.class);
     if (newRecipe.content == null || newRecipe.title == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
+
     DocumentReference recipeRef = DBReferences.recipes().document();
     newRecipe.id = recipeRef.getId();
-    ApiFuture future = recipeRef.set(newRecipe);
+    newRecipe.creatorId = decodedToken.getUid();
+    ApiFuture addRecipeFuture = recipeRef.set(newRecipe);
+
+    DocumentReference user = DBReferences.user(decodedToken.getUid());
+    String nestedPropertyName = DBReferences.getNestedPropertyName(User.CREATED_RECIPES_KEY, newRecipe.id);
+    ApiFuture addRecipeIdToUserPostsFuture = user.update(Collections.singletonMap(nestedPropertyName, true));
+
     try {
-      future.get();
+      addRecipeFuture.get();
+      addRecipeIdToUserPostsFuture.get();
     } catch (InterruptedException e) {
       System.out.println("Attempt to add recipe raised exception: " + e);
     } catch (ExecutionException e) {
