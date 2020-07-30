@@ -32,6 +32,7 @@ import com.google.sps.meltingpot.data.Recipe;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -124,13 +125,14 @@ public class RecipeServlet extends HttpServlet {
   }
 
   private String getRecipeList(HttpServletRequest request) {
-    String tagID = request.getParameter("tagID");
+    String tagParam = request.getParameter("tagIDs");
     Query query;
-    if (tagID == null || tagID.equals("None"))
+    if (tagParam == null || tagParam.equals("None"))
       query = DBReferences.recipes();
-    else
-      query = DBReferences.recipes().whereArrayContains("tag_ids", tagID);
-
+    else {
+      String[] tagIDs = tagParam.split(",");
+      query = DBReferences.recipes().whereArrayContainsAny("tag_ids", Arrays.asList(tagIDs));
+    }
     ApiFuture<QuerySnapshot> querySnapshot = query.get();
     ArrayList<Object> recipeList = new ArrayList<>();
 

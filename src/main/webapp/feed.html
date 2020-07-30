@@ -26,7 +26,7 @@
     <br />
 
     <p>Select filters:</p>
-    <select onchange="addFilter(); getRecipes()" id="tag-select">
+    <select onchange="addFilter()" id="tag-select">
       <option>None</option>
     </select>
 
@@ -63,10 +63,10 @@
       })
 
       function getRecipes() {
-        getCurrentFilters() // This returns our new tagID, used in next commit
-        const tagID = tagSelect.value
+         // This returns our new tagID, used in next commit
+        const tagIDs = getCurrentFilters()
         let recipeList = document.getElementById("recipe-list")
-        fetch("/api/post?tagID=" + tagID).then(async (response) => {
+        fetch("/api/post?tagIDs=" + tagIDs).then(async (response) => {
           if (response.status < 200 || response.status >= 300) {
             alert("Error " + response.status.toString())
           } else {
@@ -84,14 +84,12 @@
         var filterString = ""
         var filters = document.getElementById("selected-filters").childNodes
         if (filters.length < 1) {
-          console.log("Filter string: None")
           return "None"
         }
         filterString += filters[0].id
         for (var x = 1; x < filters.length; x++) {
           filterString += "," + filters[x].id
         }
-        console.log("Filter String: " + filterString)
         return filterString
       }
 
@@ -109,6 +107,7 @@
           filter.parentNode.removeChild(filter)
           getRecipes()
         })
+        getRecipes()
       }
 
       function tagInFilters(tagID) {
