@@ -116,8 +116,15 @@ public class CommentServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
-
-    ApiFuture<WriteResult> writeResult =
-        DBReferences.comments(recipeID).document(commentID).delete();
+    // Check if comment has replies
+    //   If so replace with "[deleted]"
+    //   Else:
+    try {
+      DBReferences.comments(recipeID).document(commentID).delete().get();
+    } catch (InterruptedException e) {
+      System.out.println("Attempt to delete comment raised exception: " + e);
+    } catch (ExecutionException e) {
+      System.out.println("Attempt to delete comment raised exception: " + e);
+    }
   }
 }
