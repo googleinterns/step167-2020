@@ -104,6 +104,7 @@ public class RecipeServlet extends HttpServlet {
       System.out.println("Attempt to add recipe raised exception: " + e);
     }
 
+    response.setStatus(HttpServletResponse.SC_CREATED);
     response.setContentType("application/json");
     response.getWriter().println(gson.toJson(new DBObject(newRecipe.id)));
   }
