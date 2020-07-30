@@ -58,11 +58,11 @@
             content: instructionsInput.value,
           }),
         }).then((response) => {
-          if (response.status === 202) {
-            window.location.href = "/feed.html"
-          } else {   
+          if (response.status !== 200) {
             alert("Error " + response.status.toString())
+            return
           }
+          response.json().then((data) => (window.location.href = "/recipe-display.html?recipeID=" + data.id))
         })
       }
     </script>

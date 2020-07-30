@@ -1,7 +1,5 @@
 package com.google.sps.meltingpot.data;
 
-import com.google.sps.meltingpot.data.DBObject;
-
 public class Recipe extends DBObject {
   public static final String CONTENT_KEY = "content";
   public static final String TITLE_KEY = "title";
