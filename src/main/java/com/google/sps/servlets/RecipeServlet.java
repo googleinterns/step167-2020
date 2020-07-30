@@ -55,7 +55,7 @@ public class RecipeServlet extends HttpServlet {
     String json;
 
     if (recipeID == null)
-      json = getRecipeList();
+      json = getRecipeList(request);
     else
       json = getDetailedRecipe(recipeID);
 
@@ -123,8 +123,18 @@ public class RecipeServlet extends HttpServlet {
     ApiFuture<WriteResult> writeResult = DBReferences.recipes().document(recipeID).delete();
   }
 
-  private String getRecipeList() {
-    Query query = DBReferences.recipes();
+  private String getRecipeList(HttpServletRequest request) {
+    Query query;
+    if (request.getParameter("tagName") == null)
+      query = DBReferences.recipes();
+    else {
+      String tagID = getTagID(request.getParameter("tagName"));
+      if (tagID == null) {
+        return gson.toJson(new ArrayList<>());
+      }
+      query = DBReferences.recipes().whereArrayContains("tag_ids", tagID);
+    }
+
     ApiFuture<QuerySnapshot> querySnapshot = query.get();
     ArrayList<Object> recipeList = new ArrayList<>();
 
@@ -133,6 +143,23 @@ public class RecipeServlet extends HttpServlet {
         recipeList.add(document.getData());
       }
       return gson.toJson(recipeList);
+    } catch (InterruptedException e) {
+      System.out.println("Attempt to query recipes raised exception: " + e);
+    } catch (ExecutionException e) {
+      System.out.println("Attempt to query recipes raised exception: " + e);
+    }
+
+    return null;
+  }
+
+  private String getTagID(String tagName) {
+    Query query = DBReferences.tags().whereEqualTo("name", tagName);
+    ApiFuture<QuerySnapshot> querySnapshot = query.get();
+
+    try {
+      for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+        return document.getId();
+      }
     } catch (InterruptedException e) {
       System.out.println("Attempt to query recipes raised exception: " + e);
     } catch (ExecutionException e) {
