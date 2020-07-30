@@ -20,7 +20,9 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.Query;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.sps.meltingpot.auth.Auth;
@@ -130,7 +132,16 @@ public class RecipeServlet extends HttpServlet {
 
   @Override
   public void doDelete(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {}
+      throws IOException {
+    String recipeID = request.getParameter("recipeID");
+    if (recipeID == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    deleteComments(recipeID);
+    ApiFuture<WriteResult> writeResult = DBReferences.recipes().document(recipeID).delete();
+  }
 
   private String getRecipeList() {
     Query query = DBReferences.recipes();
@@ -170,5 +181,19 @@ public class RecipeServlet extends HttpServlet {
     }
 
     return "Exception";
+  }
+
+  private void deleteComments(String recipeID) {
+    try {
+      ApiFuture<QuerySnapshot> future = DBReferences.comments(recipeID).get();
+      List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+      for (QueryDocumentSnapshot document : documents) {
+        document.getReference().delete();
+      }
+    } catch (InterruptedException e) {
+      System.out.println("Attempt to delete post comments raised exception: " + e);
+    } catch (ExecutionException e) {
+      System.out.println("Attempt to delete post comments raised exception: " + e);
+    }
   }
 }
