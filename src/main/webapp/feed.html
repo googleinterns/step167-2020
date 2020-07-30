@@ -25,9 +25,14 @@
     <a href="/submit-recipe.html">Add your own recipe!</a>
     <br />
 
-    <select onchange="getRecipes()" id="tag-select">
+    <p>Select filters:</p>
+    <select onchange="addFilter(); getRecipes()" id="tag-select">
       <option>None</option>
     </select>
+
+    <p>Currently selected filters:</p>
+    <div id="selected-filters"></div>
+    <br />
 
     <ul id="recipe-list"></ul>
 
@@ -58,6 +63,7 @@
       })
 
       function getRecipes() {
+        getCurrentFilters() // This returns our new tagID, used in next commit
         const tagID = tagSelect.value
         let recipeList = document.getElementById("recipe-list")
         fetch("/api/post?tagID=" + tagID).then(async (response) => {
@@ -72,6 +78,55 @@
             })
           }
         })
+      }
+
+      function getCurrentFilters() {
+        var filterString = ""
+        var filters = document.getElementById("selected-filters").childNodes
+        if (filters.length < 1) {
+          console.log("Filter string: None")
+          return "None"
+        }
+        filterString += filters[0].id
+        for (var x = 1; x < filters.length; x++) {
+          filterString += "," + filters[x].id
+        }
+        console.log("Filter String: " + filterString)
+        return filterString
+      }
+
+      function addFilter() {
+        const tagID = tagSelect.value
+        if (tagID == "None" || tagInFilters(tagID)) {
+          return
+        }
+        let filterList = document.getElementById("selected-filters")
+        const filter = document.createElement("DIV")
+        filter.innerText = getOptionByValue(tagID).innerText
+        filter.id = tagID
+        filterList.appendChild(filter)
+        filter.addEventListener("click", function (e) {
+          filter.parentNode.removeChild(filter)
+          getRecipes()
+        })
+      }
+
+      function tagInFilters(tagID) {
+        var filters = document.getElementById("selected-filters").childNodes
+        for (var x = 0; x < filters.length; x++) {
+          if (filters[x].id == tagID)
+            return true
+        }
+        return false
+      }
+
+      function getOptionByValue(value) {
+        var allOptions = document.getElementsByTagName("option")
+        var results = []
+        for (var x = 0; x < allOptions.length; x++) if (allOptions[x].value == value) { 
+            results.push(allOptions[x])
+        }
+        return results[0]
       }
     </script>
   </body>
