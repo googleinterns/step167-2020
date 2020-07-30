@@ -23,11 +23,11 @@ import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
-import com.google.firebase.cloud.FirestoreClient;
 import com.google.firebase.auth.FirebaseToken;
-import com.google.sps.meltingpot.auth.Auth;
+import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.data.DBObject;
 import com.google.sps.meltingpot.data.DBReferences;
 import com.google.sps.meltingpot.data.Recipe;
@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.servlet.AsyncContext;
@@ -74,7 +73,7 @@ public class RecipeServlet extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String token = request.getParameter("token");
     FirebaseToken decodedToken = Auth.verifyIdToken(token);
-    if(decodedToken == null) {
+    if (decodedToken == null) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
@@ -92,8 +91,10 @@ public class RecipeServlet extends HttpServlet {
     ApiFuture addRecipeFuture = recipeRef.set(newRecipe);
 
     DocumentReference user = DBReferences.user(decodedToken.getUid());
-    String nestedPropertyName = DBReferences.getNestedPropertyName(User.CREATED_RECIPES_KEY, newRecipe.id);
-    ApiFuture addRecipeIdToUserPostsFuture = user.update(Collections.singletonMap(nestedPropertyName, true));
+    String nestedPropertyName =
+        DBReferences.getNestedPropertyName(User.CREATED_RECIPES_KEY, newRecipe.id);
+    ApiFuture addRecipeIdToUserPostsFuture =
+        user.update(Collections.singletonMap(nestedPropertyName, true));
 
     try {
       addRecipeFuture.get();
@@ -111,7 +112,6 @@ public class RecipeServlet extends HttpServlet {
 
   @Override
   public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
     String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
     Recipe newRecipe = gson.fromJson(data, Recipe.class);
     if (newRecipe.id == null || newRecipe.content == null || newRecipe.title == null) {
@@ -121,18 +121,18 @@ public class RecipeServlet extends HttpServlet {
 
     String token = request.getParameter("token");
     FirebaseToken decodedToken = Auth.verifyIdToken(token);
-    if(decodedToken == null) {
+    if (decodedToken == null) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
-    DocumentReference user = DBReferences.user(decodedToken.getUid());
-    if(!User.createdRecipe(decodedToken.getUid(), newRecipe.id)) {
+    if (!User.createdRecipe(decodedToken.getUid(), newRecipe.id)) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return;
     }
 
     DocumentReference recipeRef = DBReferences.recipe(newRecipe.id);
-    ApiFuture future = recipeRef.update(Recipe.TITLE_KEY, newRecipe.title, Recipe.CONTENT_KEY, newRecipe.content);
+    ApiFuture future =
+        recipeRef.update(Recipe.TITLE_KEY, newRecipe.title, Recipe.CONTENT_KEY, newRecipe.content);
     try {
       future.get();
     } catch (InterruptedException e) {
