@@ -8,10 +8,24 @@ import com.google.firebase.cloud.FirestoreClient;
 public class DBReferences {
   private static final Firestore database = FirestoreClient.getFirestore();
   private static final CollectionReference recipesReference = database.collection("recipes");
+  private static final CollectionReference usersReference = database.collection("users");
+
   private static final String DB_COMMENTS = "comment-collection";
 
   public static Firestore db() {
     return database;
+  }
+
+  public static CollectionReference users() {
+    return usersReference;
+  }
+
+  public static DocumentReference user(String userID) {
+    return usersReference.document(userID);
+  }
+
+  public static String getNestedPropertyName(String property, String nestedProperty) {
+    return property + "." + nestedProperty;
   }
 
   public static CollectionReference recipes() {
