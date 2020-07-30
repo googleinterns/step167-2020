@@ -26,10 +26,7 @@
     <br />
 
     <select onchange="getRecipes()" id="tag-select">
-      <option value="american">American</option>
-      <option value="mediterranean">Mediterranean</option>
-      <option value="salt">Salt</option>
-      <option value="sugar">Sugar</option>
+      <option>None</option>
     </select>
 
     <ul id="recipe-list"></ul>
@@ -48,10 +45,22 @@
         }
       })
 
+      let tagSelect = document.getElementById("tag-select")
+      fetch("/api/tag").then(async (response) => {
+        if (response.status < 200 || response.status >= 300) {
+          alert("Error " + response.status.toString())
+        } else {
+          let tags = await response.json()
+          tags.forEach((tag) => {
+            tagSelect.innerHTML += '<option value="' + tag.id + '">' + tag.name + "</option>"
+          })
+        }
+      })
+
       function getRecipes() {
-        const tagName = document.getElementById("tag-select").value
+        const tagID = tagSelect.value
         let recipeList = document.getElementById("recipe-list")
-        fetch("/api/post?tagName=" + tagName).then(async (response) => {
+        fetch("/api/post?tagID=" + tagID).then(async (response) => {
           if (response.status < 200 || response.status >= 300) {
             alert("Error " + response.status.toString())
           } else {
