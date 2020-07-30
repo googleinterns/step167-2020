@@ -72,8 +72,6 @@ public class RecipeServlet extends HttpServlet {
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-
     String token = request.getParameter("token");
     FirebaseToken decodedToken = Auth.verifyIdToken(token);
     if(decodedToken == null) {
@@ -81,6 +79,7 @@ public class RecipeServlet extends HttpServlet {
       return;
     }
 
+    String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
     Recipe newRecipe = gson.fromJson(data, Recipe.class);
     if (newRecipe.content == null || newRecipe.title == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -112,14 +111,28 @@ public class RecipeServlet extends HttpServlet {
 
   @Override
   public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
     String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
     Recipe newRecipe = gson.fromJson(data, Recipe.class);
     if (newRecipe.id == null || newRecipe.content == null || newRecipe.title == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
+
+    String token = request.getParameter("token");
+    FirebaseToken decodedToken = Auth.verifyIdToken(token);
+    if(decodedToken == null) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return;
+    }
+    DocumentReference user = DBReferences.user(decodedToken.getUid());
+    if(!User.createdRecipe(decodedToken.getUid(), newRecipe.id)) {
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      return;
+    }
+
     DocumentReference recipeRef = DBReferences.recipe(newRecipe.id);
-    ApiFuture future = recipeRef.set(newRecipe);
+    ApiFuture future = recipeRef.update(Recipe.TITLE_KEY, newRecipe.title, Recipe.CONTENT_KEY, newRecipe.content);
     try {
       future.get();
     } catch (InterruptedException e) {
