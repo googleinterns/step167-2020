@@ -131,8 +131,7 @@ public class RecipeServlet extends HttpServlet {
     return null;
   }
 
-  private String getDetailedRecipe(String recipeID)
-      throws IOException {
+  private String getDetailedRecipe(String recipeID) throws IOException {
     DocumentReference recipeRef = DBReferences.recipes().document(recipeID);
     ApiFuture<DocumentSnapshot> future = recipeRef.get();
 
