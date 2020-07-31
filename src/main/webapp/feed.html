@@ -40,30 +40,30 @@
       let recipeList = document.getElementById("recipe-list")
       let tagSelect = document.getElementById("tag-select")
 
-      window.onload = function() {
+      window.onload = function () {
         // Fetch all recpies to populate our list
         fetch("/api/post").then(async (response) => {
-            if (response.status < 200 || response.status >= 300) {
+          if (response.status < 200 || response.status >= 300) {
             alert("Error " + response.status.toString())
-            } else {
+          } else {
             let recipes = await response.json()
             recipes.forEach((recipe) => {
-                recipeList.innerHTML +=
+              recipeList.innerHTML +=
                 '<li><a href="recipe-display.html?recipeID=' + recipe.id + '">' + recipe.title + "</a></li>"
             })
-            }
+          }
         })
 
-        // Fetch all recipe tags to populate our select form 
+        // Fetch all recipe tags to populate our select form
         fetch("/api/tag").then(async (response) => {
-            if (response.status < 200 || response.status >= 300) {
+          if (response.status < 200 || response.status >= 300) {
             alert("Error " + response.status.toString())
-            } else {
+          } else {
             let tags = await response.json()
             tags.forEach((tag) => {
-                tagSelect.innerHTML += '<option value="' + tag.id + '">' + tag.name + "</option>"
+              tagSelect.innerHTML += '<option value="' + tag.id + '">' + tag.name + "</option>"
             })
-            }
+          }
         })
       }
 
@@ -94,7 +94,7 @@
         // Generate comma-separated list of all current filters
         filterString += filters[0].id
         for (var x = 1; x < filters.length; x++) {
-          // Tag ID's, which we previously stored as the ID of 
+          // Tag ID's, which we previously stored as the ID of
           // each <option> element, get put in the list
           filterString += "," + filters[x].id
         }
@@ -128,19 +128,18 @@
       function tagInFilters(tagID) {
         var filters = document.getElementById("selected-filters").childNodes
         for (var x = 0; x < filters.length; x++) {
-          if (filters[x].id == tagID)
-            return true
+          if (filters[x].id == tagID) return true
         }
         return false
       }
 
-      // Returns the first option whose 'value' property (ie the id of the tag it represents) 
+      // Returns the first option whose 'value' property (ie the id of the tag it represents)
       // matches value
       function getOptionByValue(value) {
         var allOptions = document.getElementsByTagName("option")
         var results = []
         for (var x = 0; x < allOptions.length; x++) {
-          if (allOptions[x].value == value) { 
+          if (allOptions[x].value == value) {
             results.push(allOptions[x])
           }
         }

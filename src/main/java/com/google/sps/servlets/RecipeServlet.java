@@ -120,7 +120,7 @@ public class RecipeServlet extends HttpServlet {
       query = DBUtils.recipes();
     else {
       String[] tagIDs = tagParam.split(",");
-      query = DBUtils.recipes().whereArrayContainsAny("tag_ids", Arrays.asList(tagIDs));
+      query = recipeWhereContainsArray(tagIDs, tagIDs.length - 1);
     }
 
     ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
@@ -137,11 +137,18 @@ public class RecipeServlet extends HttpServlet {
     return gson.toJson(recipeList);
   }
 
+  private Query recipeWhereContainsArray(String[] tagIDs, int index) {
+    if (index > 0)
+      return recipeWhereContainsArray(tagIDs, index - 1)
+          .whereEqualTo("tags." + tagIDs[index], true);
+    return DBUtils.recipes().whereEqualTo("tags." + tagIDs[index], true);
+  }
+
   private String getDetailedRecipe(String recipeID) throws IOException {
     DocumentReference recipeRef = DBUtils.recipes().document(recipeID);
     ApiFuture<DocumentSnapshot> future = recipeRef.get();
     DocumentSnapshot document = DBUtils.blockOnFuture(future);
-  
+
     if (document == null || !document.exists())
       return null;
     else
