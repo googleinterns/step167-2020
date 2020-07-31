@@ -27,7 +27,7 @@ import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.sps.meltingpot.data.DBObject;
-import com.google.sps.meltingpot.data.DBReferences;
+import com.google.sps.meltingpot.data.DBUtils;
 import com.google.sps.meltingpot.data.Recipe;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -76,16 +76,10 @@ public class RecipeServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
-    DocumentReference recipeRef = DBReferences.recipes().document();
+    DocumentReference recipeRef = DBUtils.recipes().document();
     newRecipe.id = recipeRef.getId();
     ApiFuture future = recipeRef.set(newRecipe);
-    try {
-      future.get();
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to add recipe raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to add recipe raised exception: " + e);
-    }
+    DBUtils.blockOnFuture(future);
 
     response.setContentType("application/json");
     response.getWriter().println(gson.toJson(new DBObject(newRecipe.id)));
@@ -99,15 +93,9 @@ public class RecipeServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
-    DocumentReference recipeRef = DBReferences.recipe(newRecipe.id);
+    DocumentReference recipeRef = DBUtils.recipe(newRecipe.id);
     ApiFuture future = recipeRef.set(newRecipe);
-    try {
-      future.get();
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to edit recipe raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to edit recipe raised exception: " + e);
-    }
+    DBUtils.blockOnFuture(future);
   }
 
   @Override
@@ -120,30 +108,27 @@ public class RecipeServlet extends HttpServlet {
     }
 
     deleteComments(recipeID);
-    ApiFuture<WriteResult> writeResult = DBReferences.recipes().document(recipeID).delete();
+    ApiFuture<WriteResult> writeResult = DBUtils.recipes().document(recipeID).delete();
   }
 
   private String getRecipeList() {
-    Query query = DBReferences.recipes();
-    ApiFuture<QuerySnapshot> querySnapshot = query.get();
+    Query query = DBUtils.recipes();
+    ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
     ArrayList<Object> recipeList = new ArrayList<>();
+    QuerySnapshot querySnapshot = DBUtils.blockOnFuture(querySnapshotFuture);
 
-    try {
-      for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
-        recipeList.add(document.getData());
-      }
-      return gson.toJson(recipeList);
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to query recipes raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to query recipes raised exception: " + e);
+    if (querySnapshot == null) {
+      return null;
     }
 
-    return null;
+    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+      recipeList.add(document.getData());
+    }
+    return gson.toJson(recipeList);
   }
 
   private String getDetailedRecipe(String recipeID) throws IOException {
-    DocumentReference recipeRef = DBReferences.recipes().document(recipeID);
+    DocumentReference recipeRef = DBUtils.recipes().document(recipeID);
     ApiFuture<DocumentSnapshot> future = recipeRef.get();
 
     try {
@@ -164,16 +149,10 @@ public class RecipeServlet extends HttpServlet {
   }
 
   private void deleteComments(String recipeID) {
-    try {
-      ApiFuture<QuerySnapshot> future = DBReferences.comments(recipeID).get();
-      List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-      for (QueryDocumentSnapshot document : documents) {
-        document.getReference().delete();
-      }
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to delete post comments raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to delete post comments raised exception: " + e);
+    ApiFuture<QuerySnapshot> future = DBUtils.comments(recipeID).get();
+    List<QueryDocumentSnapshot> documents = DBUtils.blockOnFuture(future).getDocuments();
+    for (QueryDocumentSnapshot document : documents) {
+      document.getReference().delete();
     }
   }
 }
