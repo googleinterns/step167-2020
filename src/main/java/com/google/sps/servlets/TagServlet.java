@@ -27,7 +27,7 @@ import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.sps.meltingpot.data.DBObject;
-import com.google.sps.meltingpot.data.DBReferences;
+import com.google.sps.meltingpot.data.DBUtils;
 import com.google.sps.meltingpot.data.Recipe;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -57,7 +57,7 @@ public class TagServlet extends HttpServlet {
   }
 
   private String getRecipeList(HttpServletRequest request) {
-    Query query = DBReferences.tags();
+    Query query = DBUtils.tags();
 
     ApiFuture<QuerySnapshot> querySnapshot = query.get();
     ArrayList<Object> tagList = new ArrayList<>();

@@ -115,12 +115,12 @@ public class RecipeServlet extends HttpServlet {
   private String getRecipeList(HttpServletRequest request) {
     String tagParam = request.getParameter("tagIDs");
     Query query;
-    
+
     if (tagParam == null || tagParam.equals("None"))
-      query = DBReferences.recipes();
+      query = DBUtils.recipes();
     else {
       String[] tagIDs = tagParam.split(",");
-      query = DBReferences.recipes().whereArrayContainsAny("tag_ids", Arrays.asList(tagIDs));
+      query = DBUtils.recipes().whereArrayContainsAny("tag_ids", Arrays.asList(tagIDs));
     }
 
     ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
