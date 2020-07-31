@@ -3,8 +3,8 @@ package com.google.sps.meltingpot.data;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
-import java.util.concurrent.ExecutionException;
 import com.google.sps.meltingpot.data.DBUtils;
+import java.util.concurrent.ExecutionException;
 
 public class User {
   public static final String CREATED_RECIPES_KEY = "created-recipe-ids";

@@ -8,10 +8,12 @@ public class Comment {
 
   public String content;
   public final Date date;
+  public String creatorId;
 
-  public Comment(String content) {
+  public Comment(String content, String creatorId) {
     this.content = content;
     this.date = new Date();
+    this.creatorId = creatorId;
   }
 
   // TODO: get user display name (or username) from db collection.
