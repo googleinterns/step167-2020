@@ -3,7 +3,7 @@ package com.google.sps.meltingpot.auth;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
-import com.google.sps.meltingpot.data.DBReferences;
+import com.google.sps.meltingpot.data.DBUtils;
 
 public class Auth {
   private static FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();

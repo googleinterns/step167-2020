@@ -1,11 +1,13 @@
 package com.google.sps.meltingpot.data;
 
+import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
 import com.google.firebase.cloud.FirestoreClient;
+import java.util.concurrent.ExecutionException;
 
-public class DBReferences {
+public class DBUtils {
   private static final Firestore database = FirestoreClient.getFirestore();
   private static final CollectionReference recipesReference = database.collection("recipes");
   private static final CollectionReference usersReference = database.collection("users");
@@ -42,5 +44,16 @@ public class DBReferences {
 
   public static String commentsCollectionName() {
     return DB_COMMENTS;
+  }
+
+  public static <T> T blockOnFuture(ApiFuture<T> future) {
+    try {
+      return future.get();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } catch (ExecutionException e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 }

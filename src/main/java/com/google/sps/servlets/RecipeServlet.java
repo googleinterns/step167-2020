@@ -29,7 +29,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.data.DBObject;
-import com.google.sps.meltingpot.data.DBReferences;
+import com.google.sps.meltingpot.data.DBUtils;
 import com.google.sps.meltingpot.data.Recipe;
 import com.google.sps.meltingpot.data.User;
 import java.io.BufferedReader;
@@ -85,25 +85,19 @@ public class RecipeServlet extends HttpServlet {
       return;
     }
 
-    DocumentReference recipeRef = DBReferences.recipes().document();
+    DocumentReference recipeRef = DBUtils.recipes().document();
     newRecipe.id = recipeRef.getId();
     newRecipe.creatorId = decodedToken.getUid();
     ApiFuture addRecipeFuture = recipeRef.set(newRecipe);
 
-    DocumentReference user = DBReferences.user(decodedToken.getUid());
+    DocumentReference user = DBUtils.user(decodedToken.getUid());
     String nestedPropertyName =
-        DBReferences.getNestedPropertyName(User.CREATED_RECIPES_KEY, newRecipe.id);
+        DBUtils.getNestedPropertyName(User.CREATED_RECIPES_KEY, newRecipe.id);
     ApiFuture addRecipeIdToUserPostsFuture =
         user.update(Collections.singletonMap(nestedPropertyName, true));
 
-    try {
-      addRecipeFuture.get();
-      addRecipeIdToUserPostsFuture.get();
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to add recipe raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to add recipe raised exception: " + e);
-    }
+    DBUtils.blockOnFuture(addRecipeFuture);
+    DBUtils.blockOnFuture(addRecipeIdToUserPostsFuture);
 
     response.setStatus(HttpServletResponse.SC_CREATED);
     response.setContentType("application/json");
@@ -130,16 +124,10 @@ public class RecipeServlet extends HttpServlet {
       return;
     }
 
-    DocumentReference recipeRef = DBReferences.recipe(newRecipe.id);
+    DocumentReference recipeRef = DBUtils.recipe(newRecipe.id);
     ApiFuture future =
         recipeRef.update(Recipe.TITLE_KEY, newRecipe.title, Recipe.CONTENT_KEY, newRecipe.content);
-    try {
-      future.get();
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to edit recipe raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to edit recipe raised exception: " + e);
-    }
+    DBUtils.blockOnFuture(future);
   }
 
   @Override
@@ -163,66 +151,43 @@ public class RecipeServlet extends HttpServlet {
     }
 
     deleteComments(recipeID);
-    ApiFuture<WriteResult> writeResult = DBReferences.recipes().document(recipeID).delete();
-    try {
-      writeResult.get();
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to add recipe raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to add recipe raised exception: " + e);
-    }
+    ApiFuture<WriteResult> writeResult = DBUtils.recipes().document(recipeID).delete();
+    DBUtils.blockOnFuture(writeResult);
   }
 
   private String getRecipeList() {
-    Query query = DBReferences.recipes();
-    ApiFuture<QuerySnapshot> querySnapshot = query.get();
+    Query query = DBUtils.recipes();
+    ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
     ArrayList<Object> recipeList = new ArrayList<>();
+    QuerySnapshot querySnapshot = DBUtils.blockOnFuture(querySnapshotFuture);
 
-    try {
-      for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
-        recipeList.add(document.getData());
-      }
-      return gson.toJson(recipeList);
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to query recipes raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to query recipes raised exception: " + e);
+    if (querySnapshot == null) {
+      return null;
     }
 
-    return null;
+    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+      recipeList.add(document.getData());
+    }
+    return gson.toJson(recipeList);
   }
 
   private String getDetailedRecipe(String recipeID) throws IOException {
-    DocumentReference recipeRef = DBReferences.recipes().document(recipeID);
+    DocumentReference recipeRef = DBUtils.recipes().document(recipeID);
     ApiFuture<DocumentSnapshot> future = recipeRef.get();
 
-    try {
-      DocumentSnapshot document = future.get();
-      if (document.exists())
-        return gson.toJson(document.getData());
-      else {
-        return null;
-      }
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to query single recipe raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to query single recipe raised exception: " + e);
+    DocumentSnapshot document = DBUtils.blockOnFuture(future);
+    if (document.exists())
+      return gson.toJson(document.getData());
+    else {
+      return null;
     }
-
-    return "Exception";
   }
 
   private void deleteComments(String recipeID) {
-    try {
-      ApiFuture<QuerySnapshot> future = DBReferences.comments(recipeID).get();
-      List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-      for (QueryDocumentSnapshot document : documents) {
-        document.getReference().delete();
-      }
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to delete post comments raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to delete post comments raised exception: " + e);
+    ApiFuture<QuerySnapshot> future = DBUtils.comments(recipeID).get();
+    List<QueryDocumentSnapshot> documents = DBUtils.blockOnFuture(future).getDocuments();
+    for (QueryDocumentSnapshot document : documents) {
+      document.getReference().delete();
     }
   }
 }
