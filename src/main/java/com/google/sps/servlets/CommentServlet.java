@@ -14,7 +14,6 @@
 
 package com.google.sps.meltingpot.servlets;
 
-import com.google.sps.meltingpot.data.DBFuture;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
@@ -25,7 +24,7 @@ import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
 import com.google.sps.meltingpot.data.Comment;
-import com.google.sps.meltingpot.data.DBReferences;
+import com.google.sps.meltingpot.data.DBUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,11 +68,11 @@ public class CommentServlet extends HttpServlet {
    * For now, returns all the comments flatly. (prototype)
    */
   private String getComments(String recipeID, HttpServletResponse response) {
-    Query query = DBReferences.comments(recipeID);
+    Query query = DBUtils.comments(recipeID);
     ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
     ArrayList<Object> commentsList = new ArrayList<>();
 
-    QuerySnapshot querySnapshot = DBFuture.block(querySnapshotFuture);
+    QuerySnapshot querySnapshot = DBUtils.blockOnFuture(querySnapshotFuture);
     if (querySnapshot == null) {
       return null;
     }
@@ -95,7 +94,7 @@ public class CommentServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
-    DBReferences.comments(recipeID).document().set(newComment);
+    DBUtils.comments(recipeID).document().set(newComment);
     response.setStatus(HttpServletResponse.SC_ACCEPTED);
   }
 
