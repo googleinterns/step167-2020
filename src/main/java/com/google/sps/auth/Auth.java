@@ -13,10 +13,10 @@ public class Auth {
       FirebaseToken decodedToken = firebaseAuth.verifyIdToken(idToken, true);
       return decodedToken;
     } catch (IllegalArgumentException e) {
-      System.out.println(e.toString());
+      e.printStackTrace();
       return null;
     } catch (FirebaseAuthException e) {
-      System.out.println(e.toString());
+      e.printStackTrace();
       return null;
     }
   }
