@@ -26,6 +26,7 @@ import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.google.sps.meltingpot.data.DBFuture;
 import com.google.sps.meltingpot.data.DBObject;
 import com.google.sps.meltingpot.data.DBReferences;
 import com.google.sps.meltingpot.data.Recipe;
@@ -79,13 +80,7 @@ public class RecipeServlet extends HttpServlet {
     DocumentReference recipeRef = DBReferences.recipes().document();
     newRecipe.id = recipeRef.getId();
     ApiFuture future = recipeRef.set(newRecipe);
-    try {
-      future.get();
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to add recipe raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to add recipe raised exception: " + e);
-    }
+    DBFuture.block(future);
 
     response.setContentType("application/json");
     response.getWriter().println(gson.toJson(new DBObject(newRecipe.id)));
@@ -101,13 +96,7 @@ public class RecipeServlet extends HttpServlet {
     }
     DocumentReference recipeRef = DBReferences.recipe(newRecipe.id);
     ApiFuture future = recipeRef.set(newRecipe);
-    try {
-      future.get();
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to edit recipe raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to edit recipe raised exception: " + e);
-    }
+    DBFuture.block(future);
   }
 
   @Override
