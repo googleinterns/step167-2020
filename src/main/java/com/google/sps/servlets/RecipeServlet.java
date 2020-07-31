@@ -71,17 +71,17 @@ public class RecipeServlet extends HttpServlet {
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String token = request.getParameter("token");
-    FirebaseToken decodedToken = Auth.verifyIdToken(token);
-    if (decodedToken == null) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return;
-    }
-
     String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
     Recipe newRecipe = gson.fromJson(data, Recipe.class);
     if (newRecipe.content == null || newRecipe.title == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    String token = request.getParameter("token");
+    FirebaseToken decodedToken = Auth.verifyIdToken(token);
+    if (decodedToken == null) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
 
@@ -148,6 +148,17 @@ public class RecipeServlet extends HttpServlet {
     String recipeID = request.getParameter("recipeID");
     if (recipeID == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    String token = request.getParameter("token");
+    FirebaseToken decodedToken = Auth.verifyIdToken(token);
+    if (decodedToken == null) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return;
+    }
+    if (!User.createdRecipe(decodedToken.getUid(), recipeID)) {
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return;
     }
 
