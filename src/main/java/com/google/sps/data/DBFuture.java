@@ -8,9 +8,9 @@ public class DBFuture {
     try {
       return future.get();
     } catch (InterruptedException e) {
-      System.out.println(e.toString());
+      e.printStackTrace();
     } catch (ExecutionException e) {
-      System.out.println(e.toString());
+      e.printStackTrace();
     }
     return null;
   }
