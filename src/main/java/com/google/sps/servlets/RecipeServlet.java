@@ -140,22 +140,12 @@ public class RecipeServlet extends HttpServlet {
   private String getDetailedRecipe(String recipeID) throws IOException {
     DocumentReference recipeRef = DBUtils.recipes().document(recipeID);
     ApiFuture<DocumentSnapshot> future = recipeRef.get();
-
-    try {
-      DocumentSnapshot document = future.get();
-      if (document.exists())
-        return gson.toJson(document.getData());
-      else {
-        documentNotFound = true;
-        return "";
-      }
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to query single recipe raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to query single recipe raised exception: " + e);
-    }
-
-    return "Exception";
+    DocumentSnapshot document = DBUtils.blockOnFuture(future);
+  
+    if (document == null || !document.exists())
+      return null;
+    else
+      return gson.toJson(document.getData());
   }
 
   private void deleteComments(String recipeID) {
