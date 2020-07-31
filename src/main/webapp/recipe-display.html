@@ -39,7 +39,7 @@
             content: commentContent.value,
           }),
         }).then((response) => {
-          if (response.status === 202) {
+          if (response.status >= 200 && response.status < 300) {
             getComments(recipeID)
           } else {
             alert("Error " + response.status.toString())
@@ -75,7 +75,7 @@
         fetch("/api/post?recipeID=" + recipeID, {
           method: "DELETE",
         }).then((response) => {
-          if (response.status === 200) {
+          if (response.status >= 200 && response.status < 300) {
             window.location.href = "/feed.html"
           } else {
             alert("Error " + response.status.toString())
