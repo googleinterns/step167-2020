@@ -114,21 +114,18 @@ public class RecipeServlet extends HttpServlet {
 
   private String getRecipeList() {
     Query query = DBReferences.recipes();
-    ApiFuture<QuerySnapshot> querySnapshot = query.get();
+    ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
     ArrayList<Object> recipeList = new ArrayList<>();
+    QuerySnapshot querySnapshot = DBFuture.block(querySnapshotFuture);
 
-    try {
-      for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
-        recipeList.add(document.getData());
-      }
-      return gson.toJson(recipeList);
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to query recipes raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to query recipes raised exception: " + e);
+    if (querySnapshot == null) {
+      return null;
     }
 
-    return null;
+    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+      recipeList.add(document.getData());
+    }
+    return gson.toJson(recipeList);
   }
 
   private String getDetailedRecipe(String recipeID) throws IOException {
@@ -153,16 +150,10 @@ public class RecipeServlet extends HttpServlet {
   }
 
   private void deleteComments(String recipeID) {
-    try {
-      ApiFuture<QuerySnapshot> future = DBReferences.comments(recipeID).get();
-      List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-      for (QueryDocumentSnapshot document : documents) {
-        document.getReference().delete();
-      }
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to delete post comments raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to delete post comments raised exception: " + e);
+    ApiFuture<QuerySnapshot> future = DBReferences.comments(recipeID).get();
+    List<QueryDocumentSnapshot> documents = DBFuture.block(future).getDocuments();
+    for (QueryDocumentSnapshot document : documents) {
+      document.getReference().delete();
     }
   }
 }

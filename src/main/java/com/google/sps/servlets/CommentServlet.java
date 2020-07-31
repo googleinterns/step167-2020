@@ -14,6 +14,7 @@
 
 package com.google.sps.meltingpot.servlets;
 
+import com.google.sps.meltingpot.data.DBFuture;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
@@ -69,21 +70,18 @@ public class CommentServlet extends HttpServlet {
    */
   private String getComments(String recipeID, HttpServletResponse response) {
     Query query = DBReferences.comments(recipeID);
-    ApiFuture<QuerySnapshot> querySnapshot = query.get();
+    ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
     ArrayList<Object> commentsList = new ArrayList<>();
 
-    try {
-      for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
-        commentsList.add(document.getData());
-      }
-      return gson.toJson(commentsList);
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to query recipes raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to query recipes raised exception: " + e);
+    QuerySnapshot querySnapshot = DBFuture.block(querySnapshotFuture);
+    if (querySnapshot == null) {
+      return null;
     }
 
-    return null;
+    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+      commentsList.add(document.getData());
+    }
+    return gson.toJson(commentsList);
   }
 
   @Override
