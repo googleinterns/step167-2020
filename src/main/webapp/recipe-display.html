@@ -42,13 +42,8 @@
         initPage()
       }
 
-      /** Release module-scope funcs to the HTML page and load page elements. */
+      /** Load page elements. */
       function initPage() {
-        window.getRecipeID = getRecipeID
-        window.submitComment = submitComment
-        window.getDetailedRecipe = getDetailedRecipe
-        window.getComments = getComments
-        window.deletePost = deletePost
         
         // Load the recipe and comments on the page.
         getDetailedRecipe(getRecipeID())

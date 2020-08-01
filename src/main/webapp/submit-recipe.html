@@ -50,11 +50,9 @@
         initPage()
       }
 
-      /** Release module-scope funcs to the HTML page and set event listeners. */
+      /** Load page elements. */
       function initPage() {
-        window.renderRecipe = renderRecipe
-        window.submitRecipe = submitRecipe
-       
+        // Set event listeners.
         document.getElementById("submit").addEventListener("click", submitRecipe)
         document.querySelector("input").addEventListener("input", renderRecipe)
         document.querySelector("textarea").addEventListener("input", renderRecipe)
