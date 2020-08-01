@@ -21,8 +21,10 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
+import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.data.Comment;
 import com.google.sps.meltingpot.data.DBUtils;
 import java.io.IOException;
@@ -89,13 +91,22 @@ public class CommentServlet extends HttpServlet {
         request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
     String recipeID = request.getParameter("recipeID"); // Parent recipe of comment.
 
+    String token = request.getParameter("token");
+    FirebaseToken decodedToken = Auth.verifyIdToken(token);
+    if (decodedToken == null) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return;
+    }
+
     Comment newComment = gson.fromJson(commentData, Comment.class);
     if (newComment.content == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
-    DBUtils.comments(recipeID).document().set(newComment);
-    response.setStatus(HttpServletResponse.SC_ACCEPTED);
+    newComment.creatorId = decodedToken.getUid();
+    ApiFuture addCommentFuture = DBUtils.comments(recipeID).document().set(newComment);
+    DBUtils.blockOnFuture(addCommentFuture);
+    response.setStatus(HttpServletResponse.SC_CREATED);
   }
 
   @Override

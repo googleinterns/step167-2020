@@ -10,12 +10,7 @@
     <!-- Recipe form -->
     <div>
       <label for="recipe-title">Recipe Title</label><br />
-      <input
-        type="text"
-        id="recipe-title"
-        name="recipe-title"
-        placeholder="e.g. Grandma's Zucchini Florentine"
-      />
+      <input type="text" id="recipe-title" name="recipe-title" placeholder="e.g. Grandma's Zucchini Florentine" />
       <br />
       <label for="instructions">Recipe Instructions</label><br />
       <textarea
@@ -50,11 +45,9 @@
         initPage()
       }
 
-      /** Release module-scope funcs to the HTML page and set event listeners. */
+      /** Load page elements. */
       function initPage() {
-        window.renderRecipe = renderRecipe
-        window.submitRecipe = submitRecipe
-       
+        // Set event listeners.
         document.getElementById("submit").addEventListener("click", submitRecipe)
         document.querySelector("input").addEventListener("input", renderRecipe)
         document.querySelector("textarea").addEventListener("input", renderRecipe)

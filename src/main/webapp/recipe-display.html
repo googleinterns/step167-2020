@@ -27,7 +27,7 @@
 
     <!-- Add Firebase products that you want to use -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-auth.js"></script>
-    
+
     <!-- Page scripts -->
     <script type="module">
       import { app } from "/scripts/init.js"
@@ -42,14 +42,8 @@
         initPage()
       }
 
-      /** Release module-scope funcs to the HTML page and load page elements. */
+      /** Load page elements. */
       function initPage() {
-        window.getRecipeID = getRecipeID
-        window.submitComment = submitComment
-        window.getDetailedRecipe = getDetailedRecipe
-        window.getComments = getComments
-        window.deletePost = deletePost
-        
         // Load the recipe and comments on the page.
         getDetailedRecipe(getRecipeID())
         getComments(getRecipeID())
@@ -63,14 +57,13 @@
 
         // Set auth state change listener.
         // Currently toggles visibility only.
-        app.auth().onAuthStateChanged(function (user){
+        app.auth().onAuthStateChanged(function (user) {
           if (user) {
             deletePostButton.hidden = false
             submitCommButton.hidden = false
             commentLabel.hidden = false
             commentContent.hidden = false
-          }
-          else {
+          } else {
             deletePostButton.hidden = true
             submitCommButton.hidden = true
             commentLabel.hidden = true
@@ -78,7 +71,7 @@
           }
         })
       }
-      
+
       function toggleElementVisibility() {
         if (app == null) {
           return
@@ -88,8 +81,7 @@
           submitCommButton.hidden = false
           commentLabel.hidden = false
           commentContent.hidden = false
-        }
-        else {
+        } else {
           deletePostButton.hidden = true
           submitCommButton.hidden = true
           commentLabel.hidden = true
@@ -163,7 +155,7 @@
 
       function deletePost() {
         var recipeID = getRecipeID()
-        
+
         fetch("/api/post?recipeID=" + recipeID, {
           method: "DELETE",
         }).then((response) => {

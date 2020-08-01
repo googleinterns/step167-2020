@@ -6,6 +6,22 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- Page content -->
+    <div>
+      <button type="button" id="sign-out">Log out</button>
+      <button type="button" id="send-password-reset">Reset password</button>
+
+      <p id="welcome-message">Unknown</p>
+    </div>
+
+    <!-- Saved posts and created posts -->
+    <div>
+      <h1>Your saved recipes</h1>
+      <ul id="saved-recipes"></ul>
+      <h1>Your submissions</h1>
+      <ul id="your-recipes"></ul>
+    </div>
+
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
 
@@ -17,5 +33,107 @@
 
     <!-- Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Page script -->
+    <script type="module">
+      import { app } from "/scripts/init.js"
+
+      var signOutButton = document.getElementById("sign-out")
+      var sendResetButton = document.getElementById("send-password-reset")
+      var createdRecipeList = document.getElementById("your-recipes")
+
+      window.onload = function () {
+        initPage()
+      }
+
+      /**
+       * If no user is logged in, have the page redirect to the log-in page.
+       * Otherwise, set the auth state change listener for this page and set user-specific page elements.
+       */
+      // TODO: look into auth state change problem.
+      function initPage() {
+        // If the Firebase app hasn't been initialized at all, redirect to login.
+        if (app == null) {
+          window.location.href = "/login-page.html"
+        }
+
+        // Initialize some page elements for a signed-in user by setting an auth state change listener.
+        app.auth().onAuthStateChanged(function (user) {
+          if (user) {
+            loadUserPageElements()
+          } else {
+            window.location.href = "/login-page.html"
+          }
+        })
+      }
+
+      /** Helper function that loads user-specific page elements. */
+      function loadUserPageElements() {
+        if (app.auth().currentUser) {
+          signOutButton.addEventListener("click", signOut)
+          sendResetButton.addEventListener("click", sendPasswordResetEmail)
+          document.getElementById("welcome-message").textContent = "Welcome, " + app.auth().currentUser.displayName
+
+          // Created recipes.
+          app
+            .auth()
+            .currentUser.getIdToken(/* forceRefresh */ true)
+            .then(function (idToken) {
+              getUserCreatedRecipes(idToken)
+            })
+        } else {
+          window.location.href = "/login-page.html"
+        }
+
+        // TODO: Saved recipes
+      }
+
+      /** Get the signed in user's created posts. */
+      function getUserCreatedRecipes(idToken) {
+        fetch("/api/post?recipe-creator=" + idToken).then(async (response) => {
+          if (response.status < 200 || response.status >= 300) {
+            alert("Error " + response.status.toString())
+          } else {
+            let createdRecipes = await response.json()
+            // Clear out the HTML
+            createdRecipeList.innerHTML = ""
+            createdRecipes.forEach((recipe) => {
+              createdRecipeList.innerHTML +=
+                '<li><a href="recipe-display.html?recipeID=' + recipe.id + '">' + recipe.title + "</a></li>"
+            })
+          }
+        })
+      }
+
+      /** Sign the user out of Firebase. */
+      function signOut() {
+        app.auth().signOut()
+      }
+
+      /** Help user reset account password. */
+      function sendPasswordResetEmail() {
+        var email = document.getElementById("email").value
+
+        app
+          .auth()
+          .sendPasswordResetEmail(email)
+          .then(function onSuccess() {
+            alert("Password Reset Email Sent!")
+          })
+          .catch(function (error) {
+            // Handle errors.
+            var errorCode = error.code
+            var errorMessage = error.message
+
+            if (errorCode == "auth/invalid-email") {
+              alert("Please enter a valid email address.")
+            } else if (errorCode == "auth/user-not-found") {
+              alert("This user was not found.")
+            } else {
+              alert(errorMessage)
+            }
+          })
+      }
+    </script>
   </body>
 </html>

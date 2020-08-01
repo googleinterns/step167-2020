@@ -10,10 +10,24 @@ import java.util.concurrent.ExecutionException;
 public class DBUtils {
   private static final Firestore database = FirestoreClient.getFirestore();
   private static final CollectionReference recipesReference = database.collection("recipes");
+  private static final CollectionReference usersReference = database.collection("users");
+
   private static final String DB_COMMENTS = "comment-collection";
 
   public static Firestore db() {
     return database;
+  }
+
+  public static CollectionReference users() {
+    return usersReference;
+  }
+
+  public static DocumentReference user(String userID) {
+    return usersReference.document(userID);
+  }
+
+  public static String getNestedPropertyName(String property, String nestedProperty) {
+    return property + "." + nestedProperty;
   }
 
   public static CollectionReference recipes() {
@@ -26,6 +40,10 @@ public class DBUtils {
 
   public static CollectionReference comments(String recipeID) {
     return recipesReference.document(recipeID).collection(DB_COMMENTS);
+  }
+
+  public static DocumentReference comment(String recipeId, String commentId) {
+    return recipesReference.document(recipeId).collection(DB_COMMENTS).document(commentId);
   }
 
   public static String commentsCollectionName() {
