@@ -15,7 +15,6 @@
         id="recipe-title"
         name="recipe-title"
         placeholder="e.g. Grandma's Zucchini Florentine"
-        oninput="renderRecipe()"
       />
       <br />
       <label for="instructions">Recipe Instructions</label><br />
@@ -25,7 +24,6 @@
         name="instructions"
         id="instructions"
         placeholder="e.g. Preheat the oven to 350 degrees."
-        oninput="renderRecipe()"
       ></textarea>
       <br />
       <button type="button" id="submit" value="Submit">Submit</button>
@@ -58,6 +56,8 @@
         window.submitRecipe = submitRecipe
        
         document.getElementById("submit").addEventListener("click", submitRecipe)
+        document.querySelector("input").addEventListener("input", renderRecipe)
+        document.querySelector("textarea").addEventListener("input", renderRecipe)
       }
 
       /** Display the recipe being typed in markdown with formatting, in real-time. */

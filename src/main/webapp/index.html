@@ -25,6 +25,13 @@
       import { app } from "/scripts/init.js"
 
       function signInStatus() {
+        if (app == null) {
+          return
+        } else if (app.auth().currentUser) {
+          document.getElementById("signed-in").textContent = "Signed in"
+        } else {
+          document.getElementById("signed-in").textContent = "Signed out"
+        }
         app.auth().onAuthStateChanged(function (user) {
           if (user) {
             document.getElementById("signed-in").textContent = "Signed in"
@@ -33,13 +40,6 @@
           }
         })
 
-        if (app == null) {
-          return
-        } else if (app.auth().currentUser) {
-          document.getElementById("signed-in").textContent = "Signed in"
-        } else {
-          document.getElementById("signed-in").textContent = "Signed out"
-        }
       }
       signInStatus()
     </script>

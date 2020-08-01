@@ -11,7 +11,7 @@
     <div id="recipe"></div>
     <!-- Comment submission form -->
     <div>
-      <label for="comment-content">Message</label><br />
+      <label for="comment-content" id="comment-label">Message</label><br />
       <input type="text" id="comment-content" name="comment-content" placeholder="Leave a comment..." />
       <br />
       <button type="button" id="submit-comment" value="Submit">Submit</button>
@@ -32,6 +32,11 @@
     <script type="module">
       import { app } from "/scripts/init.js"
 
+      var deletePostButton = document.getElementById("delete-post")
+      var submitCommButton = document.getElementById("submit-comment")
+      var commentLabel = document.getElementById("comment-label")
+      var commentContent = document.getElementById("comment-content")
+
       /** On window load, initialize the page. */
       window.onload = function () {
         initPage()
@@ -50,8 +55,46 @@
         getComments(getRecipeID())
 
         // Set button click listeners.
-        document.getElementById("delete-post").addEventListener("click", deletePost)
-        document.getElementById("submit-comment").addEventListener("click", submitComment)
+        deletePostButton.addEventListener("click", deletePost)
+        submitCommButton.addEventListener("click", submitComment)
+
+        // Hide buttons and comment input for non signed-in user.
+        toggleElementVisibility()
+
+        // Set auth state change listener.
+        // Currently toggles visibility only.
+        app.auth().onAuthStateChanged(function (user){
+          if (user) {
+            deletePostButton.hidden = false
+            submitCommButton.hidden = false
+            commentLabel.hidden = false
+            commentContent.hidden = false
+          }
+          else {
+            deletePostButton.hidden = true
+            submitCommButton.hidden = true
+            commentLabel.hidden = true
+            commentContent.hidden = true
+          }
+        })
+      }
+      
+      function toggleElementVisibility() {
+        if (app == null) {
+          return
+        }
+        if (app.auth().currentUser) {
+          deletePostButton.hidden = false
+          submitCommButton.hidden = false
+          commentLabel.hidden = false
+          commentContent.hidden = false
+        }
+        else {
+          deletePostButton.hidden = true
+          submitCommButton.hidden = true
+          commentLabel.hidden = true
+          commentContent.hidden = true
+        }
       }
 
       /** Returns the recipe ID in the query string for this page. */
@@ -63,7 +106,7 @@
       /** Submit a comment -- disallow if no user is signed into the webapp. */
       function submitComment() {
         var commentContent = document.getElementById("comment-content")
-        var recipeID = getRecipeID
+        var recipeID = getRecipeID()
 
         if (app.auth().currentUser) {
           app
