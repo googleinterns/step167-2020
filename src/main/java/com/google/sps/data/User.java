@@ -4,7 +4,6 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.sps.meltingpot.data.DBUtils;
-import java.util.concurrent.ExecutionException;
 
 public class User {
   public static final String CREATED_RECIPES_KEY = "created-recipe-ids";

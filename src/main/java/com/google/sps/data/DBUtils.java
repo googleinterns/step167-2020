@@ -42,6 +42,10 @@ public class DBUtils {
     return recipesReference.document(recipeID).collection(DB_COMMENTS);
   }
 
+  public static DocumentReference comment(String recipeId, String commentId) {
+    return recipesReference.document(recipeId).collection(DB_COMMENTS).document(commentId);
+  }
+
   public static String commentsCollectionName() {
     return DB_COMMENTS;
   }
