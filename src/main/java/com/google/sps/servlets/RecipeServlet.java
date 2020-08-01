@@ -35,6 +35,7 @@ import com.google.sps.meltingpot.data.User;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -159,8 +160,17 @@ public class RecipeServlet extends HttpServlet {
   private String getRecipeList(HttpServletRequest request) {
     // This parameter should only be used if the GET request was made for recipes by a certain user.
     String recipeCreator = request.getParameter("recipe-creator");
+
+    String tagParam = request.getParameter("tagIDs");
+    Query query;
+
+    if (tagParam == null || tagParam.equals("None"))
+      query = DBUtils.recipes();
+    else {
+      String[] tagIDs = tagParam.split(",");
+      query = recipeWhereContainsArray(tagIDs, tagIDs.length - 1);
+    }
     
-    Query query = DBUtils.recipes();
     ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
     ArrayList<Object> recipeList = new ArrayList<>();
     QuerySnapshot querySnapshot = DBUtils.blockOnFuture(querySnapshotFuture);
@@ -175,16 +185,31 @@ public class RecipeServlet extends HttpServlet {
     return gson.toJson(recipeList);
   }
 
+  private Query recipeWhereContainsArray(String[] tagIDs, int index) {
+    if (index > 0)
+      return recipeWhereContainsArray(tagIDs, index - 1)
+          .whereEqualTo("tags." + tagIDs[index], true);
+    return DBUtils.recipes().whereEqualTo("tags." + tagIDs[index], true);
+  }
+
   private String getDetailedRecipe(String recipeID) throws IOException {
     DocumentReference recipeRef = DBUtils.recipes().document(recipeID);
     ApiFuture<DocumentSnapshot> future = recipeRef.get();
+    DocumentSnapshot document = DBUtils.blockOnFuture(future);
 
+<<<<<<< HEAD
     DocumentSnapshot document = DBUtils.blockOnFuture(future);
     if (document.exists())
       return gson.toJson(document.getData());
     else {
       return null;
     }
+=======
+    if (document == null || !document.exists())
+      return null;
+    else
+      return gson.toJson(document.getData());
+>>>>>>> 8a459d7fa2dec2781794baf5418ac784068c41f4
   }
 
   private void deleteComments(String recipeID) {

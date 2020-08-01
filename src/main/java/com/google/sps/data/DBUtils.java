@@ -11,6 +11,7 @@ public class DBUtils {
   private static final Firestore database = FirestoreClient.getFirestore();
   private static final CollectionReference recipesReference = database.collection("recipes");
   private static final CollectionReference usersReference = database.collection("users");
+  private static final CollectionReference tagsReference = database.collection("tags");
 
   private static final String DB_COMMENTS = "comment-collection";
 
@@ -32,6 +33,10 @@ public class DBUtils {
 
   public static CollectionReference recipes() {
     return recipesReference;
+  }
+
+  public static CollectionReference tags() {
+    return tagsReference;
   }
 
   public static DocumentReference recipe(String recipeID) {
