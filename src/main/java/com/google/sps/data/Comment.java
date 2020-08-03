@@ -24,9 +24,7 @@ public class Comment {
   // TODO: get user display name (or username) from db collection.
 
   public static boolean createdbyUser(String recipeId, String commentId, String userId) {
-    DocumentReference commentRef = DBUtils.comment(recipeId, commentId);
-    ApiFuture<DocumentSnapshot> commentFuture = commentRef.get();
-    DocumentSnapshot comment = DBUtils.blockOnFuture(commentFuture);
+    DocumentSnapshot comment = DBUtils.blockOnFuture(DBUtils.comment(recipeId, commentId).get());
 
     String commentCreatorId = comment.getString(CREATOR_ID_KEY);
     return commentCreatorId.equals(userId);

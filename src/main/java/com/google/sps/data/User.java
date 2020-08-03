@@ -18,9 +18,6 @@ public class User {
     Boolean userCreatedRecipe =
         user.getBoolean(DBUtils.getNestedPropertyName(CREATED_RECIPES_KEY, recipeId));
     // note that userCreatedRecipe is a Boolean, not a boolean
-    if (userCreatedRecipe == null || userCreatedRecipe == false) {
-      return false;
-    }
-    return true;
+    return userCreatedRecipe != null && userCreatedRecipe == true;
   }
 }
