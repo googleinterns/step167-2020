@@ -17,6 +17,7 @@
       <button type="button" onclick="submitComment(getRecipeID())" value="Submit">Submit</button>
     </div>
     <div id="comments"></div>
+    <button type="button" onclick="deletePost(getRecipeID())">Delete Post</button>
 
     <!-- Page scripts -->
     <script>
@@ -28,7 +29,7 @@
 
       function submitComment(recipeID) {
         var commentContent = document.getElementById("comment-content")
-        console.log(recipeID);
+        console.log(recipeID)
         fetch("/api/comment?recipeID=" + recipeID, {
           method: "POST",
           headers: {
@@ -68,6 +69,18 @@
             removeAllChildNodes(recipeEl)
             recipeEl.appendChild(createRecipeListElement(recipe))
           })
+      }
+
+      function deletePost(recipeID) {
+        fetch("/api/post?recipeID=" + recipeID, {
+          method: "DELETE",
+        }).then((response) => {
+          if (response.status === 200) {
+            window.location.href = "/feed.html"
+          } else {
+            alert("Error " + response.status.toString())
+          }
+        })
       }
 
       function removeAllChildNodes(parent) {
