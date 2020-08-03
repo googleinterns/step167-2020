@@ -116,7 +116,7 @@ public class CommentServlet extends HttpServlet {
     // Product Alpha TODO: Check if comment has replies
     //   If so replace with "[deleted]"
     //   Else:
-    ApiFuture<WriteResult> writeResultFuture = 
+    ApiFuture<WriteResult> writeResultFuture =
         DBUtils.comments(recipeID).document(commentID).delete();
     WriteResult writeResult = DBUtils.blockOnFuture(writeResultFuture);
   }
