@@ -59,20 +59,17 @@ public class TagServlet extends HttpServlet {
   private String getTagList(HttpServletRequest request) {
     Query query = DBUtils.tags();
 
-    ApiFuture<QuerySnapshot> querySnapshot = query.get();
+    ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
     ArrayList<Object> tagList = new ArrayList<>();
+    QuerySnapshot querySnapshot = DBUtils.blockOnFuture(querySnapshotFuture);
 
-    try {
-      for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
-        tagList.add(document.getData());
-      }
-      return gson.toJson(tagList);
-    } catch (InterruptedException e) {
-      System.out.println("Attempt to query tags raised exception: " + e);
-    } catch (ExecutionException e) {
-      System.out.println("Attempt to query tags raised exception: " + e);
+    if (querySnapshot == null) {
+      return null;
     }
 
-    return null;
+    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+      tagList.add(document.getData());
+    }
+    return gson.toJson(tagList);
   }
 }
