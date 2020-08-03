@@ -50,13 +50,13 @@ public class TagServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String json = getRecipeList(request);
+    String json = getTagList(request);
 
     response.setContentType("application/json");
     response.getWriter().println(json);
   }
 
-  private String getRecipeList(HttpServletRequest request) {
+  private String getTagList(HttpServletRequest request) {
     Query query = DBUtils.tags();
 
     ApiFuture<QuerySnapshot> querySnapshot = query.get();
