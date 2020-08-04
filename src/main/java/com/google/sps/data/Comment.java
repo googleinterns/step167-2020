@@ -1,10 +1,10 @@
 package com.google.sps.meltingpot.data;
 
-import java.util.Date;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.sps.meltingpot.data.DBUtils;
+import java.util.Date;
 
 public class Comment {
   public static final String CONTENT_KEY = "content";
