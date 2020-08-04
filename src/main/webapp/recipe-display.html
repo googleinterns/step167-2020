@@ -18,6 +18,7 @@
     </div>
     <div id="comments"></div>
     <button type="button" id="delete-post">Delete Post</button>
+    <button type="button" id="save-post">Save this recipe</button>
 
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
@@ -76,6 +77,10 @@
       function getRecipeID() {
         const params = new URLSearchParams(window.location.search)
         return params.get("recipeID")
+      }
+
+      function savePost() {
+        
       }
 
       /** Submit a comment -- disallow if no user is signed into the webapp. */
@@ -145,7 +150,9 @@
           if (response.status >= 200 && response.status < 300) {
             window.location.href = "/feed.html"
           } else {
-            alert("Error " + response.status.toString())
+             if (response.status === 403) {  // The user was not the orginal poster.
+               alert("You cannot delete another user's recipe.")
+             } else {alert("Error " + response.status.toString())}
           }
         })
       }

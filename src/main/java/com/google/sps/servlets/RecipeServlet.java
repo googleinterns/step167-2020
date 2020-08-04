@@ -159,7 +159,7 @@ public class RecipeServlet extends HttpServlet {
 
   private String getRecipeList(HttpServletRequest request) {
     // This parameter should only be used if the GET request was made for recipes by a certain user.
-    String recipeCreator = request.getParameter("recipe-creator");
+    String creatorToken = request.getParameter("token");
 
     String tagParam = request.getParameter("tagIDs");
     Query query;
@@ -197,19 +197,12 @@ public class RecipeServlet extends HttpServlet {
     ApiFuture<DocumentSnapshot> future = recipeRef.get();
     DocumentSnapshot document = DBUtils.blockOnFuture(future);
 
-<<<<<<< HEAD
     DocumentSnapshot document = DBUtils.blockOnFuture(future);
     if (document.exists())
       return gson.toJson(document.getData());
     else {
       return null;
     }
-=======
-    if (document == null || !document.exists())
-      return null;
-    else
-      return gson.toJson(document.getData());
->>>>>>> 8a459d7fa2dec2781794baf5418ac784068c41f4
   }
 
   private void deleteComments(String recipeID) {

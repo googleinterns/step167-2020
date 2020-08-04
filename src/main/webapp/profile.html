@@ -90,7 +90,7 @@
 
       /** Get the signed in user's created posts. */
       function getUserCreatedRecipes(idToken) {
-        fetch("/api/post?recipe-creator=" + idToken).then(async (response) => {
+        fetch("/api/post?token=" + idToken).then(async (response) => {
           if (response.status < 200 || response.status >= 300) {
             alert("Error " + response.status.toString())
           } else {
