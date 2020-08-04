@@ -6,6 +6,7 @@
     "html-validate:recommended"
   ],
   "rules": {
-    "void-style": "off"
+    "void-style": "off",
+    "empty-heading": "off"
   }
 }
