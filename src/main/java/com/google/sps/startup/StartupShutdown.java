@@ -11,6 +11,8 @@ import javax.servlet.annotation.WebListener;
 
 @WebListener
 public class StartupShutdown implements ServletContextListener {
+  public static boolean isFirebaseAppRunning = false;
+
   @Override
   public void contextInitialized(ServletContextEvent event) {
     System.out.println("Server starting up...");
@@ -21,7 +23,7 @@ public class StartupShutdown implements ServletContextListener {
                                     .build();
 
       FirebaseApp.initializeApp(options);
-
+      isFirebaseAppRunning = true;
       System.out.println("FirebaseApp initialized");
     } catch (IOException e) {
       System.out.println("IOException while initializing");
