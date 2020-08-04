@@ -53,39 +53,22 @@
         submitCommButton.addEventListener("click", submitComment)
 
         // Hide buttons and comment input for non signed-in user.
-        toggleElementVisibility()
+        toggleElementVisibility(app.auth().currentUser)
 
         // Set auth state change listener.
         // Currently toggles visibility only.
-        app.auth().onAuthStateChanged(function (user) {
-          if (user) {
-            deletePostButton.hidden = false
-            submitCommButton.hidden = false
-            commentLabel.hidden = false
-            commentContent.hidden = false
-          } else {
-            deletePostButton.hidden = true
-            submitCommButton.hidden = true
-            commentLabel.hidden = true
-            commentContent.hidden = true
-          }
+        app.auth().onAuthStateChanged(function (user){
+          toggleElementVisibility(user)
         })
       }
-
-      function toggleElementVisibility() {
+      
+      function toggleElementVisibility(isVisible) {
         if (app == null) {
           return
         }
-        if (app.auth().currentUser) {
-          deletePostButton.hidden = false
-          submitCommButton.hidden = false
-          commentLabel.hidden = false
-          commentContent.hidden = false
-        } else {
-          deletePostButton.hidden = true
-          submitCommButton.hidden = true
-          commentLabel.hidden = true
-          commentContent.hidden = true
+        var elements = [deletePostButton, submitCommButton, commentLabel, commentContent]
+        for (var el of elements) {
+          el.hidden = !isVisible
         }
       }
 
