@@ -21,6 +21,9 @@
 
     <!-- Page scripts -->
     <script>
+      let editForm = document.createElement("input")
+      let submitEdit = document.createElement("button")
+
       /** Returns the recipe ID in the query string for this page. */
       function getRecipeID() {
         const params = new URLSearchParams(window.location.search)
@@ -53,10 +56,10 @@
           .then(() => fetch("api/comment?recipeID=" + recipeID))
           .then((response) => response.json())
           .then((comments) => {
-            const commentEl = document.getElementById("comments")
-            commentEl.innerHTML = ""
+            const commentsEl = document.getElementById("comments")
+            commentsEl.innerHTML = ""
             comments.forEach((comment) => {
-              commentEl.appendChild(createCommentElement(comment))
+              commentsEl.appendChild(createCommentElement(comment))
             })
           })
       }
@@ -70,7 +73,9 @@
             recipeEl.appendChild(createRecipeListElement(recipe))
           })
       }
-
+      /* Deletes the currently displayed post and all associated comments.
+       *   TODO: Only allow this operation to be taken by post creator
+       */
       function deletePost(recipeID) {
         fetch("/api/post?recipeID=" + recipeID, {
           method: "DELETE",
@@ -83,15 +88,69 @@
         })
       }
 
+      /* Event triggered by clicking on an Edit button.
+       * Adds form to the comment for user to specify edits
+       */
+      function editComment(commentEl) {
+        commentEl.removeChild(commentEl.querySelector("hr"))
+        commentEl.appendChild(editForm)
+        commentEl.appendChild(submitEdit)
+        commentEl.appendChild(document.createElement("hr"))
+
+        editForm.value = commentEl.querySelector("p").innerText
+        submitEdit.innerText = "Submit"
+        submitEdit.addEventListener("click", submitEditEvent)
+      }
+
+      /* Event triggered by clicking Submit Button under Edit
+       * Removes edit form, calls function to upload changes to DB
+       */
+      function submitEditEvent(e) {
+        const parent = submitEdit.parentNode
+        parent.removeChild(editForm)
+        parent.removeChild(submitEdit)
+        submitEdit.removeEventListener("click", submitEditEvent)
+        submitCommentEdit(getRecipeID(), parent, editForm.value)
+      }
+
+      /* Uploads comment edits to DB */
+      function submitCommentEdit(recipeID, commentEl, newBody) {
+        const bodyElement = commentEl.querySelector("p")
+        console.log(commentEl.id)
+        fetch("/api/comment?recipeID=" + recipeID + "&commentID=" + commentEl.id + "&commentBody=" + newBody, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }).then((response) => {
+          if (response.status < 200 || response.status >= 300) {
+            alert("Error " + response.status.toString())
+          } else {
+            getComments(recipeID)
+          }
+        })
+      }
+
       function removeAllChildNodes(parent) {
         while (parent.firstChild) {
           parent.removeChild(parent.firstChild)
         }
       }
 
+      /* Constructs a comment element containing content, an edit button, and a thematic break
+       *   TODO: Only create edit button if comment's creator ID = current User ID
+       */
       function createCommentElement(comment) {
         const commentEl = document.createElement("div")
+        commentEl.id = comment.id
         commentEl.appendChild(createBasicElement(comment.content, "p"))
+        const editBtn = document.createElement("button")
+        editBtn.type = "button"
+        commentEl.appendChild(editBtn)
+        editBtn.innerText = "Edit"
+        editBtn.addEventListener("click", function (e) {
+          editComment(editBtn.parentNode)
+        })
         commentEl.appendChild(document.createElement("hr"))
         return commentEl
       }

@@ -104,14 +104,15 @@ public class CommentServlet extends HttpServlet {
 
   @Override
   public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-    Comment newComment = gson.fromJson(data, Comment.class);
-    if (newComment.id == null || newComment.content == null || newComment.recipeId == null) {
+    String recipeID = request.getParameter("recipeID");
+    String commentID = request.getParameter("commentID");
+    String commentBody = request.getParameter("commentBody");
+    if (recipeID == null || commentID == null || commentBody == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
-    DocumentReference commentRef = DBUtils.comments(newComment.recipeId).document(newComment.id);
-    ApiFuture future = commentRef.set(newComment);
+    DocumentReference commentRef = DBUtils.comments(recipeID).document(commentID);
+    ApiFuture future = commentRef.update("content", commentBody);
     DBUtils.blockOnFuture(future);
   }
 
