@@ -7,22 +7,70 @@
     <!-- Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   </head>
-  <body onload="getDetailedRecipe(getRecipeID()); getComments(getRecipeID())">
+  <body>
     <div id="recipe"></div>
     <!-- Comment submission form -->
     <div>
-      <label for="comment-content">Message</label><br />
+      <label for="comment-content" id="comment-label">Message</label><br />
       <input type="text" id="comment-content" name="comment-content" placeholder="Leave a comment..." />
       <br />
-      <button type="button" onclick="submitComment(getRecipeID())" value="Submit">Submit</button>
+      <button type="button" id="submit-comment" value="Submit">Submit</button>
     </div>
     <div id="comments"></div>
-    <button type="button" onclick="deletePost(getRecipeID())">Delete Post</button>
+    <button type="button" id="delete-post">Delete Post</button>
+
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
+
+    <!-- If you enabled Analytics in your project, add the Firebase SDK for Analytics -->
+    <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-analytics.js"></script>
+
+    <!-- Add Firebase products that you want to use -->
+    <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-auth.js"></script>
 
     <!-- Page scripts -->
-    <script>
-      let editForm = document.createElement("input")
-      let submitEdit = document.createElement("button")
+    <script type="module">
+      import { app } from "/scripts/init.js"
+
+      var deletePostButton = document.getElementById("delete-post")
+      var submitCommButton = document.getElementById("submit-comment")
+      var commentLabel = document.getElementById("comment-label")
+      var commentContent = document.getElementById("comment-content")
+      var editForm = document.createElement("input")
+      var submitEdit = document.createElement("button")
+
+      /** On window load, initialize the page. */
+      window.onload = function () {
+        initPage()
+      }
+
+      /** Load page elements. */
+      function initPage() {
+        // Load the recipe and comments on the page.
+        getDetailedRecipe(getRecipeID())
+        getComments(getRecipeID())
+
+        deletePostButton.addEventListener("click", deletePost)
+        submitCommButton.addEventListener("click", submitComment)
+
+        toggleElementVisibility(app.auth().currentUser)
+
+        // Set Firebase auth state change listener.
+        app.auth().onAuthStateChanged(function (user) {
+          toggleElementVisibility(user)
+        })
+      }
+
+      /** Toggle buttons' & other elements' visibility. */
+      function toggleElementVisibility(isVisible) {
+        if (app == null) {
+          return
+        }
+        var elements = [deletePostButton, submitCommButton, commentLabel, commentContent]
+        for (var el of elements) {
+          el.hidden = !isVisible
+        }
+      }
 
       /** Returns the recipe ID in the query string for this page. */
       function getRecipeID() {
@@ -30,24 +78,38 @@
         return params.get("recipeID")
       }
 
-      function submitComment(recipeID) {
+      /** Submit a comment -- disallow if no user is signed into the webapp. */
+      function submitComment() {
         var commentContent = document.getElementById("comment-content")
-        console.log(recipeID)
-        fetch("/api/comment?recipeID=" + recipeID, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            content: commentContent.value,
-          }),
-        }).then((response) => {
-          if (response.status === 202) {
-            getComments(recipeID)
-          } else {
-            alert("Error " + response.status.toString())
-          }
-        })
+        var recipeID = getRecipeID()
+
+        if (app.auth().currentUser) {
+          app
+            .auth()
+            .currentUser.getIdToken(/* forceRefresh */ true)
+            .then(function (idToken) {
+              fetch("/api/comment?recipeID=" + recipeID + "&token=" + idToken, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  content: commentContent.value,
+                }),
+              }).then((response) => {
+                if (response.ok) {
+                  getComments(recipeID)
+                } else {
+                  alert("Error " + response.status.toString())
+                }
+              })
+            })
+            .catch(function (error) {
+              alert("Error! Could not retrieve user ID token.")
+            })
+        } else {
+          alert("User must be signed in to submit a comment.")
+        }
       }
 
       /** Adds comments associated with a recipe to the UI. */
@@ -73,14 +135,16 @@
             recipeEl.appendChild(createRecipeListElement(recipe))
           })
       }
+
       /* Deletes the currently displayed post and all associated comments.
        *   TODO: Only allow this operation to be taken by post creator
        */
-      function deletePost(recipeID) {
+      function deletePost() {
+        var recipeID = getRecipeID()
         fetch("/api/post?recipeID=" + recipeID, {
           method: "DELETE",
         }).then((response) => {
-          if (response.status === 200) {
+          if (response.ok) {
             window.location.href = "/feed.html"
           } else {
             alert("Error " + response.status.toString())
