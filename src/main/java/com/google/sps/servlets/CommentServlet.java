@@ -94,12 +94,26 @@ public class CommentServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
-    DBUtils.comments(recipeID).document().set(newComment);
+    DocumentReference commentRef = DBUtils.comments(recipeID).document();
+    newComment.id = commentRef.getId();
+    ApiFuture future = commentRef.set(newComment);
+    DBUtils.blockOnFuture(future);
+
     response.setStatus(HttpServletResponse.SC_ACCEPTED);
   }
 
   @Override
-  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+    Comment newComment = gson.fromJson(data, Comment.class);
+    if (newComment.id == null || newComment.content == null || newComment.recipeId == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+    DocumentReference commentRef = DBUtils.comments(newComment.recipeId).document(newComment.id);
+    ApiFuture future = commentRef.set(newComment);
+    DBUtils.blockOnFuture(future);
+  }
 
   @Override
   public void doDelete(HttpServletRequest request, HttpServletResponse response)
