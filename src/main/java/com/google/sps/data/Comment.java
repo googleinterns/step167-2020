@@ -7,10 +7,12 @@ public class Comment {
   public static final String DATE_KEY = "date";
 
   public String content;
+  public String id;
   public final Date date;
 
-  public Comment(String content) {
+  public Comment(String content, String id) {
     this.content = content;
+    this.id = id;
     this.date = new Date();
   }
 
