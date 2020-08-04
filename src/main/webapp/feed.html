@@ -6,6 +6,16 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- Page content -->
+    <h1>
+      Recipes
+    </h1>
+    <br />
+    <a href="/submit-recipe.html">Add your own recipe!</a>
+    <br />
+
+    <ul id="recipe-list"></ul>
+
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
 
@@ -18,19 +28,14 @@
     <!-- Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    <h1>
-      Recipes
-    </h1>
-    <br />
-    <a href="/submit-recipe.html">Add your own recipe!</a>
-    <br />
+    <!-- Page scripts -->
+    <script type="module">
+      import {app} from "/scripts/init.js"
 
-    <ul id="recipe-list"></ul>
-
-    <script>
       let recipeList = document.getElementById("recipe-list")
+      
       fetch("/api/post").then(async (response) => {
-        if (response.status < 200 || response.status >= 300) {
+        if (!response.ok) {
           alert("Error " + response.status.toString())
         } else {
           let recipes = await response.json()
