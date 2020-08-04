@@ -57,9 +57,8 @@ public class RecipeServlet extends HttpServlet {
     String json;
 
     if (recipeID == null) {
-      json = getRecipeList(request);
-    }
-    else {
+      json = getRecipeList(request, response);
+    } else {
       json = getDetailedRecipe(recipeID);
     }
     if (json == null) {
@@ -157,20 +156,33 @@ public class RecipeServlet extends HttpServlet {
     DBUtils.blockOnFuture(writeResult);
   }
 
-  private String getRecipeList(HttpServletRequest request) {
+  private String getRecipeList(HttpServletRequest request, HttpServletResponse response) {
     // This parameter should only be used if the GET request was made for recipes by a certain user.
     String creatorToken = request.getParameter("token");
 
     String tagParam = request.getParameter("tagIDs");
     Query query;
 
-    if (tagParam == null || tagParam.equals("None"))
-      query = DBUtils.recipes();
-    else {
+    boolean isTagQuery = !(tagParam == null || tagParam.equals("None"));
+    boolean isCreatorQuery = (creatorToken == null || creatorToken.equals("None"));
+
+    if (isTagQuery && !isCreatorQuery) {
       String[] tagIDs = tagParam.split(",");
       query = recipeWhereContainsArray(tagIDs, tagIDs.length - 1);
+    } else if (isCreatorQuery && !isTagQuery) {
+      FirebaseToken decodedToken = Auth.verifyIdToken(creatorToken);
+      if (decodedToken == null) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        return null;
+      }
+      String uid = decodedToken.getUid();
+
+      query = DBUtils.recipes().whereEqualTo("creatorId", uid);
+    } else { // Currently addresses cases where both isTagQuery and isCreatorQuery, and where
+             // neither.
+      query = DBUtils.recipes();
     }
-    
+
     ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
     ArrayList<Object> recipeList = new ArrayList<>();
     QuerySnapshot querySnapshot = DBUtils.blockOnFuture(querySnapshotFuture);
@@ -197,7 +209,6 @@ public class RecipeServlet extends HttpServlet {
     ApiFuture<DocumentSnapshot> future = recipeRef.get();
     DocumentSnapshot document = DBUtils.blockOnFuture(future);
 
-    DocumentSnapshot document = DBUtils.blockOnFuture(future);
     if (document.exists())
       return gson.toJson(document.getData());
     else {

@@ -19,6 +19,7 @@
     <div id="comments"></div>
     <button type="button" id="delete-post">Delete Post</button>
     <button type="button" id="save-post">Save this recipe</button>
+    <p id="saved"></p>
 
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
@@ -34,9 +35,11 @@
       import { app } from "/scripts/init.js"
 
       var deletePostButton = document.getElementById("delete-post")
+      var savePostButton = document.getElementById("save-post")
       var submitCommButton = document.getElementById("submit-comment")
       var commentLabel = document.getElementById("comment-label")
       var commentContent = document.getElementById("comment-content")
+      var isSaved = document.getElementById("saved")
 
       /** On window load, initialize the page. */
       window.onload = function () {
@@ -51,6 +54,7 @@
 
         // Set button click listeners.
         deletePostButton.addEventListener("click", deletePost)
+        savePostButton.addEventListener("click", savePost)
         submitCommButton.addEventListener("click", submitComment)
 
         // Hide buttons and comment input for non signed-in user.
@@ -62,12 +66,12 @@
           toggleElementVisibility(user)
         })
       }
-      
+
       function toggleElementVisibility(isVisible) {
         if (app == null) {
           return
         }
-        var elements = [deletePostButton, submitCommButton, commentLabel, commentContent]
+        var elements = [deletePostButton, savePostButton, submitCommButton, commentLabel, commentContent]
         for (var el of elements) {
           el.hidden = !isVisible
         }
@@ -79,8 +83,35 @@
         return params.get("recipeID")
       }
 
+      // TODO:
+      /** Let a signed-in user save a recipe. */
       function savePost() {
-        
+        var recipeID = getRecipeID()
+
+        if (app.auth().currentUser) {
+          app
+            .auth()
+            .currentUser.getIdToken(/* forceRefresh */ true)
+            .then(function (idToken) {
+              fetch("/api/post?recipeID=" + recipeID + "&token=" + idToken + "&saved=true", {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                }),
+              }).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                  alert("Recipe saved!")
+                } else {
+                  alert("Error " + response.status.toString())
+                }
+              })
+            })
+            .catch(function (error) {
+              alert("Error! Could not retrieve user ID token.")
+            })
+        } else {
+          alert("User must be signed in to save a post.")
+        }
       }
 
       /** Submit a comment -- disallow if no user is signed into the webapp. */

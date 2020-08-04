@@ -41,6 +41,7 @@
       var signOutButton = document.getElementById("sign-out")
       var sendResetButton = document.getElementById("send-password-reset")
       var createdRecipeList = document.getElementById("your-recipes")
+      var savedRecipeList = document.getElementById("saved-recipes")
 
       window.onload = function () {
         initPage()
@@ -72,20 +73,37 @@
         if (app.auth().currentUser) {
           signOutButton.addEventListener("click", signOut)
           sendResetButton.addEventListener("click", sendPasswordResetEmail)
-          document.getElementById("welcome-message").textContent = "Welcome, " + app.auth().currentUser.displayName
+          document.getElementById("welcome-message").textContent = "Welcome, " + app.auth().currentUser.email
 
-          // Created recipes.
+          // Get saved and created user recipes.
           app
             .auth()
             .currentUser.getIdToken(/* forceRefresh */ true)
             .then(function (idToken) {
+              getUserSavedRecipes(idToken)
               getUserCreatedRecipes(idToken)
             })
         } else {
           window.location.href = "/login-page.html"
         }
+      }
 
-        // TODO: Saved recipes
+      // TODO:
+      /** Retrieves a user's saved posts. */
+      function getUserSavedRecipes(idToken) {
+        fetch("/api/post?token=" + idToken + "&saved=true").then(async (response) => {
+          if (response.status < 200 || response.status >= 300) {
+            alert("Error " + response.status.toString())
+          } else {
+            let savedRecipes = await response.json()
+            // Clear out the HTML
+            savedRecipeList.innerHTML = ""
+            savedRecipes.forEach((recipe) => {
+              savedRecipeList.innerHTML +=
+                '<li><a href="recipe-display.html?recipeID=' + recipe.id + '">' + recipe.title + "</a></li>"
+            })
+          }
+        })
       }
 
       /** Get the signed in user's created posts. */
