@@ -34,7 +34,7 @@
 
       let recipeList = document.getElementById("recipe-list")
       fetch("/api/post").then(async (response) => {
-        if (response.status < 200 || response.status >= 300) {
+        if (!response.ok) {
           alert("Error " + response.status.toString())
         } else {
           let recipes = await response.json()
