@@ -52,16 +52,15 @@
         deletePostButton.addEventListener("click", deletePost)
         submitCommButton.addEventListener("click", submitComment)
 
-        // Hide buttons and comment input for non signed-in user.
         toggleElementVisibility(app.auth().currentUser)
 
-        // Set auth state change listener.
-        // Currently toggles visibility only.
+        // Set Firebase auth state change listener.
         app.auth().onAuthStateChanged(function (user){
           toggleElementVisibility(user)
         })
       }
       
+      /** Toggle buttons' & other elements' visibility. */
       function toggleElementVisibility(isVisible) {
         if (app == null) {
           return

@@ -33,6 +33,7 @@
       import {app} from "/scripts/init.js"
 
       let recipeList = document.getElementById("recipe-list")
+      
       fetch("/api/post").then(async (response) => {
         if (!response.ok) {
           alert("Error " + response.status.toString())
