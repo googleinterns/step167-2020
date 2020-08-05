@@ -1,5 +1,6 @@
 package com.google.sps.meltingpot.servlets;
 
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -7,12 +8,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.anyString;
 
 import com.google.api.core.ApiFuture;
-import com.google.sps.meltingpot.auth.Auth;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
@@ -20,7 +17,10 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import com.google.gson.Gson;
+import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.startup.StartupShutdown;
 import java.io.BufferedReader;
 import java.io.File;
@@ -81,7 +81,8 @@ public final class RecipeServletTest {
     HttpServletResponse response = mock(HttpServletResponse.class);
     FirebaseAuth mockFirebaseAuth = mock(FirebaseAuth.class);
 
-    when(mockFirebaseAuth.verifyIdToken(anyString(), eq(true))).thenThrow(new IllegalArgumentException());
+    when(mockFirebaseAuth.verifyIdToken(anyString(), eq(true)))
+        .thenThrow(new IllegalArgumentException());
     BufferedReader requestBodyReader =
         new BufferedReader(new FileReader(new File(resourcesPath + "postFullBody.json")));
     when(request.getReader()).thenReturn(requestBodyReader);
@@ -100,7 +101,8 @@ public final class RecipeServletTest {
     HttpServletResponse response = mock(HttpServletResponse.class);
     FirebaseAuth mockFirebaseAuth = mock(FirebaseAuth.class);
 
-    when(mockFirebaseAuth.verifyIdToken(anyString(), eq(true))).thenThrow(new FirebaseAuthException("Invalid token", "Invalid token"));
+    when(mockFirebaseAuth.verifyIdToken(anyString(), eq(true)))
+        .thenThrow(new FirebaseAuthException("Invalid token", "Invalid token"));
     BufferedReader requestBodyReader =
         new BufferedReader(new FileReader(new File(resourcesPath + "postFullBody.json")));
     when(request.getReader()).thenReturn(requestBodyReader);

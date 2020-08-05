@@ -6,7 +6,6 @@ import com.google.firebase.auth.FirebaseToken;
 import com.google.sps.meltingpot.data.DBUtils;
 
 public class Auth {
-
   private static FirebaseAuth firebaseAuth;
 
   public static void testModeWithParams(FirebaseAuth mockFirebaseAuth) {
