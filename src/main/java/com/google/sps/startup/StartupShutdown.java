@@ -19,9 +19,6 @@ public class StartupShutdown implements ServletContextListener {
   public void contextInitialized(ServletContextEvent event) {
     System.out.println("Server starting up...");
 
-    DBUtils.productionMode();
-    Auth.productionMode();
-
     try {
       FirebaseOptions options = new FirebaseOptions.Builder()
                                     .setCredentials(GoogleCredentials.getApplicationDefault())
@@ -30,6 +27,10 @@ public class StartupShutdown implements ServletContextListener {
       FirebaseApp.initializeApp(options);
       isFirebaseAppRunning = true;
       System.out.println("FirebaseApp initialized");
+
+      DBUtils.productionMode();
+      Auth.productionMode();
+
     } catch (IOException e) {
       System.out.println("IOException while initializing");
       e.printStackTrace();

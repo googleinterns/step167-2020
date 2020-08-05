@@ -6,7 +6,6 @@ import com.google.firebase.auth.FirebaseToken;
 import com.google.sps.meltingpot.data.DBUtils;
 
 public class Auth {
-  private static final FirebaseAuth actualFirebaseAuth = FirebaseAuth.getInstance();
 
   private static FirebaseAuth firebaseAuth;
 
@@ -17,7 +16,7 @@ public class Auth {
   }
 
   public static void productionMode() {
-    firebaseAuth = actualFirebaseAuth;
+    firebaseAuth = FirebaseAuth.getInstance();
   }
 
   public static FirebaseToken verifyIdToken(String idToken) {

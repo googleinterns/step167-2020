@@ -7,8 +7,12 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.anyString;
 
 import com.google.api.core.ApiFuture;
+import com.google.sps.meltingpot.auth.Auth;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
@@ -41,15 +45,6 @@ public final class RecipeServletTest {
 
   private static final String resourcesPath = "target/test-classes/RecipeServlet/";
 
-  @BeforeClass
-  public static void setup() {
-    if (!StartupShutdown.isFirebaseAppRunning) {
-      StartupShutdown startup = new StartupShutdown();
-      ServletContextEvent mockContextEvent = mock(ServletContextEvent.class);
-      startup.contextInitialized(mockContextEvent);
-    }
-  }
-
   @Test
   public void postMissingTitle() throws IOException {
     HttpServletRequest request = mock(HttpServletRequest.class);
@@ -81,13 +76,37 @@ public final class RecipeServletTest {
   }
 
   @Test
-  public void postMissingAuth() throws IOException {
+  public void postMissingAuth() throws IOException, FirebaseAuthException {
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
+    FirebaseAuth mockFirebaseAuth = mock(FirebaseAuth.class);
 
+    when(mockFirebaseAuth.verifyIdToken(anyString(), eq(true))).thenThrow(new IllegalArgumentException());
     BufferedReader requestBodyReader =
         new BufferedReader(new FileReader(new File(resourcesPath + "postFullBody.json")));
     when(request.getReader()).thenReturn(requestBodyReader);
+
+    Auth.testModeWithParams(mockFirebaseAuth);
+
+    recipeServlet.doPost(request, response);
+
+    verify(response, never()).getWriter();
+    verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+  }
+
+  @Test
+  public void postBadAuth() throws IOException, FirebaseAuthException {
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    FirebaseAuth mockFirebaseAuth = mock(FirebaseAuth.class);
+
+    when(mockFirebaseAuth.verifyIdToken(anyString(), eq(true))).thenThrow(new FirebaseAuthException("Invalid token", "Invalid token"));
+    BufferedReader requestBodyReader =
+        new BufferedReader(new FileReader(new File(resourcesPath + "postFullBody.json")));
+    when(request.getReader()).thenReturn(requestBodyReader);
+    when(request.getParameter("token")).thenReturn("badToken");
+
+    Auth.testModeWithParams(mockFirebaseAuth);
 
     recipeServlet.doPost(request, response);
 
