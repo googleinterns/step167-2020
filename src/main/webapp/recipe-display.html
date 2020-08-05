@@ -202,19 +202,21 @@
       }
 
       /* Constructs a comment element containing content, an edit button, and a thematic break
-       *   TODO: Only create edit button if comment's creator ID = current User ID
+       *   NOTE: Only create edit button if comment's creator ID = current User ID
        */
       function createCommentElement(comment) {
         const commentEl = document.createElement("div")
         commentEl.id = comment.id
         commentEl.appendChild(createBasicElement(comment.content, "p"))
-        const editBtn = document.createElement("button")
-        editBtn.type = "button"
-        commentEl.appendChild(editBtn)
-        editBtn.innerText = "Edit"
-        editBtn.addEventListener("click", function (e) {
-          editComment(editBtn.parentNode)
-        })
+        if (comment.creatorId == firebase.auth().currentUser.uid) {
+            const editBtn = document.createElement("button")
+            editBtn.type = "button"
+            commentEl.appendChild(editBtn)
+            editBtn.innerText = "Edit"
+            editBtn.addEventListener("click", function (e) {
+                editComment(editBtn.parentNode)
+            })
+        }
         commentEl.appendChild(document.createElement("hr"))
         return commentEl
       }
