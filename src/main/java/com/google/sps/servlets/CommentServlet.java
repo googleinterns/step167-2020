@@ -118,10 +118,21 @@ public class CommentServlet extends HttpServlet {
     String recipeID = request.getParameter("recipeID");
     String commentID = request.getParameter("commentID");
     String commentBody = request.getParameter("commentBody");
+
     if (recipeID == null || commentID == null || commentBody == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
+
+    String token = request.getParameter("token");
+    FirebaseToken decodedToken = Auth.verifyIdToken(token);
+
+    if (decodedToken == null
+        || !Comment.createdbyUser(recipeID, commentID, decodedToken.getUid())) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return;
+    }
+
     DocumentReference commentRef = DBUtils.comments(recipeID).document(commentID);
     ApiFuture future = commentRef.update("content", commentBody);
     DBUtils.blockOnFuture(future);

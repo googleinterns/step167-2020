@@ -180,19 +180,40 @@
       /* Uploads comment edits to DB */
       function submitCommentEdit(recipeID, commentEl, newBody) {
         const bodyElement = commentEl.querySelector("p")
-        console.log(commentEl.id)
-        fetch("/api/comment?recipeID=" + recipeID + "&commentID=" + commentEl.id + "&commentBody=" + newBody, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }).then((response) => {
-          if (response.status < 200 || response.status >= 300) {
-            alert("Error " + response.status.toString())
-          } else {
-            getComments(recipeID)
-          }
-        })
+        if (app.auth().currentUser) {
+          app
+            .auth()
+            .currentUser.getIdToken(/* forceRefresh */ true)
+            .then(function (idToken) {
+              fetch(
+                "/api/comment?recipeID=" +
+                  recipeID +
+                  "&commentID=" +
+                  commentEl.id +
+                  "&commentBody=" +
+                  newBody +
+                  "&token=" +
+                  idToken,
+                {
+                  method: "PUT",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              ).then((response) => {
+                if (response.status < 200 || response.status >= 300) {
+                  alert("Error " + response.status.toString())
+                } else {
+                  getComments(recipeID)
+                }
+              })
+            })
+            .catch(function (error) {
+              alert("Error! Could not retrieve user ID token.")
+            })
+        } else {
+          alert("User must be signed in to submit a comment.")
+        }
       }
 
       function removeAllChildNodes(parent) {
@@ -209,13 +230,13 @@
         commentEl.id = comment.id
         commentEl.appendChild(createBasicElement(comment.content, "p"))
         if (comment.creatorId == firebase.auth().currentUser.uid) {
-            const editBtn = document.createElement("button")
-            editBtn.type = "button"
-            commentEl.appendChild(editBtn)
-            editBtn.innerText = "Edit"
-            editBtn.addEventListener("click", function (e) {
-                editComment(editBtn.parentNode)
-            })
+          const editBtn = document.createElement("button")
+          editBtn.type = "button"
+          commentEl.appendChild(editBtn)
+          editBtn.innerText = "Edit"
+          editBtn.addEventListener("click", function (e) {
+            editComment(editBtn.parentNode)
+          })
         }
         commentEl.appendChild(document.createElement("hr"))
         return commentEl

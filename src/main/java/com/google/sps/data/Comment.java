@@ -24,11 +24,11 @@ public class Comment {
   }
 
   // TODO: get user display name (or username) from db collection.
-/*
+
   public static boolean createdbyUser(String recipeId, String commentId, String userId) {
     DocumentSnapshot comment = DBUtils.blockOnFuture(DBUtils.comment(recipeId, commentId).get());
 
     String commentCreatorId = comment.getString(CREATOR_ID_KEY);
     return commentCreatorId.equals(userId);
-  }*/
+  }
 }

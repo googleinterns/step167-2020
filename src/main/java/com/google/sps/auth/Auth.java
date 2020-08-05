@@ -6,7 +6,17 @@ import com.google.firebase.auth.FirebaseToken;
 import com.google.sps.meltingpot.data.DBUtils;
 
 public class Auth {
-  private static FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+  private static FirebaseAuth firebaseAuth;
+
+  public static void testModeWithParams(FirebaseAuth mockFirebaseAuth) {
+    // Use this method to inject mock authentication when testing
+    // SHOULD ONLY BE USED IN TESTS
+    firebaseAuth = mockFirebaseAuth;
+  }
+
+  public static void productionMode() {
+    firebaseAuth = FirebaseAuth.getInstance();
+  }
 
   public static FirebaseToken verifyIdToken(String idToken) {
     try {
@@ -17,4 +27,4 @@ public class Auth {
       return null;
     }
   }
-} 
+}
