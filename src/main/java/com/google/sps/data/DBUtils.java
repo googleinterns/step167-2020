@@ -8,9 +8,24 @@ import com.google.firebase.cloud.FirestoreClient;
 import java.util.concurrent.ExecutionException;
 
 public class DBUtils {
-  private static final Firestore database = FirestoreClient.getFirestore();
-  private static final CollectionReference recipesReference = database.collection("recipes");
+  private static final Firestore actualDatabase = FirestoreClient.getFirestore();
+  private static final CollectionReference actualRecipesReference = actualDatabase.collection("recipes");
   private static final String DB_COMMENTS = "comment-collection";
+
+  private static Firestore database;
+  private static CollectionReference recipesReference;
+
+  public static void testModeWithParams(Firestore db, CollectionReference recipesRef) {
+    // Use this method to inject mock db and recipe reference when testing
+    // SHOULD ONLY BE USED IN TESTS
+    database = db;
+    recipesReference = recipesRef;
+  }
+
+  public static void productionMode() {
+    database = actualDatabase;
+    recipesReference = actualRecipesReference;
+  }
 
   public static Firestore db() {
     return database;
