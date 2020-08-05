@@ -16,7 +16,7 @@ pretty: node_modules
 validate: node_modules
 	$(HTML_VALIDATE) src/main/webapp/*.html
 	$(CSS_VALIDATOR) src/main/webapp/*.css
-	$(ESLINT) src/main/webapp/*.js
+	$(ESLINT) src/main/webapp/scripts/*.js
 
 package:
 	mvn package
