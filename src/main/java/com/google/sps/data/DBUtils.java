@@ -8,11 +8,6 @@ import com.google.firebase.cloud.FirestoreClient;
 import java.util.concurrent.ExecutionException;
 
 public class DBUtils {
-  private static final Firestore actualDatabase = FirestoreClient.getFirestore();
-  private static final CollectionReference actualRecipesReference =
-      actualDatabase.collection("recipes");
-  private static final CollectionReference actualUsersReference =
-      actualDatabase.collection("users");
   private static final String DB_COMMENTS = "comment-collection";
 
   private static Firestore database;
@@ -29,8 +24,9 @@ public class DBUtils {
   }
 
   public static void productionMode() {
-    database = actualDatabase;
-    recipesReference = actualRecipesReference;
+    database = FirestoreClient.getFirestore();
+    recipesReference = database.collection("recipes");
+    usersReference = database.collection("users");
   }
 
   public static Firestore db() {
