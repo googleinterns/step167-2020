@@ -25,7 +25,6 @@ public class StartupShutdown implements ServletContextListener {
                                     .build();
 
       FirebaseApp.initializeApp(options);
-      isFirebaseAppRunning = true;
       System.out.println("FirebaseApp initialized");
 
       DBUtils.productionMode();
