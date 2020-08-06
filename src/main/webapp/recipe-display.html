@@ -52,21 +52,19 @@
         getDetailedRecipe(getRecipeID())
         getComments(getRecipeID())
 
-        // Set button click listeners.
         deletePostButton.addEventListener("click", deletePost)
         savePostButton.addEventListener("click", savePost)
         submitCommButton.addEventListener("click", submitComment)
 
-        // Hide buttons and comment input for non signed-in user.
         toggleElementVisibility(app.auth().currentUser)
 
-        // Set auth state change listener.
-        // Currently toggles visibility only.
+        // Set Firebase auth state change listener.
         app.auth().onAuthStateChanged(function (user){
           toggleElementVisibility(user)
         })
       }
-
+      
+      /** Toggle buttons' & other elements' visibility. */
       function toggleElementVisibility(isVisible) {
         if (app == null) {
           return
@@ -133,7 +131,7 @@
                   content: commentContent.value,
                 }),
               }).then((response) => {
-                if (response.status >= 200 && response.status < 300) {
+                if (response.ok) {
                   getComments(recipeID)
                 } else {
                   alert("Error " + response.status.toString())
@@ -178,7 +176,7 @@
         fetch("/api/post?recipeID=" + recipeID, {
           method: "DELETE",
         }).then((response) => {
-          if (response.status >= 200 && response.status < 300) {
+          if (response.ok) {
             window.location.href = "/feed.html"
           } else {
              if (response.status === 403) {  // The user was not the orginal poster.

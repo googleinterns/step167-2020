@@ -13,7 +13,25 @@ public class DBUtils {
   private static final CollectionReference usersReference = database.collection("users");
   private static final CollectionReference tagsReference = database.collection("tags");
 
+  private static final Firestore actualDatabase = FirestoreClient.getFirestore();
+  private static final CollectionReference actualRecipesReference = actualDatabase.collection("recipes");
+
   private static final String DB_COMMENTS = "comment-collection";
+
+  private static Firestore database;
+  private static CollectionReference recipesReference;
+
+  public static void testModeWithParams(Firestore db, CollectionReference recipesRef) {
+    // Use this method to inject mock db and recipe reference when testing
+    // SHOULD ONLY BE USED IN TESTS
+    database = db;
+    recipesReference = recipesRef;
+  }
+
+  public static void productionMode() {
+    database = actualDatabase;
+    recipesReference = actualRecipesReference;
+  }
 
   public static Firestore db() {
     return database;
