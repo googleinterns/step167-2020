@@ -10,12 +10,13 @@ node_modules:
 pretty: node_modules
 	$(PRETTIER) --write src/main/webapp/*.{html,css}
 	find src/main/java -iname *.java | xargs $(CLANG_FORMAT) -i
+	find src/test/java -iname *.java | xargs $(CLANG_FORMAT) -i
 	find src/main/webapp -iname *.js | xargs $(CLANG_FORMAT) -i
 
 validate: node_modules
 	$(HTML_VALIDATE) src/main/webapp/*.html
 	$(CSS_VALIDATOR) src/main/webapp/*.css
-	$(ESLINT) src/main/webapp/*.js
+	$(ESLINT) src/main/webapp/scripts/*.js
 
 package:
 	mvn package

@@ -24,23 +24,20 @@
     <script type="module">
       import { app } from "/scripts/init.js"
 
-      function signInStatus() {
-        app.auth().onAuthStateChanged(function (user) {
-          if (user) {
-            document.getElementById("signed-in").textContent = "Signed in"
-          } else {
-            document.getElementById("signed-in").textContent = "Signed out"
-          }
-        })
+      var signInText = document.getElementById("signed-in")
 
+      function signInStatus() {
         if (app == null) {
           return
-        } else if (app.auth().currentUser) {
-          document.getElementById("signed-in").textContent = "Signed in"
         } else {
-          document.getElementById("signed-in").textContent = "Signed out"
+          signInText.textContent = app.auth().currentUser ? "Signed in" : "Signed out"
         }
+
+        app.auth().onAuthStateChanged(function (user) {
+          signInText.textContent = user ? "Signed in" : "Signed out"
+        })
       }
+
       signInStatus()
     </script>
   </body>

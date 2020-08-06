@@ -6,10 +6,12 @@ public class Recipe extends DBObject {
 
   public String title;
   public String content;
+  public String creatorId;
 
-  public Recipe(String id, String title, String content) {
+  public Recipe(String id, String title, String content, String creatorId) {
     super(id);
     this.title = title;
     this.content = content;
+    this.creatorId = creatorId;
   }
 }

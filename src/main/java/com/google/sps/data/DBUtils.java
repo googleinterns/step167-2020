@@ -8,21 +8,51 @@ import com.google.firebase.cloud.FirestoreClient;
 import java.util.concurrent.ExecutionException;
 
 public class DBUtils {
-  private static final Firestore database = FirestoreClient.getFirestore();
-  private static final CollectionReference recipesReference = database.collection("recipes");
-  private static final CollectionReference tagsReference = database.collection("tags");
   private static final String DB_COMMENTS = "comment-collection";
+
+  private static Firestore database;
+  private static CollectionReference recipesReference;
+  private static CollectionReference usersReference;
+  private static CollectionReference tagsReference;
+
+  public static void testModeWithParams(
+      Firestore db, CollectionReference recipesRef, CollectionReference usersRef) {
+    // Use this method to inject mock db and recipe reference when testing
+    // SHOULD ONLY BE USED IN TESTS
+    database = db;
+    recipesReference = recipesRef;
+    usersReference = usersRef;
+  }
+
+  public static void productionMode() {
+    database = FirestoreClient.getFirestore();
+    recipesReference = database.collection("recipes");
+    usersReference = database.collection("users");
+    tagsReference = database.collection("tags");
+  }
 
   public static Firestore db() {
     return database;
   }
 
-  public static CollectionReference recipes() {
-    return recipesReference;
-  }
-
   public static CollectionReference tags() {
     return tagsReference;
+  }
+
+  public static CollectionReference users() {
+    return usersReference;
+  }
+
+  public static DocumentReference user(String userID) {
+    return usersReference.document(userID);
+  }
+
+  public static String getNestedPropertyName(String property, String nestedProperty) {
+    return property + "." + nestedProperty;
+  }
+
+  public static CollectionReference recipes() {
+    return recipesReference;
   }
 
   public static DocumentReference recipe(String recipeID) {
@@ -31,6 +61,10 @@ public class DBUtils {
 
   public static CollectionReference comments(String recipeID) {
     return recipesReference.document(recipeID).collection(DB_COMMENTS);
+  }
+
+  public static DocumentReference comment(String recipeId, String commentId) {
+    return recipesReference.document(recipeId).collection(DB_COMMENTS).document(commentId);
   }
 
   public static String commentsCollectionName() {
