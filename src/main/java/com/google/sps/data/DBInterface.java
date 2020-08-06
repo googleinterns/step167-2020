@@ -1,29 +1,28 @@
 package com.google.sps.meltingpot.data;
 
 public interface DBInterface {
+    public String getRecipeContent(String Id);
+    public RecipeMetadata getRecipeMetadata(String Id);
+    public String addRecipe(RecipeMetadata newRecipe, String newContent);
+    public void deleteRecipe(String Id);
+    public void editRecipeTitleContent(String editedTitle, String editedContent);
 
-    String getRecipeContent(String Id)
-    RecipeMetadata getRecipeMetadata(String Id)
-    String addRecipe(RecipeMetadata newRecipe, String newContent)
-    void deleteRecipe(String Id)
-    void editRecipeTitleContent(String editedTitle, String editedContent)
+    public Iterable<RecipeMetadata> getAllRecipes();
+    public Iterable<Comment> getAllCommentsInRecipe(String recipeId);
+    public Iterable<Tag> getAllTags();
 
-    Iterable<RecipeMetadata> getAllRecipes()
-    Iterable<Comment> getAllCommentsInRecipe(recipeId)
-    Iterable<Tag> getAllTags()
+    public User getUser(String userId);
+    public String addUser();
+    public void deleteUser(String userId);
+    public void addRecipeIdToCreated(String userId, String recipeId);
+    public void addRecipeIdToSaved(String userId, String recipeId);
+    public void followTag(String userId, String tagId);
 
-    User getUser(String userId)
-    String addUser()
-    void deleteUser(String userId)
-    void addRecipeIdToCreated(String userId, String recipeId)
-    void addRecipeIdToSaved(String userId, String recipeId)
-    void followTag(String userId, String tagId)
+    public Iterable<RecipeMetadata> getRecipesMatchingTags(Iterable<String> tagIds);
+    public Iterable<RecipeMetadata> getRecipesMatchingCreator(String creatorId);
+    public Iterable<RecipeMetadata> getRecipesMatchingIDs(Iterable<String> Ids);
 
-    Iterable<RecipeMetadata> getRecipesMatchingTags(Iterable<String> tagIds)
-    Iterable<RecipeMetadata> getRecipesMatchingCreator(creatorId)
-    Iterable<RecipeMetadata> getRecipesMatchingIDs(Iterable<String> Ids)
-
-    Comment addComment(Comment newComment)
-    void deleteComment(String Id, recipeId)
-    void editCommentContent(String editedContent)
+    public Comment addComment(Comment newComment);
+    public void deleteComment(String Id, String recipeId);
+    public void editCommentContent(String editedContent);
 }
