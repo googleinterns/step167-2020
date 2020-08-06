@@ -10,4 +10,8 @@ public class RecipeMetadata extends DBObject {
     public Iterable<Tag> tags;
     public long votes;
     public GeoPoint location;
+
+    public RecipeMetadata(String id) {
+      super(id);
+    }
 }

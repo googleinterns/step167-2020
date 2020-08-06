@@ -11,10 +11,11 @@ public class FirestoreDB implements DBInterface {
         return null;
     }
     public void deleteRecipe(String Id) {
-        return null;
+        return;
     }
+
     public void editRecipeTitleContent(String editedTitle, String editedContent) {
-        return null;
+        return;
     }
 
     public Iterable<RecipeMetadata> getAllRecipes() {
