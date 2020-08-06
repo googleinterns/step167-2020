@@ -55,10 +55,11 @@ public class RecipeServlet extends HttpServlet {
     String recipeID = request.getParameter("recipeID");
     String json;
 
-    if (recipeID == null)
+    if (recipeID == null) {
       json = getRecipeList(request);
-    else
+    } else {
       json = getDetailedRecipe(recipeID);
+    }
 
     if (documentNotFound || json == null) {
       response.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -116,9 +117,9 @@ public class RecipeServlet extends HttpServlet {
     String tagParam = request.getParameter("tagIDs");
     Query query;
 
-    if (tagParam == null || tagParam.equals("None"))
+    if (tagParam == null || tagParam.equals("None")) {
       query = DBUtils.recipes();
-    else {
+    } else {
       String[] tagIDs = tagParam.split(",");
       query = recipeWhereContainsArray(tagIDs, tagIDs.length - 1);
     }
@@ -149,10 +150,11 @@ public class RecipeServlet extends HttpServlet {
     ApiFuture<DocumentSnapshot> future = recipeRef.get();
     DocumentSnapshot document = DBUtils.blockOnFuture(future);
 
-    if (document == null || !document.exists())
+    if (document == null || !document.exists()) {
       return null;
-    else
+    } else {
       return gson.toJson(document.getData());
+    }
   }
 
   private void deleteComments(String recipeID) {

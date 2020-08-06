@@ -43,7 +43,7 @@
       window.onload = function () {
         // Fetch all recipes to populate our list
         fetch("/api/post").then(async (response) => {
-          if (response.status < 200 || response.status >= 300) {
+          if (!response.ok) {
             alert("Error " + response.status.toString())
           } else {
             let recipes = await response.json()
@@ -56,7 +56,7 @@
 
         // Fetch all recipe tags to populate our select form
         fetch("/api/tag").then(async (response) => {
-          if (response.status < 200 || response.status >= 300) {
+          if (!response.ok) {
             alert("Error " + response.status.toString())
           } else {
             let tags = await response.json()
@@ -72,7 +72,7 @@
         const tagIDs = getCurrentFilters()
         let recipeList = document.getElementById("recipe-list")
         fetch("/api/post?tagIDs=" + tagIDs).then(async (response) => {
-          if (response.status < 200 || response.status >= 300) {
+          if (!response.ok) {
             alert("Error " + response.status.toString())
           } else {
             let recipes = await response.json()
@@ -92,12 +92,15 @@
           return "None"
         }
         // Generate comma-separated list of all current filters
+        filterString = filters.map((filter) => filter.id).join
+
+        /*
         filterString += filters[0].id
         for (var x = 1; x < filters.length; x++) {
           // Tag ID's, which we previously stored as the ID of
           // each <option> element, get put in the list
           filterString += "," + filters[x].id
-        }
+        }*/
         return filterString
       }
 
