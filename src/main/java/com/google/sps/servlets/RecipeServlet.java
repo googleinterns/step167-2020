@@ -179,13 +179,14 @@ public class RecipeServlet extends HttpServlet {
       String uid = decodedToken.getUid();
 
       ArrayList<String> savedRecipeIds = User.savedRecipeIds(uid);
-      
+
       // Only return saved recipes if there exist saved recipes associated with the user.
       if (!savedRecipeIds.isEmpty()) {
         query = DBUtils.recipes().whereIn(Recipe.ID_KEY, User.savedRecipeIds(uid));
+      } else {
+        return null;
       }
-      else { return null; }
-      
+
     } else if (isTagQuery && !isCreatorQuery) {
       String[] tagIDs = tagParam.split(",");
       query = recipeWhereContainsArray(tagIDs, tagIDs.length - 1);

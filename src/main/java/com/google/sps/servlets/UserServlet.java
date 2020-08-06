@@ -44,7 +44,7 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/api/user")
 public class UserServlet extends HttpServlet {
   private Gson gson = new Gson();
-  
+
   /** Add a new user document to the Firebase users collection. */
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {

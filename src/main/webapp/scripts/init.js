@@ -4,7 +4,7 @@
  */
 
 // Your web app's Firebase configuration
-var firebaseConfig = {
+const firebaseConfig = {
   apiKey: 'AIzaSyAe5HlFZFuhzMimXrKW1z3kglajbdHf_Rc',
   authDomain: 'meltingpot-step-2020.firebaseapp.com',
   databaseURL: 'https://meltingpot-step-2020.firebaseio.com',
@@ -15,8 +15,8 @@ var firebaseConfig = {
   measurementId: 'G-8YRW8QZ2XG',
 }
 // Initialize Firebase
-var app = firebase.initializeApp(firebaseConfig)
-firebase.analytics()
-firebase.auth()
+var app = firebase.initializeApp(firebaseConfig);
+firebase.analytics();
+firebase.auth();
 
 export {app};
