@@ -59,11 +59,11 @@
         toggleElementVisibility(app.auth().currentUser)
 
         // Set Firebase auth state change listener.
-        app.auth().onAuthStateChanged(function (user){
+        app.auth().onAuthStateChanged(function (user) {
           toggleElementVisibility(user)
         })
       }
-      
+
       /** Toggle buttons' & other elements' visibility. */
       function toggleElementVisibility(isVisible) {
         if (app == null) {
@@ -81,7 +81,6 @@
         return params.get("recipeID")
       }
 
-      // TODO:
       /** Let a signed-in user save a recipe. */
       function savePost() {
         var recipeID = getRecipeID()
@@ -91,13 +90,13 @@
             .auth()
             .currentUser.getIdToken(/* forceRefresh */ true)
             .then(function (idToken) {
-              fetch("/api/post?recipeID=" + recipeID + "&token=" + idToken + "&saved=true", {
+              fetch("/api/user?recipeID=" + recipeID + "&token=" + idToken + "&saved=true", {
                 method: "PUT",
                 headers: {
                   "Content-Type": "application/json",
-                }),
+                },
               }).then((response) => {
-                if (response.status >= 200 && response.status < 300) {
+                if (response.ok) {
                   alert("Recipe saved!")
                 } else {
                   alert("Error " + response.status.toString())
@@ -179,9 +178,12 @@
           if (response.ok) {
             window.location.href = "/feed.html"
           } else {
-             if (response.status === 403) {  // The user was not the orginal poster.
-               alert("You cannot delete another user's recipe.")
-             } else {alert("Error " + response.status.toString())}
+            if (response.status === 403) {
+              // The user was not the orginal poster.
+              alert("You cannot delete another user's recipe.")
+            } else {
+              alert("Error " + response.status.toString())
+            }
           }
         })
       }

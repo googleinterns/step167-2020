@@ -130,6 +130,21 @@
         firebase
           .auth()
           .createUserWithEmailAndPassword(email, password)
+          .then(function onSuccess() {
+            // Create new user document on the back end.
+            firebase
+            .auth()
+            .currentUser.getIdToken(/* forceRefresh */ true)
+            .then(function (idToken) {
+              // Send token to backend via HTTPS
+              fetch("/api/user?token=" + idToken, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              })
+            })
+          })
           .catch(function onFailure(error) {
             var errorCode = error.code
             var errorMessage = error.message

@@ -3,8 +3,13 @@ package com.google.sps.meltingpot.data;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.Query;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 public class DBUtils {
@@ -13,25 +18,32 @@ public class DBUtils {
   private static final CollectionReference usersReference = database.collection("users");
   private static final CollectionReference tagsReference = database.collection("tags");
 
-  private static final Firestore actualDatabase = FirestoreClient.getFirestore();
-  private static final CollectionReference actualRecipesReference = actualDatabase.collection("recipes");
+  //   private static final Firestore actualDatabase = FirestoreClient.getFirestore();
+  //   private static final CollectionReference actualRecipesReference =
+  //   actualDatabase.collection("recipes"); private static final CollectionReference
+  //   actualUsersReference = actualDatabase.collection("users"); private static final
+  //   CollectionReference actualTagsReference = actualDatabase.collection("tags");
 
   private static final String DB_COMMENTS = "comment-collection";
 
-  private static Firestore database;
-  private static CollectionReference recipesReference;
+  //   private static Firestore database;
+  //   private static CollectionReference recipesReference;
+  //   private static CollectionReference usersReference;
+  //   private static CollectionReference tagsReference;
 
-  public static void testModeWithParams(Firestore db, CollectionReference recipesRef) {
-    // Use this method to inject mock db and recipe reference when testing
-    // SHOULD ONLY BE USED IN TESTS
-    database = db;
-    recipesReference = recipesRef;
-  }
+  //   public static void testModeWithParams(Firestore db, CollectionReference recipesRef) {
+  //     // Use this method to inject mock db and recipe reference when testing
+  //     // SHOULD ONLY BE USED IN TESTS
+  //     database = db;
+  //     recipesReference = recipesRef;
+  //   }
 
-  public static void productionMode() {
-    database = actualDatabase;
-    recipesReference = actualRecipesReference;
-  }
+  //   public static void productionMode() {
+  //     database = actualDatabase;
+  //     recipesReference = actualRecipesReference;
+  //     usersReference = actualUsersReference;
+  //     tagsReference = actualTagsReference;
+  //   }
 
   public static Firestore db() {
     return database;
@@ -57,8 +69,21 @@ public class DBUtils {
     return tagsReference;
   }
 
-  public static DocumentReference recipe(String recipeID) {
-    return recipesReference.document(recipeID);
+  /** Return a list of all recipe IDs. */
+  public static ArrayList<String> allRecipeIds() {
+    ApiFuture<QuerySnapshot> querySnapshotFuture = recipesReference.get();
+    ArrayList<String> recipeIdList = new ArrayList<>();
+    QuerySnapshot querySnapshot = DBUtils.blockOnFuture(querySnapshotFuture);
+
+    if (querySnapshot == null) {
+      return null;
+    }
+
+    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+      recipeIdList.add(document.toObject(Recipe.class).id);
+    }
+
+    return recipeIdList;
   }
 
   public static CollectionReference comments(String recipeID) {

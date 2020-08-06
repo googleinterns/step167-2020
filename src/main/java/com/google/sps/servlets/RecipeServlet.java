@@ -34,6 +34,7 @@ import com.google.sps.meltingpot.data.Recipe;
 import com.google.sps.meltingpot.data.User;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.lang.Boolean;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -125,7 +126,7 @@ public class RecipeServlet extends HttpServlet {
       return;
     }
 
-    DocumentReference recipeRef = DBUtils.recipe(newRecipe.id);
+    DocumentReference recipeRef = DBUtils.recipes().document(newRecipe.id);
     ApiFuture future =
         recipeRef.update(Recipe.TITLE_KEY, newRecipe.title, Recipe.CONTENT_KEY, newRecipe.content);
     DBUtils.blockOnFuture(future);
@@ -161,23 +162,41 @@ public class RecipeServlet extends HttpServlet {
     String creatorToken = request.getParameter("token");
 
     String tagParam = request.getParameter("tagIDs");
+    boolean isSavedRequest = Boolean.parseBoolean(request.getParameter("saved"));
+
     Query query;
 
     boolean isTagQuery = !(tagParam == null || tagParam.equals("None"));
-    boolean isCreatorQuery = (creatorToken == null || creatorToken.equals("None"));
+    boolean isCreatorQuery = !(creatorToken == null || creatorToken.equals("None"));
 
-    if (isTagQuery && !isCreatorQuery) {
-      String[] tagIDs = tagParam.split(",");
-      query = recipeWhereContainsArray(tagIDs, tagIDs.length - 1);
-    } else if (isCreatorQuery && !isTagQuery) {
-      FirebaseToken decodedToken = Auth.verifyIdToken(creatorToken);
+    FirebaseToken decodedToken = Auth.verifyIdToken(creatorToken);
+
+    if (isSavedRequest) {
       if (decodedToken == null) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         return null;
       }
       String uid = decodedToken.getUid();
 
-      query = DBUtils.recipes().whereEqualTo("creatorId", uid);
+      ArrayList<String> savedRecipeIds = User.savedRecipeIds(uid);
+      
+      // Only return saved recipes if there exist saved recipes associated with the user.
+      if (!savedRecipeIds.isEmpty()) {
+        query = DBUtils.recipes().whereIn(Recipe.ID_KEY, User.savedRecipeIds(uid));
+      }
+      else { return null; }
+      
+    } else if (isTagQuery && !isCreatorQuery) {
+      String[] tagIDs = tagParam.split(",");
+      query = recipeWhereContainsArray(tagIDs, tagIDs.length - 1);
+    } else if (isCreatorQuery && !isTagQuery) {
+      if (decodedToken == null) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        return null;
+      }
+      String uid = decodedToken.getUid();
+
+      query = DBUtils.recipes().whereEqualTo(Recipe.CREATOR_ID_KEY, uid);
     } else { // Currently addresses cases where both isTagQuery and isCreatorQuery, and where
              // neither.
       query = DBUtils.recipes();

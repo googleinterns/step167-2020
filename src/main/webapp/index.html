@@ -26,11 +26,13 @@
 
       var signInText = document.getElementById("signed-in")
 
+      var signInText = document.getElementById("signed-in")
+
       function signInStatus() {
         if (app == null) {
           return
         } else {
-          signInText.textContent = app.auth().currentUser ? "Signed in" : "Signed out"
+          app.auth().currentUser ? (signInText.textContent = "Signed in") : (signInText.textContent = "Signed out")
         }
 
         app.auth().onAuthStateChanged(function (user) {
