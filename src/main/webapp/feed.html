@@ -97,16 +97,8 @@
         if (filters.length < 1) {
           return "None"
         }
-        // Generate comma-separated list of all current filters
         filterString = filters.map((filter) => filter.id).join
 
-        /*
-        filterString += filters[0].id
-        for (var x = 1; x < filters.length; x++) {
-          // Tag ID's, which we previously stored as the ID of
-          // each <option> element, get put in the list
-          filterString += "," + filters[x].id
-        }*/
         return filterString
       }
 

@@ -165,7 +165,7 @@ public class RecipeServlet extends HttpServlet {
       query = DBUtils.recipes();
     } else {
       String[] tagIDs = tagParam.split(",");
-      query = recipeWhereContainsArray(tagIDs, tagIDs.length - 1);
+      query = recipesMatchingTags(tagIDs, tagIDs.length - 1);
     }
 
     ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
@@ -182,10 +182,13 @@ public class RecipeServlet extends HttpServlet {
     return gson.toJson(recipeList);
   }
 
-  private Query recipeWhereContainsArray(String[] tagIDs, int index) {
+  /**
+   * Recursively constructs a query on recipes matching all tags passed in
+   *  eg. DBUtils.recipes().whereEqualTo("tag_0", true).whereEqualTo("tag_1", true)...
+   */
+  private Query recipesMatchingTags(String[] tagIDs, int index) {
     if (index > 0)
-      return recipeWhereContainsArray(tagIDs, index - 1)
-          .whereEqualTo("tags." + tagIDs[index], true);
+      return recipesMatchingTags(tagIDs, index - 1).whereEqualTo("tags." + tagIDs[index], true);
     return DBUtils.recipes().whereEqualTo("tags." + tagIDs[index], true);
   }
 
