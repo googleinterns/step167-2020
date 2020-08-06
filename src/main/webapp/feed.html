@@ -14,6 +14,15 @@
     <a href="/submit-recipe.html">Add your own recipe!</a>
     <br />
 
+    <p>Select filters:</p>
+    <select onchange="addFilter()" id="tag-select">
+      <option>None</option>
+    </select>
+
+    <p>Currently selected filters:</p>
+    <div id="selected-filters"></div>
+    <br />
+
     <ul id="recipe-list"></ul>
 
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
@@ -27,24 +36,6 @@
 
     <!-- Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-    <h1>
-      Recipes
-    </h1>
-    <br />
-    <a href="/submit-recipe.html">Add your own recipe!</a>
-    <br />
-
-    <p>Select filters:</p>
-    <select onchange="addFilter()" id="tag-select">
-      <option>None</option>
-    </select>
-
-    <p>Currently selected filters:</p>
-    <div id="selected-filters"></div>
-    <br />
-
-    <ul id="recipe-list"></ul>
 
     <!-- Page scripts -->
     <script type="module">
@@ -107,7 +98,7 @@
           return "None"
         }
         // Generate comma-separated list of all current filters
-        filterString = filters.map(filter => filter.id).join
+        filterString = filters.map((filter) => filter.id).join
 
         /*
         filterString += filters[0].id
