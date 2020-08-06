@@ -23,13 +23,15 @@
     <!-- TODO: replace this script with whatever needs to be done on index.html -->
     <script type="module">
       import { app } from "/scripts/init.js"
-      
+
       var signInText = document.getElementById("signed-in")
 
       function signInStatus() {
         if (app == null) {
           return
-        } else {signInText.textContent = app.auth().currentUser ? "Signed in": "Signed out"}
+        } else {
+          signInText.textContent = app.auth().currentUser ? "Signed in" : "Signed out"
+        }
 
         app.auth().onAuthStateChanged(function (user) {
           signInText.textContent = user ? "Signed in" : "Signed out"

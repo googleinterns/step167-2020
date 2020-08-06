@@ -27,7 +27,7 @@
 
     <!-- Add Firebase products that you want to use -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-auth.js"></script>
-    
+
     <!-- Page scripts -->
     <script type="module">
       import { app } from "/scripts/init.js"
@@ -44,7 +44,6 @@
 
       /** Load page elements. */
       function initPage() {
-        
         // Load the recipe and comments on the page.
         getDetailedRecipe(getRecipeID())
         getComments(getRecipeID())
@@ -55,11 +54,11 @@
         toggleElementVisibility(app.auth().currentUser)
 
         // Set Firebase auth state change listener.
-        app.auth().onAuthStateChanged(function (user){
+        app.auth().onAuthStateChanged(function (user) {
           toggleElementVisibility(user)
         })
       }
-      
+
       /** Toggle buttons' & other elements' visibility. */
       function toggleElementVisibility(isVisible) {
         if (app == null) {
@@ -137,7 +136,7 @@
 
       function deletePost() {
         var recipeID = getRecipeID()
-        
+
         fetch("/api/post?recipeID=" + recipeID, {
           method: "DELETE",
         }).then((response) => {
