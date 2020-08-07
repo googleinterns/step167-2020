@@ -6,10 +6,11 @@ public interface DBInterface {
     public String addRecipe(RecipeMetadata newRecipe, String newContent);
     public void deleteRecipe(String Id);
     public void editRecipeTitleContent(String Id, String editedTitle, String editedContent);
+    public long voteRecipe(String Id, int voteDiff);
 
-    public Iterable<RecipeMetadata> getAllRecipes();
-    public Iterable<Comment> getAllCommentsInRecipe(String recipeId);
-    public Iterable<Tag> getAllTags();
+    public Iterable<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod);
+    public Iterable<Comment> getAllCommentsInRecipe(String recipeId, SortingMethod sortingMethod);
+    public Iterable<Tag> getAllTags(boolean getHidden);
 
     public User getUser(String userId);
     public String addUser();

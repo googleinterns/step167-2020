@@ -27,46 +27,65 @@ public class FirestoreDB implements DBInterface {
         DocumentReference recipeRef = DBUtils.recipeMetadata(Id);
         DocumentSnapshot recipeMetadataSnapshot = DBUtils.blockOnFuture(recipeRef.get());
         RecipeMetadata recipeMetadata = recipeMetadataSnapshot.toObject(RecipeMetadata.class);
-        Map<String, Boolean> tagIdsMap = (Map<String, Boolean>) recipeMetadataSnapshot.get(DBUtils.TAG_IDS_KEY);
-        Query tagsQuery = DBUtils.tags().whereIn(DBObject.ID_KEY, new ArrayList<String>(tagIdsMap.keySet()));
-        recipeMetadata.tags = DBUtils.blockOnFuture(tagsQuery.get()).toObjects(Tag.class);
         return recipeMetadata;
     }
-    
+
     public String addRecipe(RecipeMetadata newRecipeMetadata, String newContent) {
         DocumentReference newContentRef = DBUtils.recipes().document();
         newRecipeMetadata.id = newContentRef.getId();
-        List<Tag> tags = newRecipeMetadata.tags;
-        newRecipeMetadata.tags = null;
         DocumentReference newRecipeMetadataRef = DBUtils.recipeMetadata(newRecipeMetadata.id);
         DBUtils.blockOnFuture(newContentRef.set(Collections.singletonMap(DBUtils.RECIPE_CONTENT_KEY, newContent)));
         DBUtils.blockOnFuture(newRecipeMetadataRef.set(newRecipeMetadata));
-        Map<String, Object> tagIdsMap = new HashMap();
-        tagIdsMap.put("tags", FieldValue.delete()); // delete the tags field in the db
-        for(Tag tag : tags) tagIdsMap.put(DBUtils.getNestedPropertyName(DBUtils.TAG_IDS_KEY, tag.id), true);
-        System.out.println(tagIdsMap);
-        DBUtils.blockOnFuture(newRecipeMetadataRef.update(tagIdsMap));
         return newRecipeMetadata.id;
     }
     public void deleteRecipe(String Id) {
-        return;
+        DBUtils.blockOnFuture(DBUtils.recipe(Id).delete());
+        DBUtils.blockOnFuture(DBUtils.recipeMetadata(Id).delete());
     }
 
     public void editRecipeTitleContent(String Id, String editedTitle, String editedContent) {
         DocumentReference contentRef = DBUtils.recipe(Id);
         DocumentReference metadataRef = DBUtils.recipeMetadata(Id);
-        DBUtils.blockOnFuture(contentRef.set(Collections.singletonMap(DBUtils.RECIPE_CONTENT_KEY, editedContent)));
-        DBUtils.blockOnFuture(metadataRef.update(Collections.singletonMap(RecipeMetadata.TITLE_KEY, editedTitle)));
+        DBUtils.blockOnFuture(contentRef.update(DBUtils.RECIPE_CONTENT_KEY, editedContent));
+        DBUtils.blockOnFuture(metadataRef.update(RecipeMetadata.TITLE_KEY, editedTitle));
     }
 
-    public Iterable<RecipeMetadata> getAllRecipes() {
-        return null;
+    public long voteRecipe(String Id, int voteDiff) {
+        DocumentReference metadataRef = DBUtils.recipeMetadata(Id);
+        long votes = DBUtils.blockOnFuture(metadataRef.get()).getLong(RecipeMetadata.VOTES_KEY);
+        metadataRef.update(RecipeMetadata.VOTES_KEY, votes + voteDiff);
+        return votes + voteDiff;
     }
-    public Iterable<Comment> getAllCommentsInRecipe(String recipeId) {
-        return null;
+
+    public List<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod) {
+        Query recipesQuery = DBUtils.recipes();
+        switch(sortingMethod) {
+            case TOP:
+                recipesQuery.orderBy(RecipeMetadata.VOTES_KEY, Query.Direction.DESCENDING);
+                break;
+            case NEW:
+                recipesQuery.orderBy(RecipeMetadata.TIMESTAMP_KEY, Query.Direction.DESCENDING);
+                break;
+        }
+        return DBUtils.blockOnFuture(recipesQuery.get()).toObjects(RecipeMetadata.class);
     }
-    public Iterable<Tag> getAllTags() {
-        return null;
+
+    public List<Comment> getAllCommentsInRecipe(String recipeId, SortingMethod sortingMethod) {
+        Query commentsQuery = DBUtils.recipes();
+        switch(sortingMethod) {
+            case TOP:
+                commentsQuery.orderBy(RecipeMetadata.VOTES_KEY, Query.Direction.DESCENDING);
+                break;
+            case NEW:
+                commentsQuery.orderBy(RecipeMetadata.TIMESTAMP_KEY, Query.Direction.DESCENDING);
+                break;
+        }
+        return DBUtils.blockOnFuture(commentsQuery.get()).toObjects(Comment.class);
+    }
+
+    public List<Tag> getAllTags(boolean getHidden) {
+        Query tagsQuery = getHidden ? DBUtils.tags() : DBUtils.tags().whereEqualTo(Tag.HIDDEN_KEY, false);
+        return DBUtils.blockOnFuture(tagsQuery.get()).toObjects(Tag.class);
     }
 
     public User getUser(String userId) {
