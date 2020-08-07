@@ -3,8 +3,13 @@ package com.google.sps.meltingpot.data;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.Query;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 public class DBUtils {
@@ -47,6 +52,23 @@ public class DBUtils {
 
   public static CollectionReference recipes() {
     return recipesReference;
+  }
+
+  /** Return a list of all recipe IDs. */
+  public static ArrayList<String> allRecipeIds() {
+    ApiFuture<QuerySnapshot> querySnapshotFuture = recipesReference.get();
+    ArrayList<String> recipeIdList = new ArrayList<>();
+    QuerySnapshot querySnapshot = DBUtils.blockOnFuture(querySnapshotFuture);
+
+    if (querySnapshot == null) {
+      return null;
+    }
+
+    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+      recipeIdList.add(document.toObject(Recipe.class).id);
+    }
+
+    return recipeIdList;
   }
 
   public static DocumentReference recipe(String recipeID) {

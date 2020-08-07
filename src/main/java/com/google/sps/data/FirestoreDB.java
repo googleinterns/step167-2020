@@ -5,10 +5,15 @@ import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.GeoPoint;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
 import com.google.sps.meltingpot.data.DBUtils;
+import com.google.sps.meltingpot.data.User;
+import java.lang.Iterable;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class FirestoreDB implements DBInterface {
   public String getRecipeContent(String Id) {
@@ -73,7 +78,12 @@ public class FirestoreDB implements DBInterface {
   }
 
   public Iterable<RecipeMetadata> getRecipesMatchingIDs(Iterable<String> Ids) {
-    Query query = DBUtils.recipes().whereIn(Recipe.ID_KEY, Ids);
+    ArrayList<String> idList = new ArrayList<>();
+    Iterator<String> iter = Ids.iterator();
+    while (iter.hasNext()) {
+      idList.add(iter.next());
+    }
+    Query query = DBUtils.recipes().whereIn(Recipe.ID_KEY, idList);
     return getRecipeMetadataQuery(query);
   }
 
@@ -87,14 +97,14 @@ public class FirestoreDB implements DBInterface {
     }
 
     for (DocumentSnapshot document : querySnapshot.getDocuments()) {
-      RecipeMetadata recipe = new RecipeMetadata(document.get("id"));
-      recipe.title = document.get("title");
-      recipe.creatorId = document.get("creatorId");
-      recipe.creatorLdap = document.get("creatorLdap");
-      recipe.timestamp = document.get("timestamp");
+      RecipeMetadata recipe = new RecipeMetadata((String) document.get("id"));
+      recipe.title = (String) document.get("title");
+      recipe.creatorId = (String) document.get("creatorId");
+      recipe.creatorLdap = (String) document.get("creatorLdap");
+      recipe.timestamp = (long) document.get("timestamp");
       recipe.tags = document.get("tags");
-      recipe.votes = document.get("votes");
-      recipe.location = document.get("location");
+      recipe.votes = (long) document.get("votes");
+      recipe.location = (GeoPoint) document.get("location");
       recipeList.add(recipe);
     }
     return recipeList;
