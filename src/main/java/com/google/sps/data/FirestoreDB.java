@@ -16,6 +16,7 @@ import com.google.firebase.cloud.FirestoreClient;
 import java.util.concurrent.ExecutionException;
 
 public class FirestoreDB implements DBInterface {
+
     public String getRecipeContent(String Id) {
         DocumentReference recipeRef = DBUtils.recipe(Id);
         DocumentSnapshot recipe = DBUtils.blockOnFuture(recipeRef.get());
@@ -31,6 +32,7 @@ public class FirestoreDB implements DBInterface {
         recipeMetadata.tags = DBUtils.blockOnFuture(tagsQuery.get()).toObjects(Tag.class);
         return recipeMetadata;
     }
+    
     public String addRecipe(RecipeMetadata newRecipeMetadata, String newContent) {
         DocumentReference newContentRef = DBUtils.recipes().document();
         newRecipeMetadata.id = newContentRef.getId();
@@ -50,8 +52,11 @@ public class FirestoreDB implements DBInterface {
         return;
     }
 
-    public void editRecipeTitleContent(String editedTitle, String editedContent) {
-        return;
+    public void editRecipeTitleContent(String Id, String editedTitle, String editedContent) {
+        DocumentReference contentRef = DBUtils.recipe(Id);
+        DocumentReference metadataRef = DBUtils.recipeMetadata(Id);
+        DBUtils.blockOnFuture(contentRef.set(Collections.singletonMap(DBUtils.RECIPE_CONTENT_KEY, editedContent)));
+        DBUtils.blockOnFuture(metadataRef.update(Collections.singletonMap(RecipeMetadata.TITLE_KEY, editedTitle)));
     }
 
     public Iterable<RecipeMetadata> getAllRecipes() {

@@ -5,7 +5,7 @@ public interface DBInterface {
     public RecipeMetadata getRecipeMetadata(String Id);
     public String addRecipe(RecipeMetadata newRecipe, String newContent);
     public void deleteRecipe(String Id);
-    public void editRecipeTitleContent(String editedTitle, String editedContent);
+    public void editRecipeTitleContent(String Id, String editedTitle, String editedContent);
 
     public Iterable<RecipeMetadata> getAllRecipes();
     public Iterable<Comment> getAllCommentsInRecipe(String recipeId);

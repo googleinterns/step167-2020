@@ -4,6 +4,9 @@ import com.google.cloud.firestore.GeoPoint;
 import java.util.List;
 
 public class RecipeMetadata extends DBObject {
+
+    public static final String TITLE_KEY = "title";
+
     public String title;
     public String creatorId;
     public String creatorLdap;

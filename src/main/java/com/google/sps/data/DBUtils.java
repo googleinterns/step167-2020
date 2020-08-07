@@ -8,11 +8,15 @@ import com.google.firebase.cloud.FirestoreClient;
 import java.util.concurrent.ExecutionException;
 
 public class DBUtils {
-  private static final String DB_COMMENTS = "comment-collection";
+  public static final String DB_COMMENTS = "comment-collection";
+  public static final String RECIPE_CONTENT_KEY = "content";
+  public static final String TAG_IDS_KEY = "tagIds";
 
   private static Firestore database;
   private static CollectionReference recipesReference;
   private static CollectionReference usersReference;
+  private static CollectionReference recipeMetadataReference;
+  private static CollectionReference tagsReference;
 
   public static void testModeWithParams(
       Firestore db, CollectionReference recipesRef, CollectionReference usersRef) {
@@ -27,6 +31,8 @@ public class DBUtils {
     database = FirestoreClient.getFirestore();
     recipesReference = database.collection("recipes");
     usersReference = database.collection("users");
+    recipeMetadataReference = database.collection("recipeMetadata");
+    tagsReference = database.collection("tags");
   }
 
   public static Firestore db() {
@@ -53,6 +59,14 @@ public class DBUtils {
     return recipesReference.document(recipeID);
   }
 
+  public static CollectionReference recipeMetadata() {
+    return recipeMetadataReference;
+  }
+
+  public static DocumentReference recipeMetadata(String recipeId) {
+    return recipeMetadataReference.document(recipeId);
+  }
+
   public static CollectionReference comments(String recipeID) {
     return recipesReference.document(recipeID).collection(DB_COMMENTS);
   }
@@ -63,6 +77,14 @@ public class DBUtils {
 
   public static String commentsCollectionName() {
     return DB_COMMENTS;
+  }
+
+  public static CollectionReference tags() {
+    return tagsReference;
+  }
+
+  public static DocumentReference tag(String tagId) {
+    return tagsReference.document(tagId);
   }
 
   public static <T> T blockOnFuture(ApiFuture<T> future) {
