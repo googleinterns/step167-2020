@@ -6,17 +6,17 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.FieldValue;
 import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.FirestoreClient;
 import com.google.cloud.firestore.GeoPoint;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
+import com.google.firebase.cloud.FirestoreClient;
 import com.google.sps.meltingpot.data.DBUtils;
 import com.google.sps.meltingpot.data.User;
 import java.lang.Iterable;
 import java.util.ArrayList;
-import java.util.Collections
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -92,7 +92,7 @@ public class FirestoreDB implements DBInterface {
         getHidden ? DBUtils.tags() : DBUtils.tags().whereEqualTo(Tag.HIDDEN_KEY, false);
     return DBUtils.blockOnFuture(tagsQuery.get()).toObjects(Tag.class);
   }
-  
+
   public User getUser(String userId) {
     return null;
   }
