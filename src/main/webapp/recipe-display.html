@@ -18,6 +18,8 @@
     </div>
     <div id="comments"></div>
 
+    <button type="button" id="delete-post" value="Delete">Delete Post</button>
+
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
 
@@ -227,7 +229,7 @@
         const commentEl = document.createElement("div")
         commentEl.id = comment.id
         commentEl.appendChild(createBasicElement(comment.content, "p"))
-        if (comment.creatorId == firebase.auth().currentUser.uid) {
+        if (comment.creatorId == app.auth().currentUser.uid) {
           const editBtn = document.createElement("button")
           editBtn.type = "button"
           commentEl.appendChild(editBtn)
@@ -244,7 +246,7 @@
         const recipeElement = document.createElement("div")
         recipeElement.appendChild(createBasicElement(recipe.title, "h2"))
         recipeElement.appendChild(createBasicElement(recipe.content, "p"))
-        if (recipe.creatorId == firebase.auth().currentUser.uid) {
+        if (recipe.creatorId == app.auth().currentUser.uid) {
           const deleteBtn = document.createElement("button")
           deleteBtn.type = "button"
           recipeElement.appendChild(deleteBtn)
