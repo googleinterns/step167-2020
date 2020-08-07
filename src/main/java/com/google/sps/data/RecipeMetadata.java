@@ -7,7 +7,7 @@ public class RecipeMetadata extends DBObject {
   public String creatorId;
   public String creatorLdap;
   public long timestamp;
-  public Iterable<Tag> tags;
+  public Iterable<String> tagIds;
   public long votes;
   public GeoPoint location;
 

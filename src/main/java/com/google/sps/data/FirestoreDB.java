@@ -7,6 +7,7 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.GeoPoint;
 import com.google.cloud.firestore.Query;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
 import com.google.sps.meltingpot.data.DBUtils;
@@ -14,6 +15,7 @@ import com.google.sps.meltingpot.data.User;
 import java.lang.Iterable;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class FirestoreDB implements DBInterface {
   public String getRecipeContent(String Id) {
@@ -97,14 +99,7 @@ public class FirestoreDB implements DBInterface {
     }
 
     for (DocumentSnapshot document : querySnapshot.getDocuments()) {
-      RecipeMetadata recipe = new RecipeMetadata((String) document.get("id"));
-      recipe.title = (String) document.get("title");
-      recipe.creatorId = (String) document.get("creatorId");
-      recipe.creatorLdap = (String) document.get("creatorLdap");
-      recipe.timestamp = (long) document.get("timestamp");
-      recipe.tags = document.get("tags");
-      recipe.votes = (long) document.get("votes");
-      recipe.location = (GeoPoint) document.get("location");
+      RecipeMetadata recipe = document.toObject(RecipeMetadata.class);
       recipeList.add(recipe);
     }
     return recipeList;
@@ -132,6 +127,14 @@ public class FirestoreDB implements DBInterface {
   public void deleteComment(String Id, String recipeId) {
     ApiFuture<WriteResult> deleteCommentFuture = DBUtils.comments(recipeId).document(Id).delete();
     WriteResult writeResult = DBUtils.blockOnFuture(deleteCommentFuture);
+  }
+
+  public void deleteComments(String recipeId) {
+    ApiFuture<QuerySnapshot> future = DBUtils.comments(recipeId).get();
+    List<QueryDocumentSnapshot> documents = DBUtils.blockOnFuture(future).getDocuments();
+    for (QueryDocumentSnapshot document : documents) {
+      document.getReference().delete();
+    }
   }
 
   public void editCommentContent(String Id, String recipeId, String editedContent) {
