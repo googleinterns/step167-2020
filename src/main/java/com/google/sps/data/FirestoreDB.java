@@ -35,13 +35,13 @@ public class FirestoreDB implements DBInterface {
     return;
   }
 
-  public Iterable<RecipeMetadata> getAllRecipes() {
+  public List<RecipeMetadata> getAllRecipes() {
     return null;
   }
-  public Iterable<Comment> getAllCommentsInRecipe(String recipeId) {
+  public List<Comment> getAllCommentsInRecipe(String recipeId) {
     return null;
   }
-  public Iterable<Tag> getAllTags() {
+  public List<Tag> getAllTags() {
     return null;
   }
 
@@ -64,22 +64,22 @@ public class FirestoreDB implements DBInterface {
     return;
   }
 
-  public Iterable<RecipeMetadata> getRecipesMatchingTags(Iterable<String> tagIds) {
+  public List<RecipeMetadata> getRecipesMatchingTags(List<String> tagIds) {
     Query query = recipesMatchingTags(tagIds, tagIds.iterator());
     return getRecipeMetadataQuery(query);
   }
 
-  public Iterable<RecipeMetadata> getRecipesMatchingCreator(String creatorId) {
+  public List<RecipeMetadata> getRecipesMatchingCreator(String creatorId) {
     Query query = DBUtils.recipes().whereEqualTo("creatorId", creatorId);
     return getRecipeMetadataQuery(query);
   }
 
-  public Iterable<RecipeMetadata> getRecipesSavedBy(String userId) {
-    Iterable<String> saved_Ids = User.savedRecipeIds(userId);
+  public List<RecipeMetadata> getRecipesSavedBy(String userId) {
+    List<String> saved_Ids = savedRecipeIds(userId);
     return getRecipesMatchingIDs(saved_Ids);
   }
 
-  public Iterable<RecipeMetadata> getRecipesMatchingIDs(Iterable<String> Ids) {
+  public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids) {
     ArrayList<String> idList = new ArrayList<>();
     Iterator<String> iter = Ids.iterator();
     while (iter.hasNext()) {
@@ -89,7 +89,7 @@ public class FirestoreDB implements DBInterface {
     return getRecipeMetadataQuery(query);
   }
 
-  private Iterable<RecipeMetadata> getRecipeMetadataQuery(Query query) {
+  private List<RecipeMetadata> getRecipeMetadataQuery(Query query) {
     ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
     ArrayList<RecipeMetadata> recipeList = new ArrayList<>();
     QuerySnapshot querySnapshot = DBUtils.blockOnFuture(querySnapshotFuture);
@@ -117,6 +117,18 @@ public class FirestoreDB implements DBInterface {
     return DBUtils.recipes();
   }
 
+  public List<String> savedRecipeIds(String userId) {
+    List<String> allRecipeIds = DBUtils.allRecipeIds();
+    ArrayList<String> savedRecipeIds = new ArrayList<String>();
+
+    for (String recipeID : allRecipeIds) {
+      if (isSavedRecipe(userId, recipeID)) {
+        savedRecipeIds.add(recipeID);
+      }
+    }
+    return savedRecipeIds;
+  }
+
   public String addComment(Comment newComment, String recipeId) {
     DocumentReference newCommentRef = DBUtils.comments(recipeId).document();
     DBUtils.blockOnFuture(newCommentRef.set(newComment));
@@ -128,7 +140,7 @@ public class FirestoreDB implements DBInterface {
   }
 
   public void deleteComments(String recipeId) {
-    List<QueryDocumentSnapshot> documents = 
+    List<QueryDocumentSnapshot> documents =
         DBUtils.blockOnFuture(DBUtils.comments(recipeId).get()).getDocuments();
     for (QueryDocumentSnapshot document : documents) {
       document.getReference().delete();
@@ -136,6 +148,33 @@ public class FirestoreDB implements DBInterface {
   }
 
   public void editCommentContent(String Id, String recipeId, String editedContent) {
-    DBUtils.blockOnFuture(DBUtils.comments(recipeId).document(Id).update("content", editedContent));
+    DBUtils.blockOnFuture(
+        DBUtils.comments(recipeId).document(Id).update(Comment.CONTENT_KEY, editedContent));
+  }
+
+  public boolean createdRecipe(String userId, String recipeId) {
+    DocumentReference userRef = DBUtils.user(userId);
+    ApiFuture<DocumentSnapshot> userFuture = userRef.get();
+    DocumentSnapshot user = DBUtils.blockOnFuture(userFuture);
+    if (!user.exists()) {
+      return false;
+    }
+    Boolean userCreatedRecipe =
+        user.getBoolean(DBUtils.getNestedPropertyName(User.CREATED_RECIPES_KEY, recipeId));
+    // note that userCreatedRecipe is a Boolean, not a boolean
+    return userCreatedRecipe != null && userCreatedRecipe;
+  }
+
+  public boolean isSavedRecipe(String userId, String recipeId) {
+    DocumentReference userRef = DBUtils.user(userId);
+    ApiFuture<DocumentSnapshot> userFuture = userRef.get();
+    DocumentSnapshot user = DBUtils.blockOnFuture(userFuture);
+
+    if (!user.exists()) {
+      return false;
+    }
+    Boolean userSavedRecipe =
+        user.getBoolean(DBUtils.getNestedPropertyName(User.SAVED_RECIPES_KEY, recipeId));
+    return userSavedRecipe != null && userSavedRecipe;
   }
 }
