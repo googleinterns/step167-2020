@@ -27,6 +27,7 @@ import com.google.gson.Gson;
 import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.data.Comment;
 import com.google.sps.meltingpot.data.DBUtils;
+import com.google.sps.meltingpot.data.FirestoreDB;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -104,9 +105,8 @@ public class CommentServlet extends HttpServlet {
       return;
     }
     newComment.creatorId = decodedToken.getUid();
-    ApiFuture addCommentFuture = DBUtils.comments(recipeID).document().set(newComment);
-    DBUtils.blockOnFuture(addCommentFuture);
-    response.setStatus(HttpServletResponse.SC_CREATED);
+    FirestoreDB db = new FirestoreDB();
+    String id = db.addComment(newComment, recipeID);
   }
 
   @Override

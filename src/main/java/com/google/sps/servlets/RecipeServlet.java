@@ -30,6 +30,7 @@ import com.google.gson.reflect.TypeToken;
 import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.data.DBObject;
 import com.google.sps.meltingpot.data.DBUtils;
+import com.google.sps.meltingpot.data.FirestoreDB;
 import com.google.sps.meltingpot.data.Recipe;
 import com.google.sps.meltingpot.data.User;
 import java.io.BufferedReader;
@@ -149,8 +150,8 @@ public class RecipeServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return;
     }
-
-    deleteComments(recipeID);
+    FirestoreDB db = new FirestoreDB();
+    db.deleteComments(recipeID);
     ApiFuture<WriteResult> writeResult = DBUtils.recipes().document(recipeID).delete();
     DBUtils.blockOnFuture(writeResult);
   }
