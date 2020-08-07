@@ -13,13 +13,11 @@ public class Comment {
 
   public String content;
   public final Date date;
-  public String id;
   public String creatorId;
 
-  public Comment(String content, String id, String creatorId) {
+  public Comment(String content, String creatorId) {
     this.content = content;
     this.date = new Date();
-    this.id = id;
     this.creatorId = creatorId;
   }
 

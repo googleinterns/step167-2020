@@ -105,11 +105,8 @@ public class CommentServlet extends HttpServlet {
     }
 
     newComment.creatorId = decodedToken.getUid();
-    DocumentReference commentRef = DBUtils.comments(recipeID).document();
-    newComment.id = commentRef.getId();
-
-    ApiFuture future = commentRef.set(newComment);
-    DBUtils.blockOnFuture(future);
+    ApiFuture addCommentFuture = DBUtils.comments(recipeID).document().set(newComment);
+    DBUtils.blockOnFuture(addCommentFuture);
     response.setStatus(HttpServletResponse.SC_CREATED);
   }
 
