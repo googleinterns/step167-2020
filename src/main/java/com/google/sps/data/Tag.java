@@ -5,6 +5,8 @@ public class Tag extends DBObject {
     public boolean hidden;
     public String type;
 
+    public Tag(){super();}
+
     public Tag(String id) {
       super(id);
     }

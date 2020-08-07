@@ -1,15 +1,18 @@
 package com.google.sps.meltingpot.data;
 
 import com.google.cloud.firestore.GeoPoint;
+import java.util.List;
 
 public class RecipeMetadata extends DBObject {
     public String title;
     public String creatorId;
     public String creatorLdap;
     public long timestamp;
-    public Iterable<Tag> tags;
+    public List<Tag> tags;
     public long votes;
     public GeoPoint location;
+
+    public RecipeMetadata(){super();}
 
     public RecipeMetadata(String id) {
       super(id);
