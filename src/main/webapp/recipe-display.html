@@ -17,7 +17,6 @@
       <button type="button" id="submit-comment" value="Submit">Submit</button>
     </div>
     <div id="comments"></div>
-    <button type="button" id="delete-post">Delete Post</button>
 
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
@@ -50,7 +49,6 @@
         getDetailedRecipe(getRecipeID())
         getComments(getRecipeID())
 
-        deletePostButton.addEventListener("click", deletePost)
         submitCommButton.addEventListener("click", submitComment)
 
         toggleElementVisibility(app.auth().currentUser)
@@ -132,7 +130,7 @@
           .then((recipe) => {
             const recipeEl = document.getElementById("recipe")
             removeAllChildNodes(recipeEl)
-            recipeEl.appendChild(createRecipeListElement(recipe))
+            recipeEl.appendChild(createRecipeElement(recipe))
           })
       }
 
@@ -201,7 +199,7 @@
                   },
                 }
               ).then((response) => {
-                if (response.status < 200 || response.status >= 300) {
+                if (!response.ok) {
                   alert("Error " + response.status.toString())
                 } else {
                   getComments(recipeID)
@@ -242,10 +240,17 @@
         return commentEl
       }
 
-      function createRecipeListElement(recipe) {
+      function createRecipeElement(recipe) {
         const recipeElement = document.createElement("div")
         recipeElement.appendChild(createBasicElement(recipe.title, "h2"))
         recipeElement.appendChild(createBasicElement(recipe.content, "p"))
+        if (recipe.creatorId == firebase.auth().currentUser.uid) {
+          const deleteBtn = document.createElement("button")
+          deleteBtn.type = "button"
+          recipeElement.appendChild(deleteBtn)
+          deleteBtn.innerText = "Delete Recipe"
+          deleteBtn.addEventListener("click", deletePost)
+        }
         return recipeElement
       }
 
