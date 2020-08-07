@@ -7,7 +7,7 @@ public class DBObject {
 
   public static String ID_KEY = "id";
 
-  public DBObject(){}
+  public DBObject() {}
 
   public DBObject(String id) {
     this.id = id;
