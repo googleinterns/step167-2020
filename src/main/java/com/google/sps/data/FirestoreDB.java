@@ -119,27 +119,23 @@ public class FirestoreDB implements DBInterface {
 
   public String addComment(Comment newComment, String recipeId) {
     DocumentReference newCommentRef = DBUtils.comments(recipeId).document();
-    ApiFuture addCommentFuture = newCommentRef.set(newComment);
-    DBUtils.blockOnFuture(addCommentFuture);
+    DBUtils.blockOnFuture(newCommentRef.set(newComment));
     return newCommentRef.getId();
   }
 
   public void deleteComment(String Id, String recipeId) {
-    ApiFuture<WriteResult> deleteCommentFuture = DBUtils.comments(recipeId).document(Id).delete();
-    WriteResult writeResult = DBUtils.blockOnFuture(deleteCommentFuture);
+    DBUtils.blockOnFuture(DBUtils.comments(recipeId).document(Id).delete());
   }
 
   public void deleteComments(String recipeId) {
-    ApiFuture<QuerySnapshot> future = DBUtils.comments(recipeId).get();
-    List<QueryDocumentSnapshot> documents = DBUtils.blockOnFuture(future).getDocuments();
+    List<QueryDocumentSnapshot> documents = 
+        DBUtils.blockOnFuture(DBUtils.comments(recipeId).get()).getDocuments();
     for (QueryDocumentSnapshot document : documents) {
       document.getReference().delete();
     }
   }
 
   public void editCommentContent(String Id, String recipeId, String editedContent) {
-    DocumentReference commentRef = DBUtils.comments(recipeId).document(Id);
-    ApiFuture editCommentFuture = commentRef.update("content", editedContent);
-    DBUtils.blockOnFuture(editCommentFuture);
+    DBUtils.blockOnFuture(DBUtils.comments(recipeId).document(Id).update("content", editedContent));
   }
 }
