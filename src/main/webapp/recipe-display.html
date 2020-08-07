@@ -38,6 +38,7 @@
       var commentLabel = document.getElementById("comment-label")
       var commentContent = document.getElementById("comment-content")
       var editForm = document.createElement("input")
+      var cancelEdit = document.createElement("button")
       var submitEdit = document.createElement("button")
 
       /** On window load, initialize the page. */
@@ -159,11 +160,15 @@
         commentEl.removeChild(commentEl.querySelector("hr"))
         commentEl.appendChild(editForm)
         commentEl.appendChild(submitEdit)
+        commentEl.appendChild(cancelEdit)
         commentEl.appendChild(document.createElement("hr"))
 
         editForm.value = commentEl.querySelector("p").innerText
         submitEdit.innerText = "Submit"
+        cancelEdit.innerText = "Cancel"
+
         submitEdit.addEventListener("click", submitEditEvent)
+        cancelEdit.addEventListener("click", endEditEvent)
       }
 
       /* Event triggered by clicking Submit Button under Edit
@@ -171,10 +176,20 @@
        */
       function submitEditEvent(e) {
         const parent = submitEdit.parentNode
+        endEditEvent()
+        submitCommentEdit(getRecipeID(), parent, editForm.value)
+      }
+
+      /* Event triggered by clicking Submit Button under Edit
+       * Removes edit form, calls function to upload changes to DB
+       */
+      function endEditEvent(e) {
+        const parent = submitEdit.parentNode
         parent.removeChild(editForm)
         parent.removeChild(submitEdit)
+        parent.removeChild(cancelEdit)
         submitEdit.removeEventListener("click", submitEditEvent)
-        submitCommentEdit(getRecipeID(), parent, editForm.value)
+        cancelEdit.removeEventListener("click", endEditEvent)
       }
 
       /* Uploads comment edits to DB */
