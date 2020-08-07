@@ -9,8 +9,6 @@ import java.util.concurrent.ExecutionException;
 
 public class DBUtils {
   public static final String DB_COMMENTS = "comment-collection";
-  public static final String RECIPE_CONTENT_KEY = "content";
-  public static final String TAG_IDS_KEY = "tagIds";
 
   private static Firestore database;
   private static CollectionReference recipesReference;
