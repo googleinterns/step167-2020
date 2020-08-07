@@ -13,10 +13,11 @@ public class Comment {
   public static final String VOTES_KEY = "votes";
 
   public String content;
-  public final long timestamp;
+  public long timestamp;
   public String creatorId;
   public long votes;
   
+  public Comment(){super();}
 
   public Comment(String content, String creatorId) {
     this.content = content;
