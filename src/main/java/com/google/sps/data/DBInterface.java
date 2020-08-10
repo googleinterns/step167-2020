@@ -16,11 +16,10 @@ public interface DBInterface {
   public Iterable<Tag> getAllTags(boolean getHidden);
 
   public User getUser(String userId);
-  public String addUser();
+  public String addUser(String userId);
   public void deleteUser(String userId);
-  public void addRecipeIdToCreated(String userId, String recipeId);
-  public void addRecipeIdToSaved(String userId, String recipeId);
-  public void followTag(String userId, String tagId);
+  public void makeUserPropertyTrue(String userId, String objectId, String collection);
+  public void deleteUserProperty(String userId, String objectId, String collection);
 
   public List<RecipeMetadata> getRecipesMatchingTags(
       List<String> tagIds, SortingMethod sortingMethod);
