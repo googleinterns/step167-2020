@@ -13,7 +13,7 @@ public interface DBInterface {
   public Iterable<Tag> getAllTags(boolean getHidden);
 
   public User getUser(String userId);
-  public String addUser();
+  public String addUser(String userId);
   public void deleteUser(String userId);
   public void makeUserPropertyTrue(String userId, String objectId, String collection);
   public void deleteUserProperty(String userId, String objectId, String collection);
