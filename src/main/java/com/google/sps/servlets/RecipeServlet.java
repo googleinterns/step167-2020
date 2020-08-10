@@ -28,13 +28,18 @@ import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.sps.meltingpot.auth.Auth;
+import com.google.sps.meltingpot.data.DBInterface;
 import com.google.sps.meltingpot.data.DBObject;
 import com.google.sps.meltingpot.data.DBUtils;
+import com.google.sps.meltingpot.data.FirestoreDB;
 import com.google.sps.meltingpot.data.Recipe;
+import com.google.sps.meltingpot.data.RecipeMetadata;
+import com.google.sps.meltingpot.data.SortingMethod;
 import com.google.sps.meltingpot.data.User;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -49,16 +54,23 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/api/post")
 public class RecipeServlet extends HttpServlet {
   private Gson gson = new Gson();
+  private DBInterface dbInterface;
+
+  @Override
+  public void init() {
+    dbInterface = new FirestoreDB();
+  }
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String recipeID = request.getParameter("recipeID");
+    String recipeId = request.getParameter("recipeID");
     String json;
 
-    if (recipeID == null)
-      json = getRecipeList();
-    else
-      json = getDetailedRecipe(recipeID);
+    if (recipeId == null) {
+      json = getRecipeList(request, response);
+    } else {
+      json = getDetailedRecipe(recipeId);
+    }
 
     if (json == null) {
       response.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -73,121 +85,128 @@ public class RecipeServlet extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
     Recipe newRecipe = gson.fromJson(data, Recipe.class);
-    if (newRecipe.content == null || newRecipe.title == null) {
+    newRecipe.metadata = gson.fromJson(data, RecipeMetadata.class);
+    if (newRecipe.content == null || newRecipe.metadata.title == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
 
     String token = request.getParameter("token");
-    FirebaseToken decodedToken = Auth.verifyIdToken(token);
-    if (decodedToken == null) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    String uid = getUid(token, response);
+    if (uid == null) {
       return;
     }
 
-    DocumentReference recipeRef = DBUtils.recipes().document();
-    newRecipe.id = recipeRef.getId();
-    newRecipe.creatorId = decodedToken.getUid();
-    ApiFuture addRecipeFuture = recipeRef.set(newRecipe);
+    newRecipe.metadata.creatorId = uid;
+    String recipeId = dbInterface.addRecipe(newRecipe.metadata, newRecipe.content);
 
-    DocumentReference user = DBUtils.user(decodedToken.getUid());
-    String nestedPropertyName =
-        DBUtils.getNestedPropertyName(User.CREATED_RECIPES_KEY, newRecipe.id);
-    ApiFuture addRecipeIdToUserPostsFuture =
-        user.update(Collections.singletonMap(nestedPropertyName, true));
-
-    DBUtils.blockOnFuture(addRecipeFuture);
-    DBUtils.blockOnFuture(addRecipeIdToUserPostsFuture);
+    dbInterface.makeUserPropertyTrue(uid, newRecipe.metadata.id, User.CREATED_RECIPES_KEY);
 
     response.setStatus(HttpServletResponse.SC_CREATED);
     response.setContentType("application/json");
-    response.getWriter().println(gson.toJson(new DBObject(newRecipe.id)));
+    response.getWriter().println(gson.toJson(newRecipe.metadata.id));
+    System.out.println(gson.toJson(newRecipe.metadata.id));
   }
 
   @Override
   public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
     Recipe newRecipe = gson.fromJson(data, Recipe.class);
-    if (newRecipe.id == null || newRecipe.content == null || newRecipe.title == null) {
+    newRecipe.metadata = gson.fromJson(data, RecipeMetadata.class);
+    if (newRecipe.metadata.id == null || newRecipe.content == null || newRecipe.metadata.title == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
 
     String token = request.getParameter("token");
-    FirebaseToken decodedToken = Auth.verifyIdToken(token);
-    if (decodedToken == null) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return;
-    }
-    if (!User.createdRecipe(decodedToken.getUid(), newRecipe.id)) {
-      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+    String uid = getUidAndMatchUser(token, newRecipe.metadata.id, response);
+    if (uid == null) {
       return;
     }
 
-    DocumentReference recipeRef = DBUtils.recipe(newRecipe.id);
-    ApiFuture future =
-        recipeRef.update(Recipe.TITLE_KEY, newRecipe.title, Recipe.CONTENT_KEY, newRecipe.content);
-    DBUtils.blockOnFuture(future);
+    dbInterface.editRecipeTitleContent(newRecipe.metadata.id, newRecipe.metadata.title, newRecipe.content);
   }
 
   @Override
   public void doDelete(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
-    String recipeID = request.getParameter("recipeID");
-    if (recipeID == null) {
+    String recipeId = request.getParameter("recipeID");
+    if (recipeId == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
 
     String token = request.getParameter("token");
+    String uid = getUidAndMatchUser(token, recipeId, response);
+    if (uid == null) {
+      return;
+    }
+
+    dbInterface.deleteComments(recipeId);
+    dbInterface.deleteRecipe(recipeId);
+  }
+
+  private String getRecipeList(HttpServletRequest request, HttpServletResponse response) {
+    String creatorToken = request.getParameter("token");
+
+    String tagParam = request.getParameter("tagIDs");
+    boolean isSavedRequest = Boolean.parseBoolean(request.getParameter("saved"));
+
+    boolean isTagQuery = !(tagParam == null || tagParam.equals("None"));
+    boolean isCreatorQuery = !(creatorToken == null || creatorToken.equals("None"));
+
+    if (isSavedRequest || (isCreatorQuery && !isTagQuery)) {
+      String uid = getUid(creatorToken, response);
+      if (uid == null) {
+        return null;
+      }
+
+      if (isSavedRequest) {
+        return gson.toJson(dbInterface.getRecipesSavedBy(uid, SortingMethod.TOP));
+      } else {
+        return gson.toJson(dbInterface.getRecipesMatchingCreator(uid, SortingMethod.TOP));
+      }
+    } else if (isTagQuery && !isCreatorQuery) {
+      String[] tagIDs = tagParam.split(",");
+      return gson.toJson(dbInterface.getRecipesMatchingTags(Arrays.asList(tagIDs), SortingMethod.TOP));
+    } else { // Currently addresses cases where both isTagQuery and isCreatorQuery, and where
+             // neither.
+      return gson.toJson(dbInterface.getAllRecipes(SortingMethod.TOP));
+    }
+  }
+
+  private String getDetailedRecipe(String recipeId) throws IOException {
+    Recipe recipe = new Recipe();
+    recipe.metadata = dbInterface.getRecipeMetadata(recipeId);
+    recipe.content = dbInterface.getRecipeContent(recipeId);
+    return gson.toJson(recipe);
+  }
+
+  /** Checks the authentication of a given token. If the token is not valid, returns null */
+  private String getUid(String token, HttpServletResponse response) {
     FirebaseToken decodedToken = Auth.verifyIdToken(token);
     if (decodedToken == null) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return;
+      return null;
     }
-    if (!User.createdRecipe(decodedToken.getUid(), recipeID)) {
+    return decodedToken.getUid();
+  }
+
+  /**
+   * Checks if token valid, then if corresponding user created the given recipe. If either
+   * fails, returns null and sets HttpServletResponse status accordingly
+   */
+  private String getUidAndMatchUser(String token, String recipeId, HttpServletResponse response) {
+    String uid = getUid(token, response);
+    if (uid == null) {
+      return null;
+    }
+
+    if (!User.createdRecipe(uid, recipeId)) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-      return;
-    }
-
-    deleteComments(recipeID);
-    ApiFuture<WriteResult> writeResult = DBUtils.recipes().document(recipeID).delete();
-    DBUtils.blockOnFuture(writeResult);
-  }
-
-  private String getRecipeList() {
-    Query query = DBUtils.recipes();
-    ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
-    ArrayList<Object> recipeList = new ArrayList<>();
-    QuerySnapshot querySnapshot = DBUtils.blockOnFuture(querySnapshotFuture);
-
-    if (querySnapshot == null) {
       return null;
     }
 
-    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
-      recipeList.add(document.getData());
-    }
-    return gson.toJson(recipeList);
-  }
-
-  private String getDetailedRecipe(String recipeID) throws IOException {
-    DocumentReference recipeRef = DBUtils.recipes().document(recipeID);
-    ApiFuture<DocumentSnapshot> future = recipeRef.get();
-
-    DocumentSnapshot document = DBUtils.blockOnFuture(future);
-    if (document.exists())
-      return gson.toJson(document.getData());
-    else {
-      return null;
-    }
-  }
-
-  private void deleteComments(String recipeID) {
-    ApiFuture<QuerySnapshot> future = DBUtils.comments(recipeID).get();
-    List<QueryDocumentSnapshot> documents = DBUtils.blockOnFuture(future).getDocuments();
-    for (QueryDocumentSnapshot document : documents) {
-      document.getReference().delete();
-    }
+    return uid;
   }
 }

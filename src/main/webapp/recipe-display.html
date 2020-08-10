@@ -175,7 +175,7 @@
 
       function createRecipeListElement(recipe) {
         const recipeElement = document.createElement("div")
-        recipeElement.appendChild(createBasicElement(recipe.title, "h2"))
+        recipeElement.appendChild(createBasicElement(recipe.metadata.title, "h2"))
         recipeElement.appendChild(createBasicElement(recipe.content, "p"))
         return recipeElement
       }
