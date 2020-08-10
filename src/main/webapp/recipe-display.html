@@ -17,7 +17,8 @@
       <button type="button" id="submit-comment" value="Submit">Submit</button>
     </div>
     <div id="comments"></div>
-    <button type="button" id="delete-post">Delete Post</button>
+
+    <button type="button" id="delete-post" value="Delete">Delete Post</button>
 
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
@@ -36,6 +37,9 @@
       var submitCommButton = document.getElementById("submit-comment")
       var commentLabel = document.getElementById("comment-label")
       var commentContent = document.getElementById("comment-content")
+      var editForm = document.createElement("input")
+      var cancelEdit = document.createElement("button")
+      var submitEdit = document.createElement("button")
 
       /** On window load, initialize the page. */
       window.onload = function () {
@@ -48,7 +52,6 @@
         getDetailedRecipe(getRecipeID())
         getComments(getRecipeID())
 
-        deletePostButton.addEventListener("click", deletePost)
         submitCommButton.addEventListener("click", submitComment)
 
         toggleElementVisibility(app.auth().currentUser)
@@ -116,10 +119,10 @@
           .then(() => fetch("api/comment?recipeID=" + recipeID))
           .then((response) => response.json())
           .then((comments) => {
-            const commentEl = document.getElementById("comments")
-            commentEl.innerHTML = ""
+            const commentsEl = document.getElementById("comments")
+            commentsEl.innerHTML = ""
             comments.forEach((comment) => {
-              commentEl.appendChild(createCommentElement(comment))
+              commentsEl.appendChild(createCommentElement(comment))
             })
           })
       }
@@ -130,13 +133,15 @@
           .then((recipe) => {
             const recipeEl = document.getElementById("recipe")
             removeAllChildNodes(recipeEl)
-            recipeEl.appendChild(createRecipeListElement(recipe))
+            recipeEl.appendChild(createRecipeElement(recipe))
           })
       }
 
+      /* Deletes the currently displayed post and all associated comments.
+       *   TODO: Only allow this operation to be taken by post creator
+       */
       function deletePost() {
         var recipeID = getRecipeID()
-
         fetch("/api/post?recipeID=" + recipeID, {
           method: "DELETE",
         }).then((response) => {
@@ -148,23 +153,121 @@
         })
       }
 
+      /* Event triggered by clicking on an Edit button.
+       * Adds form to the comment for user to specify edits
+       */
+      function editComment(commentEl) {
+        commentEl.removeChild(commentEl.querySelector("hr"))
+        commentEl.appendChild(editForm)
+        commentEl.appendChild(submitEdit)
+        commentEl.appendChild(cancelEdit)
+        commentEl.appendChild(document.createElement("hr"))
+
+        editForm.value = commentEl.querySelector("p").innerText
+        submitEdit.innerText = "Submit"
+        cancelEdit.innerText = "Cancel"
+
+        submitEdit.addEventListener("click", submitEditEvent)
+        cancelEdit.addEventListener("click", endEditEvent)
+      }
+
+      /* Event triggered by clicking Submit Button under Edit
+       * Removes edit form, calls function to upload changes to DB
+       */
+      function submitEditEvent(e) {
+        const parent = submitEdit.parentNode
+        endEditEvent()
+        submitCommentEdit(getRecipeID(), parent, editForm.value)
+      }
+
+      /* Event triggered by clicking Submit Button under Edit
+       * Removes edit form, calls function to upload changes to DB
+       */
+      function endEditEvent(e) {
+        const parent = submitEdit.parentNode
+        parent.removeChild(editForm)
+        parent.removeChild(submitEdit)
+        parent.removeChild(cancelEdit)
+        submitEdit.removeEventListener("click", submitEditEvent)
+        cancelEdit.removeEventListener("click", endEditEvent)
+      }
+
+      /* Uploads comment edits to DB */
+      function submitCommentEdit(recipeID, commentEl, newBody) {
+        const bodyElement = commentEl.querySelector("p")
+        if (app.auth().currentUser) {
+          app
+            .auth()
+            .currentUser.getIdToken(/* forceRefresh */ true)
+            .then(function (idToken) {
+              fetch(
+                "/api/comment?recipeID=" +
+                  recipeID +
+                  "&commentID=" +
+                  commentEl.id +
+                  "&commentBody=" +
+                  newBody +
+                  "&token=" +
+                  idToken,
+                {
+                  method: "PUT",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              ).then((response) => {
+                if (!response.ok) {
+                  alert("Error " + response.status.toString())
+                } else {
+                  getComments(recipeID)
+                }
+              })
+            })
+            .catch(function (error) {
+              alert("Error! Could not retrieve user ID token.")
+            })
+        } else {
+          alert("User must be signed in to submit a comment.")
+        }
+      }
+
       function removeAllChildNodes(parent) {
         while (parent.firstChild) {
           parent.removeChild(parent.firstChild)
         }
       }
 
+      /* Constructs a comment element containing content, an edit button, and a thematic break
+       *   NOTE: Only create edit button if comment's creator ID = current User ID
+       */
       function createCommentElement(comment) {
         const commentEl = document.createElement("div")
+        commentEl.id = comment.id
         commentEl.appendChild(createBasicElement(comment.content, "p"))
+        if (comment.creatorId == app.auth().currentUser.uid) {
+          const editBtn = document.createElement("button")
+          editBtn.type = "button"
+          commentEl.appendChild(editBtn)
+          editBtn.innerText = "Edit"
+          editBtn.addEventListener("click", function (e) {
+            editComment(editBtn.parentNode)
+          })
+        }
         commentEl.appendChild(document.createElement("hr"))
         return commentEl
       }
 
-      function createRecipeListElement(recipe) {
+      function createRecipeElement(recipe) {
         const recipeElement = document.createElement("div")
         recipeElement.appendChild(createBasicElement(recipe.title, "h2"))
         recipeElement.appendChild(createBasicElement(recipe.content, "p"))
+        if (recipe.creatorId == app.auth().currentUser.uid) {
+          const deleteBtn = document.createElement("button")
+          deleteBtn.type = "button"
+          recipeElement.appendChild(deleteBtn)
+          deleteBtn.innerText = "Delete Recipe"
+          deleteBtn.addEventListener("click", deletePost)
+        }
         return recipeElement
       }
 

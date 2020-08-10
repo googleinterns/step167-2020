@@ -103,6 +103,7 @@ public class CommentServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
+
     newComment.creatorId = decodedToken.getUid();
     ApiFuture addCommentFuture = DBUtils.comments(recipeID).document().set(newComment);
     DBUtils.blockOnFuture(addCommentFuture);
@@ -110,7 +111,29 @@ public class CommentServlet extends HttpServlet {
   }
 
   @Override
-  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String recipeID = request.getParameter("recipeID");
+    String commentID = request.getParameter("commentID");
+    String commentBody = request.getParameter("commentBody");
+
+    if (recipeID == null || commentID == null || commentBody == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    String token = request.getParameter("token");
+    FirebaseToken decodedToken = Auth.verifyIdToken(token);
+
+    if (decodedToken == null
+        || !Comment.createdbyUser(recipeID, commentID, decodedToken.getUid())) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return;
+    }
+
+    DocumentReference commentRef = DBUtils.comments(recipeID).document(commentID);
+    ApiFuture future = commentRef.update("content", commentBody);
+    DBUtils.blockOnFuture(future);
+  }
 
   @Override
   public void doDelete(HttpServletRequest request, HttpServletResponse response)
