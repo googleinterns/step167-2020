@@ -1,11 +1,17 @@
 package com.google.sps.meltingpot.data;
 
 public class Tag extends DBObject {
-    public String name;
-    public boolean hidden;
-    public String type;
+  public static final String HIDDEN_KEY = "hidden";
 
-    public Tag(String id) {
-      super(id);
-    }
+  public String name;
+  public boolean hidden;
+  public String type;
+
+  public Tag() {
+    super();
+  }
+
+  public Tag(String id) {
+    super(id);
+  }
 }
