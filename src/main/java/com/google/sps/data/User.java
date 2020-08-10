@@ -7,6 +7,8 @@ import com.google.sps.meltingpot.data.DBUtils;
 
 public class User {
   public static final String CREATED_RECIPES_KEY = "created-recipe-ids";
+  public static final String SAVED_RECIPES_KEY = "saved-recipe-ids";
+  public static final String TAGS_FOLLOWED_KEY = "followed-tag-ids";
 
   public static boolean createdRecipe(String userId, String recipeId) {
     DocumentReference userRef = DBUtils.user(userId);
