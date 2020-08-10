@@ -112,33 +112,37 @@ public class FirestoreDB implements DBInterface {
     return;
   }
 
-  public List<RecipeMetadata> getRecipesMatchingTags(List<String> tagIds) {
-    Query query = recipesMatchingTags(tagIds, tagIds.iterator());
-    return getRecipeMetadataQuery(query);
+  public List<RecipeMetadata> getRecipesMatchingTags(List<String> tagIds, SortingMethod sortingMethod) {
+    Query recipesQuery = recipesMatchingTags(tagIds, tagIds.iterator());
+    return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
 
-  public List<RecipeMetadata> getRecipesMatchingCreator(String creatorId) {
-    Query query = DBUtils.recipes().whereEqualTo("creatorId", creatorId);
-    return getRecipeMetadataQuery(query);
+  public List<RecipeMetadata> getRecipesMatchingCreator(String creatorId, SortingMethod sortingMethod) {
+    Query recipesQuery = DBUtils.recipes().whereEqualTo("creatorId", creatorId);
+    return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
 
-  public List<RecipeMetadata> getRecipesSavedBy(String userId) {
+  public List<RecipeMetadata> getRecipesSavedBy(String userId, SortingMethod sortingMethod) {
     List<String> saved_Ids = savedRecipeIds(userId);
-    return getRecipesMatchingIDs(saved_Ids);
+    return getRecipesMatchingIDs(saved_Ids, sortingMethod);
   }
 
-  public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids) {
-    ArrayList<String> idList = new ArrayList<>();
-    Iterator<String> iter = Ids.iterator();
-    while (iter.hasNext()) {
-      idList.add(iter.next());
+  public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids, SortingMethod sortingMethod) {
+    Query recipesQuery = DBUtils.recipes().whereIn(Recipe.ID_KEY, Ids);
+    return getRecipeMetadataQuery(recipesQuery, sortingMethod);
+  }
+
+private List<RecipeMetadata> getRecipeMetadataQuery(Query recipesQuery, SortingMethod sortingMethod) {
+    switch (sortingMethod) {
+      case TOP:
+        recipesQuery = recipesQuery.orderBy(Recipe.VOTES_KEY, Query.Direction.DESCENDING);
+        break;
+      case NEW:
+        recipesQuery = recipesQuery.orderBy(Recipe.TIMESTAMP_KEY, Query.Direction.DESCENDING);
+        break;
     }
-    Query query = DBUtils.recipes().whereIn(Recipe.ID_KEY, idList);
-    return getRecipeMetadataQuery(query);
-  }
 
-  private List<RecipeMetadata> getRecipeMetadataQuery(Query query) {
-    ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
+    ApiFuture<QuerySnapshot> querySnapshotFuture = recipesQuery.get();
     ArrayList<RecipeMetadata> recipeList = new ArrayList<>();
     QuerySnapshot querySnapshot = DBUtils.blockOnFuture(querySnapshotFuture);
 

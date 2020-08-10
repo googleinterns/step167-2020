@@ -22,10 +22,10 @@ public interface DBInterface {
   public void addRecipeIdToSaved(String userId, String recipeId);
   public void followTag(String userId, String tagId);
 
-  public List<RecipeMetadata> getRecipesMatchingTags(List<String> tagIds);
-  public List<RecipeMetadata> getRecipesMatchingCreator(String creatorId);
-  public List<RecipeMetadata> getRecipesSavedBy(String userId);
-  public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids);
+  public List<RecipeMetadata> getRecipesMatchingTags(List<String> tagIds, SortingMethod sortingMethod);
+  public List<RecipeMetadata> getRecipesMatchingCreator(String creatorId, SortingMethod sortingMethod);
+  public List<RecipeMetadata> getRecipesSavedBy(String userId, SortingMethod sortingMethod);
+  public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids, SortingMethod sortingMethod);
 
   public String addComment(Comment newComment, String recipeId);
   public void deleteComment(String Id, String recipeId);
