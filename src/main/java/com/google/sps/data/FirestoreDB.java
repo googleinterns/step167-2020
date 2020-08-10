@@ -92,61 +92,63 @@ public class FirestoreDB implements DBInterface {
         getHidden ? DBUtils.tags() : DBUtils.tags().whereEqualTo(Tag.HIDDEN_KEY, false);
     return DBUtils.blockOnFuture(tagsQuery.get()).toObjects(Tag.class);
   }
-  
+
   public List<Tag> getTagsMatchingIds(List<String> Ids) {
     Query tagsQuery = DBUtils.tags().whereIn(Tag.ID_KEY, Ids);
     return DBUtils.blockOnFuture(tagsQuery.get()).toObjects(Tag.class);
   }
 
   /** Returns a User object from userId. */
-    public User getUser(String userId) {
-      DocumentReference userRef = DBUtils.user(userId);
-      DocumentSnapshot user = DBUtils.blockOnFuture(userRef.get());
-      return user.toObject(User.class);
-    }
-   
-    /** Adds a User to the db based on an input userId. */
-    public String addUser(String userId) {
-      DocumentReference newUserRef = DBUtils.users().document(userId);
-      User newUser = new User(userId);
-      DBUtils.blockOnFuture(newUserRef.set(newUser));  // .set() returns an ApiFuture
-      return userId;
-    }
-    
-    /** Delete a User from the db based on an input userId. */
-    public void deleteUser(String userId) {
-      DBUtils.blockOnFuture(DBUtils.user(userId).delete());
-    }
-    
-    /**
-     * Sets a property's value to "true" for a certain user document.
-     * Can be used to let a user add a recipe to saved or created, or to let user follow a tag.
-     * @param userId the user's Firebase ID
-     * @param objectId the ID of either a recipe if the intent is to save/create, or of a tag for tag following.
-     * @param collection a KEY constant from User class indicating which mode -- save, create, or follow tag.
-     */
-    public void makeUserPropertyTrue(String userId, String objectId, String collection) {
-      DocumentReference userRef = DBUtils.user(userId);
-      String nestedPropertyName = DBUtils.getNestedPropertyName(collection, objectId);
-      ApiFuture addUserPropertyFuture = 
-          userRef.update(Collections.singletonMap(nestedPropertyName, true));
-      DBUtils.blockOnFuture(addUserPropertyFuture);
-    }
+  public User getUser(String userId) {
+    DocumentReference userRef = DBUtils.user(userId);
+    DocumentSnapshot user = DBUtils.blockOnFuture(userRef.get());
+    return user.toObject(User.class);
+  }
 
-    /**
-     * Deletes a property value for a certain user document.
-     * Can be used to let a user delete a recipe from saved or created, or to let user unfollow a tag.
-     * @param userId the user's Firebase ID
-     * @param objectId the ID of either a recipe if the intent is to unsave/create, or of a tag for tag unfollowing.
-     * @param collection a KEY constant from User class indicating which mode -- save, create, or tag.
-     */
-    public void deleteUserProperty(String userId, String objectId, String collection) {
-      DocumentReference userRef = DBUtils.user(userId);
-      String nestedPropertyName = DBUtils.getNestedPropertyName(collection, objectId);
-      ApiFuture removeUserPropertyFuture = 
-          userRef.update(nestedPropertyName, FieldValue.delete());
-      DBUtils.blockOnFuture(removeUserPropertyFuture);
-    }
+  /** Adds a User to the db based on an input userId. */
+  public String addUser(String userId) {
+    DocumentReference newUserRef = DBUtils.users().document(userId);
+    User newUser = new User(userId);
+    DBUtils.blockOnFuture(newUserRef.set(newUser)); // .set() returns an ApiFuture
+    return userId;
+  }
+
+  /** Delete a User from the db based on an input userId. */
+  public void deleteUser(String userId) {
+    DBUtils.blockOnFuture(DBUtils.user(userId).delete());
+  }
+
+  /**
+   * Sets a property's value to "true" for a certain user document.
+   * Can be used to let a user add a recipe to saved or created, or to let user follow a tag.
+   * @param userId the user's Firebase ID
+   * @param objectId the ID of either a recipe if the intent is to save/create, or of a tag for tag
+   *     following.
+   * @param collection a KEY constant from User class indicating which mode -- save, create, or
+   *     follow tag.
+   */
+  public void makeUserPropertyTrue(String userId, String objectId, String collection) {
+    DocumentReference userRef = DBUtils.user(userId);
+    String nestedPropertyName = DBUtils.getNestedPropertyName(collection, objectId);
+    ApiFuture addUserPropertyFuture =
+        userRef.update(Collections.singletonMap(nestedPropertyName, true));
+    DBUtils.blockOnFuture(addUserPropertyFuture);
+  }
+
+  /**
+   * Deletes a property value for a certain user document.
+   * Can be used to let a user delete a recipe from saved or created, or to let user unfollow a tag.
+   * @param userId the user's Firebase ID
+   * @param objectId the ID of either a recipe if the intent is to unsave/create, or of a tag for
+   *     tag unfollowing.
+   * @param collection a KEY constant from User class indicating which mode -- save, create, or tag.
+   */
+  public void deleteUserProperty(String userId, String objectId, String collection) {
+    DocumentReference userRef = DBUtils.user(userId);
+    String nestedPropertyName = DBUtils.getNestedPropertyName(collection, objectId);
+    ApiFuture removeUserPropertyFuture = userRef.update(nestedPropertyName, FieldValue.delete());
+    DBUtils.blockOnFuture(removeUserPropertyFuture);
+  }
 
   public List<RecipeMetadata> getRecipesMatchingTags(
       List<String> tagIds, SortingMethod sortingMethod) {
