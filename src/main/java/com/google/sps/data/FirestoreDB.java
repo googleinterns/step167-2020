@@ -135,7 +135,6 @@ public class FirestoreDB implements DBInterface {
       DBUtils.blockOnFuture(removeUserPropertyFuture);
     }
 
-
   public Iterable<RecipeMetadata> getRecipesMatchingTags(Iterable<String> tagIds) {
     return null;
   }

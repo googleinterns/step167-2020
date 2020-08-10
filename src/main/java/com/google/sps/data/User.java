@@ -5,10 +5,14 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.sps.meltingpot.data.DBUtils;
 
-public class User {
+public class User extends DBObject {
   public static final String CREATED_RECIPES_KEY = "created-recipe-ids";
   public static final String SAVED_RECIPES_KEY = "saved-recipe-ids";
   public static final String TAGS_FOLLOWED_KEY = "followed-tag-ids";
+
+  public User(String id) {
+    super(id);
+  }
 
   public static boolean createdRecipe(String userId, String recipeId) {
     DocumentReference userRef = DBUtils.user(userId);

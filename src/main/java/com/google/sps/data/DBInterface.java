@@ -15,9 +15,8 @@ public interface DBInterface {
   public User getUser(String userId);
   public String addUser();
   public void deleteUser(String userId);
-  public void addRecipeIdToCreated(String userId, String recipeId);
-  public void addRecipeIdToSaved(String userId, String recipeId);
-  public void followTag(String userId, String tagId);
+  public void makeUserPropertyTrue(String userId, String objectId, String collection);
+  public void deleteUserProperty(String userId, String objectId, String collection);
 
   public Iterable<RecipeMetadata> getRecipesMatchingTags(Iterable<String> tagIds);
   public Iterable<RecipeMetadata> getRecipesMatchingCreator(String creatorId);
