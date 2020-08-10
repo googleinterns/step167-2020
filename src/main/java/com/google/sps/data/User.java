@@ -8,15 +8,12 @@ import com.google.sps.meltingpot.data.DBUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class User {
+public class User extends DBObject {
   public static final String CREATED_RECIPES_KEY = "created-recipe-ids";
   public static final String SAVED_RECIPES_KEY = "saved-recipe-ids";
-  public static final String UID_KEY = "uid";
 
-  public String uid;
-
-  public User(String uid) {
-    this.uid = uid;
+  public User(String id) {
+    super(id);
   }
 
   public static boolean createdRecipe(String userId, String recipeId) {
