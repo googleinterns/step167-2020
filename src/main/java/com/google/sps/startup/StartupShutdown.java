@@ -1,4 +1,5 @@
 package com.google.sps.meltingpot.startup;
+
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.FirestoreOptions;
 import com.google.firebase.FirebaseApp;
@@ -34,6 +35,7 @@ public class StartupShutdown implements ServletContextListener {
       e.printStackTrace();
     }
   }
+
   public void contextDestroyed(ServletContextEvent event) {
     System.out.println("Server shutting down...");
   }
