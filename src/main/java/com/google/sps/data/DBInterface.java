@@ -3,7 +3,6 @@ package com.google.sps.meltingpot.data;
 import java.util.List;
 
 public interface DBInterface {
-
   /**
    * Returns the content of a recipe.
    * @param   id  the uid of the recipe
@@ -55,7 +54,8 @@ public interface DBInterface {
   /**
    * Gets a list of all recipe's metadata sorted in the given order.
    * @param   sortingMethod    the method of sorting the recipes
-   * @return                   a List of RecipeMetadata in the database sorted by the given sortingMethod
+   * @return                   a List of RecipeMetadata in the database sorted by the given
+   *     sortingMethod
    */
   public List<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod);
 
