@@ -64,58 +64,60 @@ public class FirestoreDB implements DBInterface {
       DBUtils.blockOnFuture(DBUtils.user(userId).delete());
     }
     
-    /** Add recipe id: true as a singleton map to user's created recipes field. */
-    public void addRecipeIdToCreated(String userId, String recipeId) {
+    /**
+     * Sets a property's value to "true" for a certain user document.
+     * Can be used to let a user add a recipe to saved or created, or to let user follow a tag.
+     * @param userId the user's Firebase ID
+     * @param objectId the ID of either a recipe if the intent is to save/create, or of a tag for tag following.
+     * @param collection a constant from User class indicating which mode -- save, create, or follow tag.
+     */
+    public void makeUserPropertyTrue(String userId, String objectId, String collection) {
       DocumentReference userRef = DBUtils.user(userId);
-      String nestedPropertyName = DBUtils.getNestedPropertyName(User.CREATED_RECIPES_KEY, recipeId);
-      ApiFuture addToCreatedPostsFuture =
+      String nestedPropertyName;
+      
+      switch (collection) {
+        case User.SAVE:
+          nestedPropertyName = DBUtils.getNestedPropertyName(User.SAVED_RECIPES_KEY, objectId);
+          break;
+        case User.CREATE:
+          nestedPropertyName = DBUtils.getNestedPropertyName(User.CREATED_RECIPES_KEY, objectId);
+          break;
+        case User.TAG:
+          nestedPropertyName = DBUtils.getNestedPropertyName(User.TAGS_FOLLOWED_KEY, objectId);
+          break;
+      }
+
+      ApiFuture addUserPropertyFuture = 
           userRef.update(Collections.singletonMap(nestedPropertyName, true));
-      DBUtils.blockOnFuture(addToCreatedPostsFuture);
-    }
-    
-    /** Remove a recipe from a user's created (when recipe is deleted). */
-    public void removeRecipeIdFromCreated(String userId, String recipeId) {
-      DocumentReference userRef = DBUtils.user(userId);
-      String nestedPropertyName = DBUtils.getNestedPropertyName(User.CREATED_RECIPES_KEY, recipeId);
-      Map<String, Object> update = new HashMap<>();
-      update.put(nestedPropertyName, FieldValue.delete());
-      DBUtils.blockOnFuture(userRef.update(update));
-    }
-    
-    /** Add recipe id: true as a singleton map to user's saved recipes field. */
-    public void addRecipeIdToSaved(String userId, String recipeId) {
-      DocumentReference userRef = DBUtils.user(userId);
-      String nestedPropertyName = DBUtils.getNestedPropertyName(User.SAVED_RECIPES_KEY, recipeId);
-      ApiFuture addToSavedPostsFuture =
-          userRef.update(Collections.singletonMap(nestedPropertyName, true));
-      DBUtils.blockOnFuture(addToSavedPostsFuture);
+      DBUtils.blockOnFuture(addUserPropertyFuture);
     }
 
-    /** Remove a recipe from a user's created (when recipe is deleted or unsaved). */
-    public void removeRecipeIdFromSaved(String userId, String recipeId) {
+    /**
+     * Deletes a property value for a certain user document.
+     * Can be used to let a user delete a recipe from saved or created, or to let user unfollow a tag.
+     * @param userId the user's Firebase ID
+     * @param objectId the ID of either a recipe if the intent is to unsave/create, or of a tag for tag unfollowing.
+     * @param collection a constant from User class indicating which mode -- save, create, or tag.
+     */
+    public void deleteUserProperty(String userId, String objectId, String collection) {
       DocumentReference userRef = DBUtils.user(userId);
-      String nestedPropertyName = DBUtils.getNestedPropertyName(User.SAVED_RECIPES_KEY, recipeId);
-      Map<String, Object> update = new HashMap<>();
-      update.put(nestedPropertyName, FieldValue.delete());
-      DBUtils.blockOnFuture(userRef.update(update));
-    }
+      String nestedPropertyName;
+      
+      switch (collection) {
+        case User.SAVE:
+          nestedPropertyName = DBUtils.getNestedPropertyName(User.SAVED_RECIPES_KEY, objectId);
+          break;
+        case User.CREATE:
+          nestedPropertyName = DBUtils.getNestedPropertyName(User.CREATED_RECIPES_KEY, objectId);
+          break;
+        case User.TAG:
+          nestedPropertyName = DBUtils.getNestedPropertyName(User.TAGS_FOLLOWED_KEY, objectId);
+          break;
+      }
 
-    /** Add tag id: true as a singleton map to user's tags followed field. */
-    public void followTag(String userId, String tagId) {
-      DocumentReference userRef = DBUtils.user(userId);
-      String nestedPropertyName = DBUtils.getNestedPropertyName(User.TAGS_FOLLOWED_KEY, tagId);
-      ApiFuture addToTagsFollowedFuture =
-          userRef.update(Collections.singletonMap(nestedPropertyName, true));
-      DBUtils.blockOnFuture(addToTagsFollowedFuture);
-    }
-   
-    /** Remove a tag from a user's followed tags. */
-    public void unfollowTag(String userId, String tagId) {
-      DocumentReference userRef = DBUtils.user(userId);
-      String nestedPropertyName = DBUtils.getNestedPropertyName(User.TAGS_FOLLOWED_KEY, tagId);
-      Map<String, Object> update = new HashMap<>();
-      update.put(nestedPropertyName, FieldValue.delete());
-      DBUtils.blockOnFuture(userRef.update(update));
+      ApiFuture removeUserPropertyFuture = 
+          userRef.update(nestedPropertyName, FieldValue.delete());
+      DBUtils.blockOnFuture(removeUserPropertyFuture);
     }
 
     public Iterable<RecipeMetadata> getRecipesMatchingTags(Iterable<String> tagIds) {

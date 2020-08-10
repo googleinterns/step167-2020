@@ -10,6 +10,11 @@ public class User {
   public static final String SAVED_RECIPES_KEY = "saved-recipe-ids";
   public static final String TAGS_FOLLOWED_KEY = "followed-tag-ids";
 
+  // Used to switch between cases for saved recipe/created recipe/followed tags functions.
+  public static final String CREATE = "create";
+  public static final String SAVE = "save";
+  public static final String TAG = "tag";
+
   public static boolean createdRecipe(String userId, String recipeId) {
     DocumentReference userRef = DBUtils.user(userId);
     ApiFuture<DocumentSnapshot> userFuture = userRef.get();
