@@ -69,24 +69,11 @@ public class FirestoreDB implements DBInterface {
      * Can be used to let a user add a recipe to saved or created, or to let user follow a tag.
      * @param userId the user's Firebase ID
      * @param objectId the ID of either a recipe if the intent is to save/create, or of a tag for tag following.
-     * @param collection a constant from User class indicating which mode -- save, create, or follow tag.
+     * @param collection a KEY constant from User class indicating which mode -- save, create, or follow tag.
      */
     public void makeUserPropertyTrue(String userId, String objectId, String collection) {
       DocumentReference userRef = DBUtils.user(userId);
-      String nestedPropertyName;
-      
-      switch (collection) {
-        case User.SAVE:
-          nestedPropertyName = DBUtils.getNestedPropertyName(User.SAVED_RECIPES_KEY, objectId);
-          break;
-        case User.CREATE:
-          nestedPropertyName = DBUtils.getNestedPropertyName(User.CREATED_RECIPES_KEY, objectId);
-          break;
-        case User.TAG:
-          nestedPropertyName = DBUtils.getNestedPropertyName(User.TAGS_FOLLOWED_KEY, objectId);
-          break;
-      }
-
+      String nestedPropertyName = DBUtils.getNestedPropertyName(collection, objectId);
       ApiFuture addUserPropertyFuture = 
           userRef.update(Collections.singletonMap(nestedPropertyName, true));
       DBUtils.blockOnFuture(addUserPropertyFuture);
@@ -97,24 +84,11 @@ public class FirestoreDB implements DBInterface {
      * Can be used to let a user delete a recipe from saved or created, or to let user unfollow a tag.
      * @param userId the user's Firebase ID
      * @param objectId the ID of either a recipe if the intent is to unsave/create, or of a tag for tag unfollowing.
-     * @param collection a constant from User class indicating which mode -- save, create, or tag.
+     * @param collection a KEY constant from User class indicating which mode -- save, create, or tag.
      */
     public void deleteUserProperty(String userId, String objectId, String collection) {
       DocumentReference userRef = DBUtils.user(userId);
-      String nestedPropertyName;
-      
-      switch (collection) {
-        case User.SAVE:
-          nestedPropertyName = DBUtils.getNestedPropertyName(User.SAVED_RECIPES_KEY, objectId);
-          break;
-        case User.CREATE:
-          nestedPropertyName = DBUtils.getNestedPropertyName(User.CREATED_RECIPES_KEY, objectId);
-          break;
-        case User.TAG:
-          nestedPropertyName = DBUtils.getNestedPropertyName(User.TAGS_FOLLOWED_KEY, objectId);
-          break;
-      }
-
+      String nestedPropertyName = DBUtils.getNestedPropertyName(collection, objectId);
       ApiFuture removeUserPropertyFuture = 
           userRef.update(nestedPropertyName, FieldValue.delete());
       DBUtils.blockOnFuture(removeUserPropertyFuture);
