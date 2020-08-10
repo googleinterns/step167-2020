@@ -8,14 +8,8 @@ public class Recipe extends DBObject {
   public static final String TIMESTAMP_KEY = "timestamp";
   public static final String VOTES_KEY = "votes";
 
-  public String title;
+  public RecipeMetadata metadata;
   public String content;
-  public String creatorId;
 
-  public Recipe(String id, String title, String content, String creatorId) {
-    super(id);
-    this.title = title;
-    this.content = content;
-    this.creatorId = creatorId;
-  }
+  public Recipe() {}
 }
