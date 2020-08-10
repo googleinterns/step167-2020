@@ -112,12 +112,14 @@ public class FirestoreDB implements DBInterface {
     return;
   }
 
-  public List<RecipeMetadata> getRecipesMatchingTags(List<String> tagIds, SortingMethod sortingMethod) {
+  public List<RecipeMetadata> getRecipesMatchingTags(
+      List<String> tagIds, SortingMethod sortingMethod) {
     Query recipesQuery = recipesMatchingTags(tagIds, tagIds.iterator());
     return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
 
-  public List<RecipeMetadata> getRecipesMatchingCreator(String creatorId, SortingMethod sortingMethod) {
+  public List<RecipeMetadata> getRecipesMatchingCreator(
+      String creatorId, SortingMethod sortingMethod) {
     Query recipesQuery = DBUtils.recipes().whereEqualTo("creatorId", creatorId);
     return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
@@ -132,7 +134,8 @@ public class FirestoreDB implements DBInterface {
     return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
 
-private List<RecipeMetadata> getRecipeMetadataQuery(Query recipesQuery, SortingMethod sortingMethod) {
+  private List<RecipeMetadata> getRecipeMetadataQuery(
+      Query recipesQuery, SortingMethod sortingMethod) {
     switch (sortingMethod) {
       case TOP:
         recipesQuery = recipesQuery.orderBy(Recipe.VOTES_KEY, Query.Direction.DESCENDING);
@@ -142,9 +145,8 @@ private List<RecipeMetadata> getRecipeMetadataQuery(Query recipesQuery, SortingM
         break;
     }
 
-    ApiFuture<QuerySnapshot> querySnapshotFuture = recipesQuery.get();
     ArrayList<RecipeMetadata> recipeList = new ArrayList<>();
-    QuerySnapshot querySnapshot = DBUtils.blockOnFuture(querySnapshotFuture);
+    QuerySnapshot querySnapshot = DBUtils.blockOnFuture(recipesQuery.get());
 
     if (querySnapshot == null) {
       return null;

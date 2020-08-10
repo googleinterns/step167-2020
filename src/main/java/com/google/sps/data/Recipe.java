@@ -8,7 +8,6 @@ public class Recipe extends DBObject {
   public static final String TIMESTAMP_KEY = "timestamp";
   public static final String VOTES_KEY = "votes";
 
-
   public String title;
   public String content;
   public String creatorId;
