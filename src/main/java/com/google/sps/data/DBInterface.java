@@ -30,6 +30,7 @@ public interface DBInterface {
 
   public String addComment(Comment newComment, String recipeId);
   public void deleteComment(String Id, String recipeId);
+  public void deleteComments(String recipeId);
   public void editCommentContent(String Id, String recipeId, String editedContent);
 
   public List<String> savedRecipeIds(String userId);
