@@ -93,6 +93,11 @@ public class FirestoreDB implements DBInterface {
     return DBUtils.blockOnFuture(tagsQuery.get()).toObjects(Tag.class);
   }
   
+  public List<Tag> getTagsMatchingIds(List<String> Ids) {
+    Query tagsQuery = DBUtils.tags().whereIn(Tag.ID_KEY, Ids);
+    return DBUtils.blockOnFuture(tagsQuery.get()).toObjects(Tag.class);
+  }
+
   /** Returns a User object from userId. */
     public User getUser(String userId) {
       DocumentReference userRef = DBUtils.user(userId);

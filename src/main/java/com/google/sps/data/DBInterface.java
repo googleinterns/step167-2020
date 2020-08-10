@@ -11,9 +11,10 @@ public interface DBInterface {
   public void editRecipeTitleContent(String Id, String editedTitle, String editedContent);
   public long voteRecipe(String Id, int voteDiff);
 
-  public Iterable<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod);
-  public Iterable<Comment> getAllCommentsInRecipe(String recipeId, SortingMethod sortingMethod);
-  public Iterable<Tag> getAllTags(boolean getHidden);
+  public List<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod);
+  public List<Comment> getAllCommentsInRecipe(String recipeId, SortingMethod sortingMethod);
+  public List<Tag> getAllTags(boolean getHidden);
+  public List<Tag> getTagsMatchingIds(List<String> Ids);
 
   public User getUser(String userId);
   public String addUser(String userId);
