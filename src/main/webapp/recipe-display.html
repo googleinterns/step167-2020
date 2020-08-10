@@ -137,15 +137,27 @@
       function deletePost() {
         var recipeID = getRecipeID()
 
-        fetch("/api/post?recipeID=" + recipeID, {
-          method: "DELETE",
-        }).then((response) => {
-          if (response.ok) {
-            window.location.href = "/feed.html"
-          } else {
-            alert("Error " + response.status.toString())
-          }
-        })
+        if (app.auth().currentUser) {
+          app
+            .auth()
+            .currentUser.getIdToken(/* forceRefresh */ true)
+            .then(function (idToken) {
+              fetch("/api/post?recipeID=" + recipeID + "&token=" + idToken, {
+                method: "DELETE",
+              }).then((response) => {
+                if (response.ok) {
+                  window.location.href = "/feed.html"
+                } else {
+                  alert("Error " + response.status.toString())
+                }
+              })
+            })
+            .catch(function (error) {
+              alert("Error! Could not retrieve user ID token.")
+            })
+        } else {
+          alert("User must be signed in to submit a comment.")
+        }
       }
 
       function removeAllChildNodes(parent) {
