@@ -1,10 +1,13 @@
 package com.google.sps.meltingpot.data;
 
+import java.util.List;
+
 public interface DBInterface {
   public String getRecipeContent(String Id);
   public RecipeMetadata getRecipeMetadata(String Id);
   public String addRecipe(RecipeMetadata newRecipe, String newContent);
   public void deleteRecipe(String Id);
+
   public void editRecipeTitleContent(String Id, String editedTitle, String editedContent);
   public long voteRecipe(String Id, int voteDiff);
 
@@ -18,11 +21,18 @@ public interface DBInterface {
   public void makeUserPropertyTrue(String userId, String objectId, String collection);
   public void deleteUserProperty(String userId, String objectId, String collection);
 
-  public Iterable<RecipeMetadata> getRecipesMatchingTags(Iterable<String> tagIds);
-  public Iterable<RecipeMetadata> getRecipesMatchingCreator(String creatorId);
-  public Iterable<RecipeMetadata> getRecipesMatchingIDs(Iterable<String> Ids);
+  public List<RecipeMetadata> getRecipesMatchingTags(
+      List<String> tagIds, SortingMethod sortingMethod);
+  public List<RecipeMetadata> getRecipesMatchingCreator(
+      String creatorId, SortingMethod sortingMethod);
+  public List<RecipeMetadata> getRecipesSavedBy(String userId, SortingMethod sortingMethod);
+  public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids, SortingMethod sortingMethod);
 
-  public Comment addComment(Comment newComment);
+  public String addComment(Comment newComment, String recipeId);
   public void deleteComment(String Id, String recipeId);
-  public void editCommentContent(String editedContent);
+  public void editCommentContent(String Id, String recipeId, String editedContent);
+
+  public List<String> savedRecipeIds(String userId);
+  public boolean createdRecipe(String userId, String recipeId);
+  public boolean isSavedRecipe(String userId, String recipeId);
 }

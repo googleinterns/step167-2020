@@ -6,11 +6,19 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.FieldValue;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.GeoPoint;
 import com.google.cloud.firestore.Query;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
+import com.google.sps.meltingpot.data.DBUtils;
+import com.google.sps.meltingpot.data.User;
+import java.lang.Iterable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -135,23 +143,123 @@ public class FirestoreDB implements DBInterface {
       DBUtils.blockOnFuture(removeUserPropertyFuture);
     }
 
-  public Iterable<RecipeMetadata> getRecipesMatchingTags(Iterable<String> tagIds) {
-    return null;
-  }
-  public Iterable<RecipeMetadata> getRecipesMatchingCreator(String creatorId) {
-    return null;
-  }
-  public Iterable<RecipeMetadata> getRecipesMatchingIDs(Iterable<String> Ids) {
-    return null;
+  public List<RecipeMetadata> getRecipesMatchingTags(
+      List<String> tagIds, SortingMethod sortingMethod) {
+    Query recipesQuery = recipesMatchingTags(tagIds, tagIds.iterator());
+    return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
 
-  public Comment addComment(Comment newComment) {
-    return null;
+  public List<RecipeMetadata> getRecipesMatchingCreator(
+      String creatorId, SortingMethod sortingMethod) {
+    Query recipesQuery = DBUtils.recipes().whereEqualTo("creatorId", creatorId);
+    return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
+
+  public List<RecipeMetadata> getRecipesSavedBy(String userId, SortingMethod sortingMethod) {
+    List<String> saved_Ids = savedRecipeIds(userId);
+    return getRecipesMatchingIDs(saved_Ids, sortingMethod);
+  }
+
+  public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids, SortingMethod sortingMethod) {
+    Query recipesQuery = DBUtils.recipes().whereIn(Recipe.ID_KEY, Ids);
+    return getRecipeMetadataQuery(recipesQuery, sortingMethod);
+  }
+
+  private List<RecipeMetadata> getRecipeMetadataQuery(
+      Query recipesQuery, SortingMethod sortingMethod) {
+    switch (sortingMethod) {
+      case TOP:
+        recipesQuery = recipesQuery.orderBy(Recipe.VOTES_KEY, Query.Direction.DESCENDING);
+        break;
+      case NEW:
+        recipesQuery = recipesQuery.orderBy(Recipe.TIMESTAMP_KEY, Query.Direction.DESCENDING);
+        break;
+    }
+
+    ArrayList<RecipeMetadata> recipeList = new ArrayList<>();
+    QuerySnapshot querySnapshot = DBUtils.blockOnFuture(recipesQuery.get());
+
+    if (querySnapshot == null) {
+      return null;
+    }
+
+    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+      RecipeMetadata recipe = document.toObject(RecipeMetadata.class);
+      recipeList.add(recipe);
+    }
+    return recipeList;
+  }
+
+  /**
+   * Recursively constructs a query on recipes matching all tags passed in
+   *  eg. DBUtils.recipes().whereEqualTo("tag_N-1", true).whereEqualTo("tag_N-2", true)...
+   */
+  private Query recipesMatchingTags(Iterable<String> tagIds, Iterator<String> iter) {
+    if (iter.hasNext()) {
+      String nextTag = iter.next();
+      return recipesMatchingTags(tagIds, iter).whereEqualTo("tags." + nextTag, true);
+    }
+    return DBUtils.recipes();
+  }
+
+  public List<String> savedRecipeIds(String userId) {
+    List<String> allRecipeIds = DBUtils.allRecipeIds();
+    ArrayList<String> savedRecipeIds = new ArrayList<String>();
+
+    for (String recipeID : allRecipeIds) {
+      if (isSavedRecipe(userId, recipeID)) {
+        savedRecipeIds.add(recipeID);
+      }
+    }
+    return savedRecipeIds;
+  }
+
+  public String addComment(Comment newComment, String recipeId) {
+    DocumentReference newCommentRef = DBUtils.comments(recipeId).document();
+    DBUtils.blockOnFuture(newCommentRef.set(newComment));
+    return newCommentRef.getId();
+  }
+
   public void deleteComment(String Id, String recipeId) {
-    return;
+    DBUtils.blockOnFuture(DBUtils.comments(recipeId).document(Id).delete());
   }
-  public void editCommentContent(String editedContent) {
-    return;
+
+  public void deleteComments(String recipeId) {
+    List<QueryDocumentSnapshot> documents =
+        DBUtils.blockOnFuture(DBUtils.comments(recipeId).get()).getDocuments();
+    for (QueryDocumentSnapshot document : documents) {
+      document.getReference().delete();
+    }
+  }
+
+  public void editCommentContent(String Id, String recipeId, String editedContent) {
+    DBUtils.blockOnFuture(
+        DBUtils.comments(recipeId).document(Id).update(Comment.CONTENT_KEY, editedContent));
+  }
+
+  public boolean createdRecipe(String userId, String recipeId) {
+    DocumentReference userRef = DBUtils.user(userId);
+    ApiFuture<DocumentSnapshot> userFuture = userRef.get();
+    DocumentSnapshot user = DBUtils.blockOnFuture(userFuture);
+    if (!user.exists()) {
+      return false;
+    }
+    Boolean userCreatedRecipe =
+        user.getBoolean(DBUtils.getNestedPropertyName(User.CREATED_RECIPES_KEY, recipeId));
+    // note that userCreatedRecipe is a Boolean, not a boolean
+    return userCreatedRecipe != null && userCreatedRecipe;
+  }
+
+  public boolean isSavedRecipe(String userId, String recipeId) {
+    DocumentReference userRef = DBUtils.user(userId);
+    ApiFuture<DocumentSnapshot> userFuture = userRef.get();
+    DocumentSnapshot user = DBUtils.blockOnFuture(userFuture);
+
+    if (!user.exists()) {
+      return false;
+    }
+    Boolean userSavedRecipe =
+        user.getBoolean(DBUtils.getNestedPropertyName(User.SAVED_RECIPES_KEY, recipeId));
+    return userSavedRecipe != null && userSavedRecipe;
   }
 }
