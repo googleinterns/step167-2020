@@ -14,15 +14,7 @@
 
 package com.google.sps.meltingpot.servlets;
 
-import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.Query;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
-import com.google.cloud.firestore.QuerySnapshot;
-import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
@@ -104,8 +96,7 @@ public class RecipeServlet extends HttpServlet {
 
     response.setStatus(HttpServletResponse.SC_CREATED);
     response.setContentType("application/json");
-    response.getWriter().println(gson.toJson(newRecipe.metadata.id));
-    System.out.println(gson.toJson(newRecipe.metadata.id));
+    response.getWriter().println(gson.toJson(new DBObject(newRecipe.metadata.id)));
   }
 
   @Override
@@ -113,7 +104,8 @@ public class RecipeServlet extends HttpServlet {
     String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
     Recipe newRecipe = gson.fromJson(data, Recipe.class);
     newRecipe.metadata = gson.fromJson(data, RecipeMetadata.class);
-    if (newRecipe.metadata.id == null || newRecipe.content == null || newRecipe.metadata.title == null) {
+    if (newRecipe.metadata.id == null || newRecipe.content == null
+        || newRecipe.metadata.title == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
@@ -124,7 +116,8 @@ public class RecipeServlet extends HttpServlet {
       return;
     }
 
-    dbInterface.editRecipeTitleContent(newRecipe.metadata.id, newRecipe.metadata.title, newRecipe.content);
+    dbInterface.editRecipeTitleContent(
+        newRecipe.metadata.id, newRecipe.metadata.title, newRecipe.content);
   }
 
   @Override
@@ -168,7 +161,8 @@ public class RecipeServlet extends HttpServlet {
       }
     } else if (isTagQuery && !isCreatorQuery) {
       String[] tagIDs = tagParam.split(",");
-      return gson.toJson(dbInterface.getRecipesMatchingTags(Arrays.asList(tagIDs), SortingMethod.TOP));
+      return gson.toJson(
+          dbInterface.getRecipesMatchingTags(Arrays.asList(tagIDs), SortingMethod.TOP));
     } else { // Currently addresses cases where both isTagQuery and isCreatorQuery, and where
              // neither.
       return gson.toJson(dbInterface.getAllRecipes(SortingMethod.TOP));
