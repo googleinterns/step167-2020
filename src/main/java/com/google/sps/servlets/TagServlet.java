@@ -54,6 +54,10 @@ public class TagServlet extends HttpServlet {
   private Gson gson = new Gson();
   private DBInterface db;
 
+  public TagServlet(DBInterface db) {
+    this.db = db;
+  }
+
   @Override
   public void init() {
     db = new FirestoreDB();
@@ -73,6 +77,6 @@ public class TagServlet extends HttpServlet {
     }
 
     response.setContentType("application/json");
-    response.getWriter().println(gson.toJson(tags));
+    response.getWriter().print(gson.toJson(tags));
   }
 }
