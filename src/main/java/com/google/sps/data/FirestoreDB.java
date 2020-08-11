@@ -10,6 +10,7 @@ import com.google.cloud.firestore.GeoPoint;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.WriteBatch;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.sps.meltingpot.data.DBUtils;
@@ -64,8 +65,10 @@ public class FirestoreDB implements DBInterface {
    * @param Id the recipe's Firestore ID.
    */
   public void deleteRecipe(String Id) {
-    DBUtils.blockOnFuture(DBUtils.recipe(Id).delete());
-    DBUtils.blockOnFuture(DBUtils.recipeMetadata(Id).delete());
+    WriteBatch batch = DBUtils.database.batch();
+    batch.delete(DBUtils.recipe(Id));
+    batch.delete(DBUtils.recipeMetadata(Id));
+    DBUtils.blockOnFuture(batch.commit());
   }
 
   /**
@@ -77,21 +80,26 @@ public class FirestoreDB implements DBInterface {
   public void editRecipeTitleContent(String Id, String editedTitle, String editedContent) {
     DocumentReference contentRef = DBUtils.recipe(Id);
     DocumentReference metadataRef = DBUtils.recipeMetadata(Id);
-    DBUtils.blockOnFuture(contentRef.update(Recipe.CONTENT_KEY, editedContent));
-    DBUtils.blockOnFuture(metadataRef.update(RecipeMetadata.TITLE_KEY, editedTitle));
+    WriteBatch batch = DBUtils.database.batch();
+    batch.update(contentRef, Recipe.CONTENT_KEY, editedContent);
+    batch.update(metadataRef, RecipeMetadata.TITLE_KEY, editedTitle);
+    DBUtils.blockOnFuture(batch.commit());
   }
   
   /**
-   *  Adjusts the vote count on a recipe.
+   * Adjusts the vote count on a recipe.
    * @param Id recipe's Firestore ID
    * @param voteDiff int value that should be added to the current votes on the recipe
    * @return recipe vote count after the update
    */
-  public long voteRecipe(String Id, int voteDiff) {
+  public Long voteRecipe(String Id, int voteDiff) {
     DocumentReference metadataRef = DBUtils.recipeMetadata(Id);
-    long votes = DBUtils.blockOnFuture(metadataRef.get()).getLong(RecipeMetadata.VOTES_KEY);
-    metadataRef.update(RecipeMetadata.VOTES_KEY, votes + voteDiff);
-    return votes + voteDiff;
+    ApiFuture<Long> voteTransaction = DBUtils.database.runTransaction(transaction -> {
+      long votes = DBUtils.blockOnFuture(metadataRef.get()).getLong(RecipeMetadata.VOTES_KEY);
+      metadataRef.update(RecipeMetadata.VOTES_KEY, votes + voteDiff);
+      return votes + voteDiff;
+    });
+    return DBUtils.blockOnFuture(voteTransaction);
   }
   
   /** 
@@ -151,21 +159,7 @@ public class FirestoreDB implements DBInterface {
    * true if it is.
    */
   public boolean isDocument(String docId, String collection) {
-    DocumentReference docRef;
-    
-    // Look in the appropriate bin.
-    switch (collection) {
-      case DBUtils.DB_RECIPES_COLLECTION:
-        docRef = DBUtils.recipe(docId);
-        break;
-      case DBUtils.DB_USERS_COLLECTION:
-        docRef = DBUtils.user(docId);
-        break;
-      case DBUtils.DB_TAGS_COLLECTION:
-        docRef = DBUtils.tag(docId);
-        break;
-    }
-
+    DocumentReference docRef = DBUtils.database.collection(collection).document(docId);
     DocumentSnapshot document = DBUtils.blockOnFuture(docRef.get());
     return document.exists();
   }

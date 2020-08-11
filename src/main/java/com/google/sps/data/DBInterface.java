@@ -5,15 +5,14 @@ import java.util.List;
 public interface DBInterface {
   public String getRecipeContent(String Id);
   public RecipeMetadata getRecipeMetadata(String Id);
-  public String addRecipe(RecipeMetadata newRecipe, String newContent);
+  public String addRecipe(RecipeMetadata newRecipeMetadata, String newContent);
   public void deleteRecipe(String Id);
-
   public void editRecipeTitleContent(String Id, String editedTitle, String editedContent);
-  public long voteRecipe(String Id, int voteDiff);
+  public Long voteRecipe(String Id, int voteDiff);
 
-  public Iterable<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod);
-  public Iterable<Comment> getAllCommentsInRecipe(String recipeId, SortingMethod sortingMethod);
-  public Iterable<Tag> getAllTags(boolean getHidden);
+  public List<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod);
+  public List<Comment> getAllCommentsInRecipe(String recipeId, SortingMethod sortingMethod);
+  public List<Tag> getAllTags(boolean getHidden);
 
   public boolean isDocument(String docId, String collection);
   public User getUser(String userId);
