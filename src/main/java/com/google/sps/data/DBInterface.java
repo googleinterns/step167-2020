@@ -15,6 +15,7 @@ public interface DBInterface {
   public Iterable<Comment> getAllCommentsInRecipe(String recipeId, SortingMethod sortingMethod);
   public Iterable<Tag> getAllTags(boolean getHidden);
 
+  public boolean isDocument(String docId, String collection);
   public User getUser(String userId);
   public String addUser(String userId);
   public void deleteUser(String userId);
