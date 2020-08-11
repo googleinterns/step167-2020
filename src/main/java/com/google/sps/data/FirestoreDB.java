@@ -163,7 +163,7 @@ public class FirestoreDB implements DBInterface {
     return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
   
-  private List<RecipeMetadata> getRecipeMetadataQuery(
+  public List<RecipeMetadata> getRecipeMetadataQuery(
       Query recipesQuery, SortingMethod sortingMethod) {
     switch (sortingMethod) {
       case TOP:
@@ -188,7 +188,7 @@ public class FirestoreDB implements DBInterface {
     return recipeList;
   }
 
-  private Query recipesMatchingTags(Iterable<String> tagIds, Iterator<String> iter) {
+  public Query recipesMatchingTags(Iterable<String> tagIds, Iterator<String> iter) {
     if (iter.hasNext()) {
       String nextTag = iter.next();
       return recipesMatchingTags(tagIds, iter).whereEqualTo("tags." + nextTag, true);

@@ -163,7 +163,7 @@ public interface DBInterface {
    * @param sortingMethod sorting method from SortingMethod class
    * @return ordered list of recipe metadata
    */
-  private List<RecipeMetadata> getRecipeMetadataQuery(Query recipesQuery, SortingMethod sortingMethod);
+   public List<RecipeMetadata> getRecipeMetadataQuery(Query recipesQuery, SortingMethod sortingMethod);
 
   /**
    * Recursively constructs a query on recipes matching any of the tags passed in
@@ -172,7 +172,7 @@ public interface DBInterface {
    * @param iter iterator object
    * @return a query that includes all of the recipes which match a tag passed in
    */
-  private Query recipesMatchingTags(Iterable<String> tagIds, Iterator<String> iter);
+  public Query recipesMatchingTags(Iterable<String> tagIds, Iterator<String> iter);
 
   /** 
    * Adds a Comment object to a recipe's comment subcollection in Firestore.
