@@ -158,14 +158,6 @@ public interface DBInterface {
   public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids, SortingMethod sortingMethod);
 
   /**
-   * Returns an ordered list of RecipeMetadata objects based on a sorting method.
-   * @param recipesQuery recipe metadata collection query
-   * @param sortingMethod sorting method from SortingMethod class
-   * @return ordered list of recipe metadata
-   */
-   public List<RecipeMetadata> getRecipeMetadataQuery(Query recipesQuery, SortingMethod sortingMethod);
-
-  /**
    * Recursively constructs a query on recipes matching any of the tags passed in
    *  eg. DBUtils.recipes().whereEqualTo("tag_N-1", true).whereEqualTo("tag_N-2", true)...
    * @param tagIds an iterable object holding tag Ids

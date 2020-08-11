@@ -163,7 +163,7 @@ public class FirestoreDB implements DBInterface {
     return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
   
-  public List<RecipeMetadata> getRecipeMetadataQuery(
+  private List<RecipeMetadata> getRecipeMetadataQuery(
       Query recipesQuery, SortingMethod sortingMethod) {
     switch (sortingMethod) {
       case TOP:
@@ -174,18 +174,13 @@ public class FirestoreDB implements DBInterface {
         break;
     }
 
-    ArrayList<RecipeMetadata> recipeList = new ArrayList<>();
     QuerySnapshot querySnapshot = DBUtils.blockOnFuture(recipesQuery.get());
 
     if (querySnapshot == null) {
       return null;
     }
 
-    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
-      RecipeMetadata recipe = document.toObject(RecipeMetadata.class);
-      recipeList.add(recipe);
-    }
-    return recipeList;
+    return querySnapshot.toObjects(RecipeMetadata.class);
   }
 
   public Query recipesMatchingTags(Iterable<String> tagIds, Iterator<String> iter) {
@@ -197,15 +192,10 @@ public class FirestoreDB implements DBInterface {
   }
 
   public List<String> savedRecipeIds(String userId) {
-    List<String> allRecipeIds = DBUtils.allRecipeIds();
-    ArrayList<String> savedRecipeIds = new ArrayList<String>();
-
-    for (String recipeID : allRecipeIds) {
-      if (isSavedRecipe(userId, recipeID)) {
-        savedRecipeIds.add(recipeID);
-      }
-    }
-    return savedRecipeIds;
+    DocumentReference userRef = DBUtils.user(userId);
+    DocumentSnapshot user = DBUtils.blockOnFuture(userRef.get());
+    Map<String, Boolean> savedRecipeIdsMap = (Map<String, Boolean>) user.get(User.SAVED_RECIPES_KEY);
+    return new ArrayList<String>(savedRecipeIdsMap.keySet());
   }
   
   public String addComment(Comment newComment, String recipeId) {
@@ -219,10 +209,8 @@ public class FirestoreDB implements DBInterface {
   }
 
   public void deleteComments(String recipeId) {
-    List<QueryDocumentSnapshot> documents =
-        DBUtils.blockOnFuture(DBUtils.comments(recipeId).get()).getDocuments();
-    for (QueryDocumentSnapshot document : documents) {
-      document.getReference().delete();
+    for (DocumentReference comment : DBUtils.comments(recipeId).listDocuments()) {
+      comment.delete();
     }
   }
   
