@@ -69,7 +69,7 @@ public class DBUtils {
     }
 
     for (DocumentSnapshot document : querySnapshot.getDocuments()) {
-      recipeIdList.add(document.toObject(Recipe.class).id);
+      recipeIdList.add(document.toObject(Recipe.class).metadata.id);
     }
 
     return recipeIdList;

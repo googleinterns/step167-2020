@@ -174,9 +174,8 @@ public class RecipeServlet extends HttpServlet {
   }
 
   protected String getDetailedRecipe(String recipeId) throws IOException {
-    Recipe recipe = new Recipe();
-    recipe.metadata = dbInterface.getRecipeMetadata(recipeId);
-    recipe.content = dbInterface.getRecipeContent(recipeId);
+    Recipe recipe =
+        new Recipe(dbInterface.getRecipeContent(recipeId), dbInterface.getRecipeMetadata(recipeId));
     return gson.toJson(recipe);
   }
 
