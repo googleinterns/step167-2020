@@ -10,12 +10,16 @@ import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class DBUtils {
   public static final String DB_COMMENTS = "comment-collection";
+  public static final String DB_RECIPES_COLLECTION = "recipe-collection";
+  public static final String DB_USERS_COLLECTION = "user-collection";
+  public static final String DB_TAGS_COLLECTION = "tags-collection";
 
-  private static Firestore database;
+  public static Firestore database;
   private static CollectionReference recipesReference;
   private static CollectionReference usersReference;
   private static CollectionReference recipeMetadataReference;
@@ -38,10 +42,6 @@ public class DBUtils {
     tagsReference = database.collection("tags");
   }
 
-  public static Firestore db() {
-    return database;
-  }
-
   public static CollectionReference users() {
     return usersReference;
   }
@@ -60,16 +60,11 @@ public class DBUtils {
 
   /** Return a list of all recipe IDs. */
   public static ArrayList<String> allRecipeIds() {
-    ApiFuture<QuerySnapshot> querySnapshotFuture = recipesReference.get();
+    Iterable<DocumentReference> recipeReferences = recipesReference.listDocuments();
     ArrayList<String> recipeIdList = new ArrayList<>();
-    QuerySnapshot querySnapshot = DBUtils.blockOnFuture(querySnapshotFuture);
 
-    if (querySnapshot == null) {
-      return null;
-    }
-
-    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
-      recipeIdList.add(document.toObject(Recipe.class).id);
+    for (DocumentReference docRef : recipeReferences) {
+      recipeIdList.add(docRef.getId());
     }
 
     return recipeIdList;
