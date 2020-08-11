@@ -48,6 +48,10 @@ public class RecipeServlet extends HttpServlet {
   private Gson gson = new Gson();
   private DBInterface dbInterface;
 
+  public RecipeServlet(DBInterface mockInterface) {
+    dbInterface = mockInterface;
+  }
+
   @Override
   public void init() {
     dbInterface = new FirestoreDB();
@@ -64,7 +68,7 @@ public class RecipeServlet extends HttpServlet {
       json = getDetailedRecipe(recipeId);
     }
 
-    if (json == null) {
+    if (json == null || json.equals(gson.toJson(null))) {
       response.setStatus(HttpServletResponse.SC_NO_CONTENT);
       return;
     }
@@ -92,11 +96,11 @@ public class RecipeServlet extends HttpServlet {
     newRecipe.metadata.creatorId = uid;
     String recipeId = dbInterface.addRecipe(newRecipe.metadata, newRecipe.content);
 
-    dbInterface.makeUserPropertyTrue(uid, newRecipe.metadata.id, User.CREATED_RECIPES_KEY);
+    dbInterface.makeUserPropertyTrue(uid, recipeId, User.CREATED_RECIPES_KEY);
 
     response.setStatus(HttpServletResponse.SC_CREATED);
     response.setContentType("application/json");
-    response.getWriter().println(gson.toJson(new DBObject(newRecipe.metadata.id)));
+    response.getWriter().println(gson.toJson(new DBObject(recipeId)));
   }
 
   @Override
@@ -111,7 +115,7 @@ public class RecipeServlet extends HttpServlet {
     }
 
     String token = request.getParameter("token");
-    String uid = getUidAndMatchUser(token, newRecipe.metadata.id, response);
+    String uid = matchUser(token, newRecipe.metadata.id, response);
     if (uid == null) {
       return;
     }
@@ -130,7 +134,7 @@ public class RecipeServlet extends HttpServlet {
     }
 
     String token = request.getParameter("token");
-    String uid = getUidAndMatchUser(token, recipeId, response);
+    String uid = matchUser(token, recipeId, response);
     if (uid == null) {
       return;
     }
@@ -139,7 +143,7 @@ public class RecipeServlet extends HttpServlet {
     dbInterface.deleteRecipe(recipeId);
   }
 
-  private String getRecipeList(HttpServletRequest request, HttpServletResponse response) {
+  protected String getRecipeList(HttpServletRequest request, HttpServletResponse response) {
     String creatorToken = request.getParameter("token");
 
     String tagParam = request.getParameter("tagIDs");
@@ -169,7 +173,7 @@ public class RecipeServlet extends HttpServlet {
     }
   }
 
-  private String getDetailedRecipe(String recipeId) throws IOException {
+  protected String getDetailedRecipe(String recipeId) throws IOException {
     Recipe recipe = new Recipe();
     recipe.metadata = dbInterface.getRecipeMetadata(recipeId);
     recipe.content = dbInterface.getRecipeContent(recipeId);
@@ -177,7 +181,7 @@ public class RecipeServlet extends HttpServlet {
   }
 
   /** Checks the authentication of a given token. If the token is not valid, returns null */
-  private String getUid(String token, HttpServletResponse response) {
+  protected String getUid(String token, HttpServletResponse response) {
     FirebaseToken decodedToken = Auth.verifyIdToken(token);
     if (decodedToken == null) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -190,13 +194,13 @@ public class RecipeServlet extends HttpServlet {
    * Checks if token valid, then if corresponding user created the given recipe. If either
    * fails, returns null and sets HttpServletResponse status accordingly
    */
-  private String getUidAndMatchUser(String token, String recipeId, HttpServletResponse response) {
+  protected String matchUser(String token, String recipeId, HttpServletResponse response) {
     String uid = getUid(token, response);
     if (uid == null) {
       return null;
     }
 
-    if (!User.createdRecipe(uid, recipeId)) {
+    if (!dbInterface.createdRecipe(uid, recipeId)) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return null;
     }
