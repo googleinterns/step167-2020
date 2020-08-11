@@ -47,9 +47,9 @@ public interface DBInterface {
    * This method always waits for the database operation to finish before returning.
    * @param   Id           the uid of the recipe
    * @param   voteDiff     the votes added to the current vote count
-   * @return               the new vote count of the recipe
+   * @return               the new vote count of the recipe (null if transaction fails)
    */
-  public long voteRecipe(String Id, int voteDiff);
+  public Long voteRecipe(String Id, int voteDiff);
 
   /**
    * Gets a list of all recipe's metadata sorted in the given order.

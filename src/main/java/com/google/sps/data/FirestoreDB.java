@@ -10,6 +10,7 @@ import com.google.cloud.firestore.GeoPoint;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.WriteBatch;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.sps.meltingpot.data.DBUtils;
@@ -42,22 +43,29 @@ public class FirestoreDB implements DBInterface {
     return newRecipeMetadata.id;
   }
   public void deleteRecipe(String Id) {
-    DBUtils.blockOnFuture(DBUtils.recipe(Id).delete());
-    DBUtils.blockOnFuture(DBUtils.recipeMetadata(Id).delete());
+    WriteBatch batch = DBUtils.database.batch();
+    batch.delete(DBUtils.recipe(Id));
+    batch.delete(DBUtils.recipeMetadata(Id));
+    DBUtils.blockOnFuture(batch.commit());
   }
 
   public void editRecipeTitleContent(String Id, String editedTitle, String editedContent) {
     DocumentReference contentRef = DBUtils.recipe(Id);
     DocumentReference metadataRef = DBUtils.recipeMetadata(Id);
-    DBUtils.blockOnFuture(contentRef.update(Recipe.CONTENT_KEY, editedContent));
-    DBUtils.blockOnFuture(metadataRef.update(RecipeMetadata.TITLE_KEY, editedTitle));
+    WriteBatch batch = DBUtils.database.batch();
+    batch.update(contentRef, Recipe.CONTENT_KEY, editedContent);
+    batch.update(metadataRef, RecipeMetadata.TITLE_KEY, editedTitle);
+    DBUtils.blockOnFuture(batch.commit());
   }
 
-  public long voteRecipe(String Id, int voteDiff) {
+  public Long voteRecipe(String Id, int voteDiff) {
     DocumentReference metadataRef = DBUtils.recipeMetadata(Id);
-    long votes = DBUtils.blockOnFuture(metadataRef.get()).getLong(RecipeMetadata.VOTES_KEY);
-    metadataRef.update(RecipeMetadata.VOTES_KEY, votes + voteDiff);
-    return votes + voteDiff;
+    ApiFuture<Long> voteTransaction = DBUtils.database.runTransaction(transaction -> {
+      long votes = DBUtils.blockOnFuture(metadataRef.get()).getLong(RecipeMetadata.VOTES_KEY);
+      metadataRef.update(RecipeMetadata.VOTES_KEY, votes + voteDiff);
+      return votes + voteDiff;
+    });
+    return DBUtils.blockOnFuture(voteTransaction);
   }
 
   public List<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod) {

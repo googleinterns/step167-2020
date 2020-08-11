@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutionException;
 public class DBUtils {
   public static final String DB_COMMENTS = "comment-collection";
 
-  private static Firestore database;
+  public static Firestore database;
   private static CollectionReference recipesReference;
   private static CollectionReference usersReference;
   private static CollectionReference recipeMetadataReference;
