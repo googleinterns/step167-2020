@@ -104,7 +104,7 @@ public class FirestoreDB implements DBInterface {
   }
 
   public List<Tag> getTagsMatchingIds(List<String> Ids) {
-    Query tagsQuery = DBUtils.tags().whereIn(Tag.ID_KEY, Ids);
+    Query tagsQuery = DBUtils.tags().whereIn(DBObject.ID_KEY, Ids);
     return DBUtils.blockOnFuture(tagsQuery.get()).toObjects(Tag.class);
   }
   
