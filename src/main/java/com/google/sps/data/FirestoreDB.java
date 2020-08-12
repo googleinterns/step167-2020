@@ -1,31 +1,19 @@
 package com.google.sps.meltingpot.data;
 
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.FieldValue;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.GeoPoint;
 import com.google.cloud.firestore.Query;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteBatch;
-import com.google.cloud.firestore.WriteResult;
-import com.google.firebase.cloud.FirestoreClient;
-import com.google.sps.meltingpot.data.DBUtils;
-import com.google.sps.meltingpot.data.User;
-import java.lang.Iterable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 public class FirestoreDB implements DBInterface {
-  
   public String getRecipeContent(String Id) {
     return DBUtils.blockOnFuture(DBUtils.recipe(Id).get()).getString(Recipe.CONTENT_KEY);
   }
@@ -43,7 +31,7 @@ public class FirestoreDB implements DBInterface {
     DBUtils.blockOnFuture(newRecipeMetadataRef.set(newRecipeMetadata));
     return newRecipeMetadata.id;
   }
-  
+
   public void deleteRecipe(String Id) {
     WriteBatch batch = DBUtils.database.batch();
     batch.delete(DBUtils.recipe(Id));
@@ -59,7 +47,7 @@ public class FirestoreDB implements DBInterface {
     batch.update(metadataRef, RecipeMetadata.TITLE_KEY, editedTitle);
     DBUtils.blockOnFuture(batch.commit());
   }
-  
+
   public Long voteRecipe(String Id, int voteDiff) {
     DocumentReference metadataRef = DBUtils.recipeMetadata(Id);
     ApiFuture<Long> voteTransaction = DBUtils.database.runTransaction(transaction -> {
@@ -69,7 +57,7 @@ public class FirestoreDB implements DBInterface {
     });
     return DBUtils.blockOnFuture(voteTransaction);
   }
-  
+
   public List<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod) {
     Query recipesQuery = DBUtils.recipeMetadata();
     switch (sortingMethod) {
@@ -95,14 +83,19 @@ public class FirestoreDB implements DBInterface {
         break;
     }
     return DBUtils.blockOnFuture(commentsQuery.get()).toObjects(Comment.class);
-  }  
+  }
 
   public List<Tag> getAllTags(boolean getHidden) {
     Query tagsQuery =
         getHidden ? DBUtils.tags() : DBUtils.tags().whereEqualTo(Tag.HIDDEN_KEY, false);
     return DBUtils.blockOnFuture(tagsQuery.get()).toObjects(Tag.class);
   }
-  
+
+  public List<Tag> getTagsMatchingIds(List<String> Ids) {
+    Query tagsQuery = DBUtils.tags().whereIn(DBObject.ID_KEY, Ids);
+    return DBUtils.blockOnFuture(tagsQuery.get()).toObjects(Tag.class);
+  }
+
   public boolean isDocument(String docId, String collection) {
     DocumentReference docRef = DBUtils.database.collection(collection).document(docId);
     DocumentSnapshot document = DBUtils.blockOnFuture(docRef.get());
@@ -152,7 +145,7 @@ public class FirestoreDB implements DBInterface {
     Query recipesQuery = DBUtils.recipes().whereEqualTo(Recipe.CREATOR_ID_KEY, creatorId);
     return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
-  
+
   public List<RecipeMetadata> getRecipesSavedBy(String userId, SortingMethod sortingMethod) {
     List<String> saved_Ids = savedRecipeIds(userId);
     return getRecipesMatchingIDs(saved_Ids, sortingMethod);
@@ -162,7 +155,7 @@ public class FirestoreDB implements DBInterface {
     Query recipesQuery = DBUtils.recipes().whereIn(Recipe.ID_KEY, Ids);
     return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
-  
+
   private List<RecipeMetadata> getRecipeMetadataQuery(
       Query recipesQuery, SortingMethod sortingMethod) {
     switch (sortingMethod) {
@@ -194,10 +187,11 @@ public class FirestoreDB implements DBInterface {
   public List<String> savedRecipeIds(String userId) {
     DocumentReference userRef = DBUtils.user(userId);
     DocumentSnapshot user = DBUtils.blockOnFuture(userRef.get());
-    Map<String, Boolean> savedRecipeIdsMap = (Map<String, Boolean>) user.get(User.SAVED_RECIPES_KEY);
+    Map<String, Boolean> savedRecipeIdsMap =
+        (Map<String, Boolean>) user.get(User.SAVED_RECIPES_KEY);
     return new ArrayList<String>(savedRecipeIdsMap.keySet());
   }
-  
+
   public String addComment(Comment newComment, String recipeId) {
     DocumentReference newCommentRef = DBUtils.comments(recipeId).document();
     DBUtils.blockOnFuture(newCommentRef.set(newComment));
@@ -213,12 +207,12 @@ public class FirestoreDB implements DBInterface {
       comment.delete();
     }
   }
-  
+
   public void editCommentContent(String Id, String recipeId, String editedContent) {
     DBUtils.blockOnFuture(
         DBUtils.comments(recipeId).document(Id).update(Comment.CONTENT_KEY, editedContent));
   }
- 
+
   public boolean createdRecipe(String userId, String recipeId) {
     DocumentReference userRef = DBUtils.user(userId);
     ApiFuture<DocumentSnapshot> userFuture = userRef.get();
@@ -231,7 +225,7 @@ public class FirestoreDB implements DBInterface {
     // note that userCreatedRecipe is a Boolean, not a boolean
     return userCreatedRecipe != null && userCreatedRecipe;
   }
-  
+
   public boolean isSavedRecipe(String userId, String recipeId) {
     DocumentReference userRef = DBUtils.user(userId);
     ApiFuture<DocumentSnapshot> userFuture = userRef.get();
