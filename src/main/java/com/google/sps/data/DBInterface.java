@@ -133,7 +133,7 @@ public interface DBInterface {
    * @param collection a KEY constant from User class indicating which mode -- save, create, or
    *     follow tag.
    */
-  public void makeUserPropertyTrue(String userId, String objectId, String collection);
+  public void setUserProperty(String userId, String objectId, String collection, boolean val);
 
   /**
    * Deletes a property value for a certain user document. Can be used to let a user delete a recipe
@@ -145,6 +145,15 @@ public interface DBInterface {
    * @param collection a KEY constant from User class indicating which mode -- save, create, or tag.
    */
   public void deleteUserProperty(String userId, String objectId, String collection);
+
+  /**
+   * Checks if a specified user has a given recipe as true in a given map field.
+   *
+   * @param userId the user's Firebase ID.
+   * @param recipeId the recipe's Firebase ID.
+   * @return true if it is in the map as true, false if in map as false, null if not in map or user does not exist
+   */
+  public Boolean inUserMap(String userId, String recipeId, String mapName);
 
   /**
    * Returns a list of all recipe metadata with any of the tags in the tag IDs list.
@@ -233,22 +242,4 @@ public interface DBInterface {
    * @return a list of the Firestore IDs of the user's saved recipes in no particular order.
    */
   public List<String> savedRecipeIds(String userId);
-
-  /**
-   * Checks if a specified user created a specified recipe.
-   *
-   * @param userId the user's Firebase ID.
-   * @param recipeId the recipe's Firebase ID.
-   * @return true if created, false if not or if user doesn't exist.
-   */
-  public boolean createdRecipe(String userId, String recipeId);
-
-  /**
-   * Checks if a specified user saved a specified recipe.
-   *
-   * @param userId the user's Firebase ID.
-   * @param recipeId the recipe's Firebase ID.
-   * @return true if saved, false if not or if user doesn't exist.
-   */
-  public boolean isSavedRecipe(String userId, String recipeId);
 }

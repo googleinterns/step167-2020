@@ -119,11 +119,11 @@ public class FirestoreDB implements DBInterface {
     DBUtils.blockOnFuture(DBUtils.user(userId).delete());
   }
 
-  public void makeUserPropertyTrue(String userId, String objectId, String collection) {
+  public void setUserProperty(String userId, String objectId, String collection, boolean val) {
     DocumentReference userRef = DBUtils.user(userId);
     String nestedPropertyName = DBUtils.getNestedPropertyName(collection, objectId);
     ApiFuture addUserPropertyFuture =
-        userRef.update(Collections.singletonMap(nestedPropertyName, true));
+        userRef.update(Collections.singletonMap(nestedPropertyName, val));
     DBUtils.blockOnFuture(addUserPropertyFuture);
   }
 
@@ -132,6 +132,17 @@ public class FirestoreDB implements DBInterface {
     String nestedPropertyName = DBUtils.getNestedPropertyName(collection, objectId);
     ApiFuture removeUserPropertyFuture = userRef.update(nestedPropertyName, FieldValue.delete());
     DBUtils.blockOnFuture(removeUserPropertyFuture);
+  }
+
+  public Boolean inUserMap(String userId, String recipeId, String mapName) {
+    DocumentSnapshot user = DBUtils.blockOnFuture(DBUtils.user(userId).get());
+
+    if (!user.exists()) {
+      return false;
+    }
+    Boolean inMap =
+        user.getBoolean(DBUtils.getNestedPropertyName(mapName, recipeId));
+    return inMap;
   }
 
   public List<RecipeMetadata> getRecipesMatchingTags(
@@ -211,31 +222,5 @@ public class FirestoreDB implements DBInterface {
   public void editCommentContent(String Id, String recipeId, String editedContent) {
     DBUtils.blockOnFuture(
         DBUtils.comments(recipeId).document(Id).update(Comment.CONTENT_KEY, editedContent));
-  }
-
-  public boolean createdRecipe(String userId, String recipeId) {
-    DocumentReference userRef = DBUtils.user(userId);
-    ApiFuture<DocumentSnapshot> userFuture = userRef.get();
-    DocumentSnapshot user = DBUtils.blockOnFuture(userFuture);
-    if (!user.exists()) {
-      return false;
-    }
-    Boolean userCreatedRecipe =
-        user.getBoolean(DBUtils.getNestedPropertyName(User.CREATED_RECIPES_KEY, recipeId));
-    // note that userCreatedRecipe is a Boolean, not a boolean
-    return userCreatedRecipe != null && userCreatedRecipe;
-  }
-
-  public boolean isSavedRecipe(String userId, String recipeId) {
-    DocumentReference userRef = DBUtils.user(userId);
-    ApiFuture<DocumentSnapshot> userFuture = userRef.get();
-    DocumentSnapshot user = DBUtils.blockOnFuture(userFuture);
-
-    if (!user.exists()) {
-      return false;
-    }
-    Boolean userSavedRecipe =
-        user.getBoolean(DBUtils.getNestedPropertyName(User.SAVED_RECIPES_KEY, recipeId));
-    return userSavedRecipe != null && userSavedRecipe;
   }
 }
