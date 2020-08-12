@@ -139,7 +139,7 @@
           .then((response) => response.json())
           .then((recipe) => {
             const recipeEl = document.getElementById("recipe")
-            votes.innerHTML = "Votes: " + recipe.votes;
+            votes.innerHTML = "Votes: " + recipe.metadata.votes;
             removeAllChildNodes(recipeEl)
             recipeEl.appendChild(createRecipeListElement(recipe))
           })
@@ -180,7 +180,7 @@
             .currentUser.getIdToken(/* forceRefresh */ true)
             .then(function (idToken) {
               fetch("/api/vote?recipeId=" + recipeID + "&vote=" + vote + "&token=" + idToken, {
-                method: "DELETE",
+                method: "PUT",
               }).then((response) => {
                 if (response.ok) {
                   return response.json();

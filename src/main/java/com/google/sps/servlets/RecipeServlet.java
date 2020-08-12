@@ -98,7 +98,7 @@ public class RecipeServlet extends HttpServlet {
     newRecipe.metadata.creatorLdap = Auth.getUserEmail(uid);
     String recipeId = db.addRecipe(newRecipe);
 
-    db.makeUserPropertyTrue(uid, recipeId, User.CREATED_RECIPES_KEY);
+    db.setUserProperty(uid, recipeId, User.CREATED_RECIPES_KEY, true);
 
     response.setStatus(HttpServletResponse.SC_CREATED);
     response.setContentType("application/json");
@@ -201,7 +201,7 @@ public class RecipeServlet extends HttpServlet {
       return null;
     }
 
-    if (!db.createdRecipe(uid, recipeId)) {
+    if (!db.inUserMap(uid, recipeId, DBUtils.DB_RECIPES_COLLECTION)) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return null;
     }
