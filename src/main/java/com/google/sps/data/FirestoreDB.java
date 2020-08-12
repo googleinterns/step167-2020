@@ -182,7 +182,7 @@ public class FirestoreDB implements DBInterface {
       System.out.println("Current tag: " + nextTag);
       return recipesMatchingTags(tagIds, iter).whereEqualTo("tagIds." + nextTag, true);
     }
-    return DBUtils.recipes();
+    return DBUtils.recipeMetadata();
   }
 
   public List<String> savedRecipeIds(String userId) {

@@ -77,7 +77,18 @@
       function getRecipes() {
         const tagIDs = getCurrentFilters()
         let recipeList = document.getElementById("recipe-list")
-        fetch("/api/post?tagIDs=" + tagIDs).then(async (response) => {
+        let queryString = "/api/post"
+
+        if (tagIDs.length > 0) {
+            queryString += "?tagIDs=" + tagIDs[0]
+            for (var x = 1; x < tagIDs.length; x++) {
+                queryString += "&tagIDs=" + tagIDs[x];
+            }
+        }
+
+        console.log(queryString)
+
+        fetch(queryString).then(async (response) => {
           if (!response.ok) {
             alert("Error " + response.status.toString())
           } else {
@@ -92,14 +103,9 @@
       }
 
       function getCurrentFilters() {
-        var filterString = ""
         var filters = Array.from(document.getElementById("selected-filters").childNodes)
-        if (filters.length < 1) {
-          return "None"
-        }
-        filterString = filters.map((filter) => filter.id).join
-
-        return filterString
+        filters = filters.map((filter) => filter.id)
+        return filters
       }
 
       // Adds a filter to list of selected-filters
