@@ -80,10 +80,10 @@
         let queryString = "/api/post"
 
         if (tagIDs.length > 0) {
-            queryString += "?tagIDs=" + tagIDs[0]
-            for (var x = 1; x < tagIDs.length; x++) {
-                queryString += "&tagIDs=" + tagIDs[x];
-            }
+          queryString += "?tagIDs=" + tagIDs[0]
+          for (var x = 1; x < tagIDs.length; x++) {
+            queryString += "&tagIDs=" + tagIDs[x]
+          }
         }
 
         console.log(queryString)
