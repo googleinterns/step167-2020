@@ -1,48 +1,25 @@
 package com.google.sps.meltingpot.servlets;
 
-import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.Query;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
-import com.google.cloud.firestore.QuerySnapshot;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
 import com.google.gson.Gson;
-import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.data.DBInterface;
 import com.google.sps.meltingpot.data.Tag;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.StringWriter;
-import java.io.PrintWriter;
 import java.io.IOException;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.http.HttpServlet;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import java.util.Arrays;
 
 @RunWith(JUnit4.class)
 public final class TagServletTest {
@@ -62,7 +39,7 @@ public final class TagServletTest {
 
     when(request.getParameterValues("tagIds")).thenReturn(null);
     when(request.getParameter("getHidden")).thenReturn("true");
-    when(db.getAllTags(true)).thenReturn(Arrays.asList(Tag0,Tag1,Tag2,Tag3));
+    when(db.getAllTags(true)).thenReturn(Arrays.asList(Tag0, Tag1, Tag2, Tag3));
 
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw);
@@ -72,7 +49,7 @@ public final class TagServletTest {
 
     verify(db, times(1)).getAllTags(true);
     verify(db, never()).getTagsMatchingIds(anyList());
-    Assert.assertEquals(gson.toJson(Arrays.asList(Tag0,Tag1,Tag2,Tag3)), sw.toString());
+    Assert.assertEquals(gson.toJson(Arrays.asList(Tag0, Tag1, Tag2, Tag3)), sw.toString());
   }
 
   @Test
@@ -82,7 +59,7 @@ public final class TagServletTest {
 
     when(request.getParameterValues("tagIds")).thenReturn(null);
     when(request.getParameter("getHidden")).thenReturn("false");
-    when(db.getAllTags(false)).thenReturn(Arrays.asList(Tag2,Tag3));
+    when(db.getAllTags(false)).thenReturn(Arrays.asList(Tag2, Tag3));
 
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw);
@@ -92,7 +69,7 @@ public final class TagServletTest {
 
     verify(db, times(1)).getAllTags(false);
     verify(db, never()).getTagsMatchingIds(anyList());
-    Assert.assertEquals(gson.toJson(Arrays.asList(Tag2,Tag3)), sw.toString());
+    Assert.assertEquals(gson.toJson(Arrays.asList(Tag2, Tag3)), sw.toString());
   }
 
   @Test
@@ -100,9 +77,9 @@ public final class TagServletTest {
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
 
-    when(request.getParameterValues("tagIds")).thenReturn(new String[]{"1","2"});
+    when(request.getParameterValues("tagIds")).thenReturn(new String[] {"1", "2"});
     when(request.getParameter("getHidden")).thenReturn(null);
-    when(db.getTagsMatchingIds(anyList())).thenReturn(Arrays.asList(Tag1,Tag2));
+    when(db.getTagsMatchingIds(anyList())).thenReturn(Arrays.asList(Tag1, Tag2));
 
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw);
@@ -112,6 +89,6 @@ public final class TagServletTest {
 
     verify(db, never()).getAllTags(false);
     verify(db, times(1)).getTagsMatchingIds(anyList());
-    Assert.assertEquals(gson.toJson(Arrays.asList(Tag1,Tag2)), sw.toString());
-  } 
+    Assert.assertEquals(gson.toJson(Arrays.asList(Tag1, Tag2)), sw.toString());
+  }
 }

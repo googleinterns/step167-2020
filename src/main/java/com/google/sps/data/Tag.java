@@ -14,7 +14,7 @@ public class Tag extends DBObject {
   public Tag(String id) {
     super(id);
   }
-  
+
   public Tag(String id, String name, boolean hidden, String type) {
     super(id);
     this.name = name;
@@ -23,6 +23,7 @@ public class Tag extends DBObject {
   }
 
   public String toString() {
-    return "Tag[id=" + super.id + ", name=" + name + ", hidden=" + String.valueOf(hidden) + ", type=" + type + "}";
+    return "Tag[id=" + super.id + ", name=" + name + ", hidden=" + String.valueOf(hidden)
+        + ", type=" + type + "}";
   }
 }

@@ -14,35 +14,13 @@
 
 package com.google.sps.meltingpot.servlets;
 
-import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.Query;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
-import com.google.cloud.firestore.QuerySnapshot;
-import com.google.cloud.firestore.WriteResult;
-import com.google.firebase.auth.FirebaseToken;
-import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.data.DBInterface;
-import com.google.sps.meltingpot.data.DBObject;
 import com.google.sps.meltingpot.data.FirestoreDB;
-import com.google.sps.meltingpot.data.Recipe;
 import com.google.sps.meltingpot.data.Tag;
-import com.google.sps.meltingpot.data.User;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import javax.servlet.AsyncContext;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -57,6 +35,8 @@ public class TagServlet extends HttpServlet {
   public TagServlet(DBInterface db) {
     this.db = db;
   }
+
+  public TagServlet() {}
 
   @Override
   public void init() {
