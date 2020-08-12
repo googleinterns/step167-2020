@@ -233,7 +233,7 @@ public interface DBInterface {
    * @return a list of the Firestore IDs of the user's saved recipes in no particular order.
    */
   public List<String> savedRecipeIds(String userId);
-  
+
   /**
    * Checks if a specified user created a specified comment.
    *

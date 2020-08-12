@@ -17,7 +17,7 @@ public class StartupShutdown implements ServletContextListener {
   @Override
   public void contextInitialized(ServletContextEvent event) {
     System.out.println("Server starting up...");
-    
+
     try {
       FirebaseOptions options = new FirebaseOptions.Builder()
                                     .setCredentials(GoogleCredentials.getApplicationDefault())

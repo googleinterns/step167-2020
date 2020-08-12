@@ -1,9 +1,8 @@
 package com.google.sps.meltingpot.data;
 
-import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
-
+import com.google.cloud.firestore.DocumentSnapshot;
 
 public class Comment {
   public static final String CONTENT_KEY = "content";

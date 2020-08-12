@@ -82,6 +82,7 @@ public class FirestoreDB implements DBInterface {
         commentsQuery = commentsQuery.orderBy(Comment.TIMESTAMP_KEY, Query.Direction.DESCENDING);
         break;
     }
+    // blockOnFuture() returns a QuerySnapshot
     return DBUtils.blockOnFuture(commentsQuery.get()).toObjects(Comment.class);
   }
 
