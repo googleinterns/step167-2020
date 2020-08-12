@@ -29,7 +29,7 @@ public interface DBInterface {
    * @param newContent the new recipe's content, as distinct from metadata
    * @return the new recipe's Firestore doc ID
    */
-  public String addRecipe(RecipeMetadata newRecipeMetadata, String newContent);
+  public String addRecipe(Recipe newRecipe);
 
   /**
    * Deletes a recipe's content and metadata from Firestore.

@@ -1,3 +1,5 @@
 {
-    "content":"A recipe without instructions"
+    "metadata":{
+        "title":"A recipe with a name"
+    }
 }
