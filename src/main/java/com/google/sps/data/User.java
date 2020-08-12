@@ -3,7 +3,6 @@ package com.google.sps.meltingpot.data;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.sps.meltingpot.data.DBUtils;
 
 public class User extends DBObject {
   public static final String CREATED_RECIPES_KEY = "created-recipe-ids";
