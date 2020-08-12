@@ -25,8 +25,8 @@ public interface DBInterface {
   /**
    * Adds a recipe and its metadata to their respective collections in Firestore.
    *
-   * @param newRecipeMetadata a populated RecipeMetadata object (title, timestamp, etc)
-   * @param newContent the new recipe's content, as distinct from metadata
+   * @param newRecipe a populated Recipe object (title, timestamp, etc)
+   *        as well as the new recipe's content, as distinct from metadata
    * @return the new recipe's Firestore doc ID
    */
   public String addRecipe(Recipe newRecipe);

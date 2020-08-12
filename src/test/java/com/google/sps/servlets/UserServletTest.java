@@ -35,6 +35,8 @@ public final class UserServletTest {
     request = mock(HttpServletRequest.class);
     response = mock(HttpServletResponse.class);
     firebaseAuth = mock(FirebaseAuth.class);
+    // Inject the mock Firebase Auth object into Auth class.
+    Auth.testModeWithParams(firebaseAuth);
   }
   
   /** 
@@ -45,9 +47,6 @@ public final class UserServletTest {
   public void postUnauthorized() throws IOException, FirebaseAuthException {
     when(firebaseAuth.verifyIdToken(anyString(), eq(true)))
         .thenThrow(new IllegalArgumentException());
-    
-    // Inject mock authentication obj.
-    Auth.testModeWithParams(firebaseAuth);
 
     userServlet.doPost(request, response);
     
@@ -66,9 +65,6 @@ public final class UserServletTest {
     when(firebaseToken.getUid()).thenReturn("userID");
     when(firebaseAuth.verifyIdToken(anyString(), eq(true)))
         .thenReturn(firebaseToken);
-    
-    // Inject mock authentication obj.
-    Auth.testModeWithParams(firebaseAuth);
 
     userServlet.doPost(request, response);
 
@@ -86,9 +82,6 @@ public final class UserServletTest {
 
     when(firebaseAuth.verifyIdToken(anyString(), eq(true)))
         .thenThrow(new IllegalArgumentException());
-    
-    // Inject mock authentication obj.
-    Auth.testModeWithParams(firebaseAuth);
 
     userServlet.doPut(request, response);
     
@@ -112,9 +105,6 @@ public final class UserServletTest {
     when(firebaseToken.getUid()).thenReturn("userID");
     when(firebaseAuth.verifyIdToken(anyString(), eq(true)))
         .thenReturn(firebaseToken);
-    
-    // Inject mock authentication obj.
-    Auth.testModeWithParams(firebaseAuth);  
 
     userServlet.doPut(request, response);
 
@@ -137,9 +127,6 @@ public final class UserServletTest {
     when(firebaseToken.getUid()).thenReturn("userID");
     when(firebaseAuth.verifyIdToken(anyString(), eq(true)))
         .thenReturn(firebaseToken);
-    
-    // Inject mock authentication obj.
-    Auth.testModeWithParams(firebaseAuth);  
 
     userServlet.doPut(request, response);
 

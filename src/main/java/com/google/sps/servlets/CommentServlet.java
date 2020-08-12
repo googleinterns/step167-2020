@@ -59,14 +59,14 @@ public class CommentServlet extends HttpServlet {
 
     if (recipeID == null) {
       System.err.println("No recipe ID was provided.");
-      response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     } else {
       json = gson.toJson(db.getAllCommentsInRecipe(recipeID, SortingMethod.NEW));
     }
 
-    if (json == null) {
-      // Error message is printed by getComments().
+    if (json == null || json.equals(gson.toJson(null))) {
+      response.setStatus(HttpServletResponse.SC_NO_CONTENT);
       return;
     }
 

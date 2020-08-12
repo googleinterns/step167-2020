@@ -46,6 +46,8 @@ public class RecipeServlet extends HttpServlet {
   private Date date = new Date();
   private DBInterface db;
 
+  public RecipeServlet() {}
+
   public RecipeServlet(DBInterface mockInterface) {
     db = mockInterface;
   }

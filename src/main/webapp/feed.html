@@ -44,6 +44,8 @@
       let recipeList = document.getElementById("recipe-list")
       let tagSelect = document.getElementById("tag-select")
 
+      window.addFilter = addFilter
+
       window.onload = function () {
         // Fetch all recipes to populate our list
         fetch("/api/post").then(async (response) => {
@@ -60,7 +62,7 @@
 
         // Fetch all recipe tags to populate our select form
         fetch("/api/tag").then(async (response) => {
-          if (response.status < 200 || response.status >= 300) {
+          if (!response.ok) {
             alert("Error " + response.status.toString())
           } else {
             let tags = await response.json()
@@ -75,8 +77,19 @@
       function getRecipes() {
         const tagIDs = getCurrentFilters()
         let recipeList = document.getElementById("recipe-list")
-        fetch("/api/post?tagIDs=" + tagIDs).then(async (response) => {
-          if (response.status < 200 || response.status >= 300) {
+        let queryString = "/api/post"
+
+        if (tagIDs.length > 0) {
+            queryString += "?tagIDs=" + tagIDs[0]
+            for (var x = 1; x < tagIDs.length; x++) {
+                queryString += "&tagIDs=" + tagIDs[x];
+            }
+        }
+
+        console.log(queryString)
+
+        fetch(queryString).then(async (response) => {
+          if (!response.ok) {
             alert("Error " + response.status.toString())
           } else {
             let recipes = await response.json()
@@ -90,19 +103,9 @@
       }
 
       function getCurrentFilters() {
-        var filterString = ""
-        var filters = document.getElementById("selected-filters").childNodes
-        if (filters.length < 1) {
-          return "None"
-        }
-        // Generate comma-separated list of all current filters
-        filterString += filters[0].id
-        for (var x = 1; x < filters.length; x++) {
-          // Tag ID's, which we previously stored as the ID of
-          // each <option> element, get put in the list
-          filterString += "," + filters[x].id
-        }
-        return filterString
+        var filters = Array.from(document.getElementById("selected-filters").childNodes)
+        filters = filters.map((filter) => filter.id)
+        return filters
       }
 
       // Adds a filter to list of selected-filters

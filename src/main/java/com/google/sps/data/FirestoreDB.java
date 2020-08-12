@@ -159,14 +159,14 @@ public class FirestoreDB implements DBInterface {
 
   private List<RecipeMetadata> getRecipeMetadataQuery(
       Query recipesQuery, SortingMethod sortingMethod) {
-    switch (sortingMethod) {
+    /*switch (sortingMethod) {
       case TOP:
         recipesQuery = recipesQuery.orderBy(Recipe.VOTES_KEY, Query.Direction.DESCENDING);
         break;
       case NEW:
         recipesQuery = recipesQuery.orderBy(Recipe.TIMESTAMP_KEY, Query.Direction.DESCENDING);
         break;
-    }
+    }*/
 
     QuerySnapshot querySnapshot = DBUtils.blockOnFuture(recipesQuery.get());
 
@@ -180,9 +180,10 @@ public class FirestoreDB implements DBInterface {
   public Query recipesMatchingTags(Iterable<String> tagIds, Iterator<String> iter) {
     if (iter.hasNext()) {
       String nextTag = iter.next();
-      return recipesMatchingTags(tagIds, iter).whereEqualTo("tags." + nextTag, true);
+      System.out.println("Current tag: " + nextTag);
+      return recipesMatchingTags(tagIds, iter).whereEqualTo("tagIds." + nextTag, true);
     }
-    return DBUtils.recipes();
+    return DBUtils.recipeMetadata();
   }
 
   public List<String> savedRecipeIds(String userId) {
