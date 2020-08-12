@@ -216,7 +216,7 @@ public class FirestoreDB implements DBInterface {
   public boolean isCreatedComment(String recipeId, String commentId, String userId) {
     DocumentSnapshot comment = DBUtils.blockOnFuture(DBUtils.comment(recipeId, commentId).get());
 
-    String commentCreatorId = comment.getString(CREATOR_ID_KEY);
+    String commentCreatorId = comment.getString(Comment.CREATOR_ID_KEY);
     return commentCreatorId.equals(userId);
   }
 
