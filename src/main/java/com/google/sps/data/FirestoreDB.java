@@ -102,14 +102,12 @@ public class FirestoreDB implements DBInterface {
     return document.exists();
   }
 
-  /** Returns a User object from userId. */
   public User getUser(String userId) {
     DocumentReference userRef = DBUtils.user(userId);
     DocumentSnapshot user = DBUtils.blockOnFuture(userRef.get());
     return user.toObject(User.class);
   }
 
-  /** Adds a User to the db based on an input userId. */
   public String addUser(String userId) {
     DocumentReference newUserRef = DBUtils.users().document(userId);
     User newUser = new User(userId);
@@ -117,7 +115,6 @@ public class FirestoreDB implements DBInterface {
     return userId;
   }
 
-  /** Delete a User from the db based on an input userId. */
   public void deleteUser(String userId) {
     DBUtils.blockOnFuture(DBUtils.user(userId).delete());
   }
