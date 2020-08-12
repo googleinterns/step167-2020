@@ -1,24 +1,27 @@
 package com.google.sps.meltingpot.data;
 
-import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.sps.meltingpot.data.DBUtils;
-import java.util.Date;
 
 public class Comment {
   public static final String CONTENT_KEY = "content";
-  public static final String DATE_KEY = "date";
+  public static final String TIMESTAMP_KEY = "timestamp";
   public static final String CREATOR_ID_KEY = "creatorId";
+  public static final String VOTES_KEY = "votes";
 
   public String content;
-  public final Date date;
+  public long timestamp;
   public String creatorId;
+  public long votes;
+
+  public Comment() {
+    super();
+  }
 
   public Comment(String content, String creatorId) {
     this.content = content;
-    this.date = new Date();
+    this.timestamp = System.currentTimeMillis();
     this.creatorId = creatorId;
+    this.votes = 0;
   }
 
   // TODO: get user display name (or username) from db collection.

@@ -14,62 +14,49 @@
 
 package com.google.sps.meltingpot.servlets;
 
-import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.Query;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
-import com.google.cloud.firestore.QuerySnapshot;
-import com.google.cloud.firestore.WriteResult;
-import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.google.sps.meltingpot.data.DBObject;
-import com.google.sps.meltingpot.data.DBUtils;
-import com.google.sps.meltingpot.data.Recipe;
-import java.io.BufferedReader;
+import com.google.sps.meltingpot.data.DBInterface;
+import com.google.sps.meltingpot.data.FirestoreDB;
+import com.google.sps.meltingpot.data.Tag;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import javax.servlet.AsyncContext;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/** Handles recipe tag requests. */
+/** Handles recipe post requests. */
 @WebServlet("/api/tag")
 public class TagServlet extends HttpServlet {
   private Gson gson = new Gson();
+  private DBInterface db;
+
+  public TagServlet(DBInterface db) {
+    this.db = db;
+  }
+
+  public TagServlet() {}
+
+  @Override
+  public void init() {
+    db = new FirestoreDB();
+  }
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String json = getTagList(request);
+    String[] tagIds = request.getParameterValues("tagIds");
+    String getHidden = request.getParameter("getHidden");
+
+    List<Tag> tags;
+
+    if (tagIds == null) {
+      tags = db.getAllTags(getHidden != null && getHidden.equals("true"));
+    } else {
+      tags = db.getTagsMatchingIds(Arrays.asList(tagIds));
+    }
 
     response.setContentType("application/json");
-    response.getWriter().println(json);
-  }
-
-  private String getTagList(HttpServletRequest request) {
-    Query query = DBUtils.tags();
-
-    ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
-    ArrayList<Object> tagList = new ArrayList<>();
-    QuerySnapshot querySnapshot = DBUtils.blockOnFuture(querySnapshotFuture);
-
-    if (querySnapshot == null) {
-      return null;
-    }
-
-    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
-      tagList.add(document.getData());
-    }
-    return gson.toJson(tagList);
+    response.getWriter().print(gson.toJson(tags));
   }
 }
