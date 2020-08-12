@@ -14,6 +14,15 @@
     <a href="/submit-recipe.html">Add your own recipe!</a>
     <br />
 
+    <p>Select filters:</p>
+    <select onchange="addFilter()" id="tag-select">
+      <option>None</option>
+    </select>
+
+    <p>Currently selected filters:</p>
+    <div id="selected-filters"></div>
+    <br />
+
     <ul id="recipe-list"></ul>
 
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
@@ -33,18 +42,116 @@
       import { app } from "/scripts/init.js"
 
       let recipeList = document.getElementById("recipe-list")
+      let tagSelect = document.getElementById("tag-select")
 
-      fetch("/api/post").then(async (response) => {
-        if (!response.ok) {
-          alert("Error " + response.status.toString())
-        } else {
-          let recipes = await response.json()
-          recipes.forEach((recipe) => {
-            recipeList.innerHTML +=
-              '<li><a href="recipe-display.html?recipeID=' + recipe.id + '">' + recipe.title + "</a></li>"
-          })
+      window.addFilter = addFilter
+
+      window.onload = function () {
+        // Fetch all recipes to populate our list
+        fetch("/api/post").then(async (response) => {
+          if (!response.ok) {
+            alert("Error " + response.status.toString())
+          } else {
+            let recipes = await response.json()
+            recipes.forEach((recipe) => {
+              recipeList.innerHTML +=
+                '<li><a href="recipe-display.html?recipeID=' + recipe.id + '">' + recipe.title + "</a></li>"
+            })
+          }
+        })
+
+        // Fetch all recipe tags to populate our select form
+        fetch("/api/tag").then(async (response) => {
+          if (!response.ok) {
+            alert("Error " + response.status.toString())
+          } else {
+            let tags = await response.json()
+            tags.forEach((tag) => {
+              tagSelect.innerHTML += '<option value="' + tag.id + '">' + tag.name + "</option>"
+            })
+          }
+        })
+      }
+
+      // Performs retrieval of recipes based on the filters currently contained in <div> 'selected-filters'
+      function getRecipes() {
+        const tagIDs = getCurrentFilters()
+        let recipeList = document.getElementById("recipe-list")
+        let queryString = "/api/post"
+
+        if (tagIDs.length > 0) {
+          queryString += "?tagIDs=" + tagIDs[0]
+          for (var x = 1; x < tagIDs.length; x++) {
+            queryString += "&tagIDs=" + tagIDs[x]
+          }
         }
-      })
+
+        console.log(queryString)
+
+        fetch(queryString).then(async (response) => {
+          if (!response.ok) {
+            alert("Error " + response.status.toString())
+          } else {
+            let recipes = await response.json()
+            recipeList.innerHTML = ""
+            recipes.forEach((recipe) => {
+              recipeList.innerHTML +=
+                '<li><a href="recipe-display.html?recipeID=' + recipe.id + '">' + recipe.title + "</a></li>"
+            })
+          }
+        })
+      }
+
+      function getCurrentFilters() {
+        var filters = Array.from(document.getElementById("selected-filters").childNodes)
+        filters = filters.map((filter) => filter.id)
+        return filters
+      }
+
+      // Adds a filter to list of selected-filters
+      function addFilter() {
+        const tagID = tagSelect.value
+        if (tagID == "None" || tagInFilters(tagID)) {
+          return
+        }
+        let filterList = document.getElementById("selected-filters")
+
+        // Create 'filter' element with id matching tag ID and innertext matching tag name
+        const filter = document.createElement("DIV")
+        // Retrieve option with matching tagID then retrieve innertext (tag name)
+        filter.innerText = getOptionByValue(tagID).innerText
+        filter.id = tagID
+
+        filterList.appendChild(filter)
+        filter.addEventListener("click", function (e) {
+          // When we click a currently selected filter, remove it and retrieve recipes
+          filter.parentNode.removeChild(filter)
+          getRecipes()
+        })
+        getRecipes()
+      }
+
+      // Determines if the passed tagID is represented in the current selected filters
+      function tagInFilters(tagID) {
+        var filters = document.getElementById("selected-filters").childNodes
+        for (var x = 0; x < filters.length; x++) {
+          if (filters[x].id == tagID) return true
+        }
+        return false
+      }
+
+      // Returns the first option whose 'value' property (ie the id of the tag it represents)
+      // matches value
+      function getOptionByValue(value) {
+        var allOptions = document.getElementsByTagName("option")
+        var results = []
+        for (var x = 0; x < allOptions.length; x++) {
+          if (allOptions[x].value == value) {
+            results.push(allOptions[x])
+          }
+        }
+        return results[0]
+      }
     </script>
   </body>
 </html>
