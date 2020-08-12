@@ -54,7 +54,7 @@ public class VoteServlet extends HttpServlet {
     String vote = request.getParameter("vote");
     String token = request.getParameter("token");
 
-    if(recipeId == null || (!vote.equals("true") && !vote.equals("false"))) {
+    if(recipeId == null || vote == null || (!vote.equals("true") && !vote.equals("false"))) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
@@ -65,8 +65,8 @@ public class VoteServlet extends HttpServlet {
       return;
     }
 
-    FirebaseToken authToken;
-    if((authToken = Auth.verifyIdToken(token)) != null) {
+    FirebaseToken authToken = Auth.verifyIdToken(token);
+    if(authToken == null) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
