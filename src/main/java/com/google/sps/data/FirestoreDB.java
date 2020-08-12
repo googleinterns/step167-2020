@@ -158,14 +158,14 @@ public class FirestoreDB implements DBInterface {
 
   private List<RecipeMetadata> getRecipeMetadataQuery(
       Query recipesQuery, SortingMethod sortingMethod) {
-    switch (sortingMethod) {
+    /*switch (sortingMethod) {
       case TOP:
         recipesQuery = recipesQuery.orderBy(Recipe.VOTES_KEY, Query.Direction.DESCENDING);
         break;
       case NEW:
         recipesQuery = recipesQuery.orderBy(Recipe.TIMESTAMP_KEY, Query.Direction.DESCENDING);
         break;
-    }
+    }*/
 
     QuerySnapshot querySnapshot = DBUtils.blockOnFuture(recipesQuery.get());
 
