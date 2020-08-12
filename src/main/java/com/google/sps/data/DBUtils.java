@@ -1,5 +1,4 @@
 package com.google.sps.meltingpot.data;
-
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;

@@ -92,6 +92,7 @@ public class CommentServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
+
     newComment.creatorId = decodedToken.getUid();
     // Call FirestoreDB addComment method.
     db.addComment(newComment, recipeID);
