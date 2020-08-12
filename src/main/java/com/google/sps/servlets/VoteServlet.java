@@ -21,6 +21,7 @@ import com.google.sps.meltingpot.data.FirestoreDB;
 import com.google.sps.meltingpot.data.Tag;
 import com.google.sps.meltingpot.data.RecipeMetadata;
 import com.google.sps.meltingpot.data.User;
+import com.google.sps.meltingpot.data.DBUtils;
 import com.google.firebase.auth.FirebaseToken;
 import java.io.IOException;
 import java.util.Arrays;
@@ -54,6 +55,12 @@ public class VoteServlet extends HttpServlet {
     String token = request.getParameter("token");
 
     if(recipeId == null || (!vote.equals("true") && !vote.equals("false"))) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    if(!db.isDocument(recipeId, DBUtils.DB_RECIPES_COLLECTION)) {
+      // recipe does not exist
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
