@@ -12,6 +12,9 @@ public class Recipe extends DBObject {
   public String content;
   public String creatorId;
 
+  /** Empty constructor needed to deserialize Recipe object in Firestore queries. */
+  public Recipe() {}
+
   public Recipe(String id, String title, String content, String creatorId) {
     super(id);
     this.title = title;

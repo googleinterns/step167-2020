@@ -29,7 +29,9 @@ import com.google.sps.meltingpot.data.DBUtils;
 import com.google.sps.meltingpot.data.Recipe;
 import com.google.sps.meltingpot.data.User;
 import java.io.IOException;
+import java.lang.Boolean;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,11 +50,11 @@ public class RecipeServlet extends HttpServlet {
     String recipeID = request.getParameter("recipeID");
     String json;
 
-    if (recipeID == null)
-      json = getRecipeList();
-    else
+    if (recipeID == null) {
+      json = getRecipeList(request, response);
+    } else {
       json = getDetailedRecipe(recipeID);
-
+    }
     if (json == null) {
       response.setStatus(HttpServletResponse.SC_NO_CONTENT);
       return;
@@ -117,7 +119,7 @@ public class RecipeServlet extends HttpServlet {
       return;
     }
 
-    DocumentReference recipeRef = DBUtils.recipe(newRecipe.id);
+    DocumentReference recipeRef = DBUtils.recipes().document(newRecipe.id);
     ApiFuture future =
         recipeRef.update(Recipe.TITLE_KEY, newRecipe.title, Recipe.CONTENT_KEY, newRecipe.content);
     DBUtils.blockOnFuture(future);
@@ -148,8 +150,52 @@ public class RecipeServlet extends HttpServlet {
     DBUtils.blockOnFuture(writeResult);
   }
 
-  private String getRecipeList() {
-    Query query = DBUtils.recipes();
+  private String getRecipeList(HttpServletRequest request, HttpServletResponse response) {
+    // This parameter should only be used if the GET request was made for recipes by a certain user.
+    String creatorToken = request.getParameter("token");
+
+    String tagParam = request.getParameter("tagIDs");
+    boolean isSavedRequest = Boolean.parseBoolean(request.getParameter("saved"));
+
+    Query query;
+
+    boolean isTagQuery = !(tagParam == null || tagParam.equals("None"));
+    boolean isCreatorQuery = !(creatorToken == null || creatorToken.equals("None"));
+
+    FirebaseToken decodedToken = Auth.verifyIdToken(creatorToken);
+
+    if (isSavedRequest) {
+      if (decodedToken == null) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        return null;
+      }
+      String uid = decodedToken.getUid();
+
+      ArrayList<String> savedRecipeIds = User.savedRecipeIds(uid);
+
+      // Only return saved recipes if there exist saved recipes associated with the user.
+      if (!savedRecipeIds.isEmpty()) {
+        query = DBUtils.recipes().whereIn(Recipe.ID_KEY, User.savedRecipeIds(uid));
+      } else {
+        return null;
+      }
+
+    } else if (isTagQuery && !isCreatorQuery) {
+      String[] tagIDs = tagParam.split(",");
+      query = recipeWhereContainsArray(tagIDs, tagIDs.length - 1);
+    } else if (isCreatorQuery && !isTagQuery) {
+      if (decodedToken == null) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        return null;
+      }
+      String uid = decodedToken.getUid();
+
+      query = DBUtils.recipes().whereEqualTo(Recipe.CREATOR_ID_KEY, uid);
+    } else { // Currently addresses cases where both isTagQuery and isCreatorQuery, and where
+             // neither.
+      query = DBUtils.recipes();
+    }
+
     ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
     ArrayList<Object> recipeList = new ArrayList<>();
     QuerySnapshot querySnapshot = DBUtils.blockOnFuture(querySnapshotFuture);
@@ -164,11 +210,18 @@ public class RecipeServlet extends HttpServlet {
     return gson.toJson(recipeList);
   }
 
+  private Query recipeWhereContainsArray(String[] tagIDs, int index) {
+    if (index > 0)
+      return recipeWhereContainsArray(tagIDs, index - 1)
+          .whereEqualTo("tags." + tagIDs[index], true);
+    return DBUtils.recipes().whereEqualTo("tags." + tagIDs[index], true);
+  }
+
   private String getDetailedRecipe(String recipeID) throws IOException {
     DocumentReference recipeRef = DBUtils.recipes().document(recipeID);
     ApiFuture<DocumentSnapshot> future = recipeRef.get();
-
     DocumentSnapshot document = DBUtils.blockOnFuture(future);
+
     if (document.exists())
       return gson.toJson(document.getData());
     else {

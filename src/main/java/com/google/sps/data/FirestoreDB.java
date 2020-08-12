@@ -188,10 +188,7 @@ public class FirestoreDB implements DBInterface {
     DocumentReference userRef = DBUtils.user(userId);
     DocumentSnapshot user = DBUtils.blockOnFuture(userRef.get());
     Map<String, Boolean> savedRecipeIdsMap =
-        (Map<String, Boolean>) user.get(User.SAVED_RECIPES_KEY);
-    return new ArrayList<String>(savedRecipeIdsMap.keySet());
-  }
-
+        (Map<String, Boolean>) user.get(User.SAVED_RECIPES_KEY
   public String addComment(Comment newComment, String recipeId) {
     DocumentReference newCommentRef = DBUtils.comments(recipeId).document();
     DBUtils.blockOnFuture(newCommentRef.set(newComment));
@@ -211,6 +208,13 @@ public class FirestoreDB implements DBInterface {
   public void editCommentContent(String Id, String recipeId, String editedContent) {
     DBUtils.blockOnFuture(
         DBUtils.comments(recipeId).document(Id).update(Comment.CONTENT_KEY, editedContent));
+  }
+
+  public boolean isCreatedComment(String recipeId, String commentId, String userId) {
+    DocumentSnapshot comment = DBUtils.blockOnFuture(DBUtils.comment(recipeId, commentId).get());
+
+    String commentCreatorId = comment.getString(CREATOR_ID_KEY);
+    return commentCreatorId.equals(userId);
   }
 
   public boolean createdRecipe(String userId, String recipeId) {

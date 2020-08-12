@@ -3,6 +3,9 @@ package com.google.sps.meltingpot.data;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
+import com.google.gson.Gson;
+import java.util.ArrayList;
+import java.util.List;
 
 public class User extends DBObject {
   public static final String CREATED_RECIPES_KEY = "created-recipe-ids";
@@ -11,18 +14,5 @@ public class User extends DBObject {
 
   public User(String id) {
     super(id);
-  }
-
-  public static boolean createdRecipe(String userId, String recipeId) {
-    DocumentReference userRef = DBUtils.user(userId);
-    ApiFuture<DocumentSnapshot> userFuture = userRef.get();
-    DocumentSnapshot user = DBUtils.blockOnFuture(userFuture);
-    if (!user.exists()) {
-      return false;
-    }
-    Boolean userCreatedRecipe =
-        user.getBoolean(DBUtils.getNestedPropertyName(CREATED_RECIPES_KEY, recipeId));
-    // note that userCreatedRecipe is a Boolean, not a boolean
-    return userCreatedRecipe != null && userCreatedRecipe == true;
   }
 }
