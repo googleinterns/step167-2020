@@ -45,6 +45,8 @@ public class RecipeServlet extends HttpServlet {
   private Date date = new Date();
   private DBInterface db;
 
+  public RecipeServlet() {}
+
   public RecipeServlet(DBInterface mockInterface) {
     db = mockInterface;
   }
@@ -147,8 +149,8 @@ public class RecipeServlet extends HttpServlet {
     String tagIDs[] = request.getParameterValues("tagIDs");
     boolean isSavedRequest = Boolean.parseBoolean(request.getParameter("saved"));
 
-    boolean isTagQuery = !(tagIDs == null || tagIDs.length == 0 || tagIDs[0].equals("None"));
-    boolean isCreatorQuery = !(creatorToken == null || creatorToken.equals("None"));
+    boolean isTagQuery = (tagIDs != null && tagIDs.length > 0 && !tagIDs[0].equals("None"));
+    boolean isCreatorQuery = (creatorToken != null && !creatorToken.equals("None"));
 
     if (isSavedRequest || (isCreatorQuery && !isTagQuery)) {
       // If frontend is requesting saved recipes or created recipes of a given user,

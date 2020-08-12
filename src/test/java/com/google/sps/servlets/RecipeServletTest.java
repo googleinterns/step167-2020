@@ -136,10 +136,6 @@ public final class RecipeServletTest {
     Auth.testModeWithParams(mockFirebaseAuth);
     recipeServlet.doPost(request, response);
 
-    // verify(mockDbInterface).addRecipe(anyObject(), anyString());
-    // verify(mockDbInterface).makeUserPropertyTrue("USER_ID", "RECIPE_ID",
-    //     User.CREATED_RECIPES_KEY);
-
     verify(response).getWriter();
     verify(response).setStatus(HttpServletResponse.SC_CREATED);
     verify(pw).println(anyString());
