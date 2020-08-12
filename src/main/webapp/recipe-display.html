@@ -17,7 +17,12 @@
       <button type="button" id="submit-comment" value="Submit">Submit</button>
     </div>
     <div id="comments"></div>
+    <div id="votes">
+      Votes: 
+    </div>
     <button type="button" id="delete-post">Delete Post</button>
+    <button type="button" id="upvote">Toggle Upvote</button>
+    <button type="button" id="downvote">Toggle Downvote</button>
 
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
@@ -36,6 +41,9 @@
       var submitCommButton = document.getElementById("submit-comment")
       var commentLabel = document.getElementById("comment-label")
       var commentContent = document.getElementById("comment-content")
+      var votes = document.getElementById("votes")
+      var upvoteButton = document.getElementById("upvote")
+      var downvoteButton = document.getElementById("downvote")
 
       /** On window load, initialize the page. */
       window.onload = function () {
@@ -50,6 +58,8 @@
 
         deletePostButton.addEventListener("click", deletePost)
         submitCommButton.addEventListener("click", submitComment)
+        upvoteButton.addEventListener("click", () => toggleVote(true))
+        downvoteButton.addEventListener("click", () => toggleVote(false))
 
         toggleElementVisibility(app.auth().currentUser)
 
@@ -129,6 +139,7 @@
           .then((response) => response.json())
           .then((recipe) => {
             const recipeEl = document.getElementById("recipe")
+            votes.innerHTML = "Votes: " + recipe.votes;
             removeAllChildNodes(recipeEl)
             recipeEl.appendChild(createRecipeListElement(recipe))
           })
@@ -157,6 +168,32 @@
             })
         } else {
           alert("User must be signed in to submit a comment.")
+        }
+      }
+
+      function toggleVote(vote) {
+        var recipeID = getRecipeID()
+
+        if (app.auth().currentUser) {
+          app
+            .auth()
+            .currentUser.getIdToken(/* forceRefresh */ true)
+            .then(function (idToken) {
+              fetch("/api/vote?recipeId=" + recipeID + "&vote=" + vote + "&token=" + idToken, {
+                method: "DELETE",
+              }).then((response) => {
+                if (response.ok) {
+                  return response.json();
+                } else {
+                  alert("Error " + response.status.toString())
+                }
+              }).then(data => votes.innerHTML = "Votes: " + data.votes)
+            })
+            .catch(function (error) {
+              alert("Error! Could not retrieve user ID token.")
+            })
+        } else {
+          alert("User must be signed in to vote.")
         }
       }
 
