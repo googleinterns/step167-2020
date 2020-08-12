@@ -151,7 +151,8 @@ public interface DBInterface {
    *
    * @param userId the user's Firebase ID.
    * @param recipeId the recipe's Firebase ID.
-   * @return true if it is in the map as true, false if in map as false, null if not in map or user does not exist
+   * @return true if it is in the map as true, false if in map as false, null if not in map or user
+   *     does not exist
    */
   public Boolean inUserMap(String userId, String recipeId, String mapName);
 

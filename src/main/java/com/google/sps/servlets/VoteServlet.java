@@ -14,18 +14,15 @@
 
 package com.google.sps.meltingpot.servlets;
 
+import com.google.firebase.auth.FirebaseToken;
 import com.google.gson.Gson;
 import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.data.DBInterface;
+import com.google.sps.meltingpot.data.DBUtils;
 import com.google.sps.meltingpot.data.FirestoreDB;
-import com.google.sps.meltingpot.data.Tag;
 import com.google.sps.meltingpot.data.RecipeMetadata;
 import com.google.sps.meltingpot.data.User;
-import com.google.sps.meltingpot.data.DBUtils;
-import com.google.firebase.auth.FirebaseToken;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -54,23 +51,23 @@ public class VoteServlet extends HttpServlet {
     String vote = request.getParameter("vote");
     String token = request.getParameter("token");
 
-    if(recipeId == null || vote == null || (!vote.equals("true") && !vote.equals("false"))) {
+    if (recipeId == null || vote == null || (!vote.equals("true") && !vote.equals("false"))) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
 
-    if(!db.isDocument(recipeId, DBUtils.DB_RECIPES_COLLECTION)) {
+    if (!db.isDocument(recipeId, DBUtils.DB_RECIPES_COLLECTION)) {
       // recipe does not exist
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
 
     FirebaseToken authToken = Auth.verifyIdToken(token);
-    if(authToken == null) {
+    if (authToken == null) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
-    
+
     /*
     Expected Behavior: Go to position in table
     vote \  Current Position | Upvoted | Neutral | Downvoted
@@ -82,17 +79,17 @@ public class VoteServlet extends HttpServlet {
     String uid = authToken.getUid();
     RecipeMetadata metadata = new RecipeMetadata();
     Boolean votedRecipe = db.inUserMap(uid, recipeId, User.VOTED_RECIPES_KEY);
-    if(votedRecipe != null) {
-      if(votedRecipe == true) { // previously upvoted
-        if(vote.equals("true")) { //request wants to reset the upvote
+    if (votedRecipe != null) {
+      if (votedRecipe == true) { // previously upvoted
+        if (vote.equals("true")) { // request wants to reset the upvote
           db.deleteUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY);
           metadata.votes = db.voteRecipe(recipeId, -1);
         } else { // request wants to change upvote to downvote
           db.setUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, false);
           metadata.votes = db.voteRecipe(recipeId, -2);
         }
-      } else { // previously downvoted 
-        if(vote.equals("true")) { // request wants to change downvote to upvote
+      } else { // previously downvoted
+        if (vote.equals("true")) { // request wants to change downvote to upvote
           db.setUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, true);
           metadata.votes = db.voteRecipe(recipeId, 2);
         } else { // request wants to reset the downvote
@@ -101,7 +98,7 @@ public class VoteServlet extends HttpServlet {
         }
       }
     } else {
-      if(vote.equals("true")) { // request wants to upvote
+      if (vote.equals("true")) { // request wants to upvote
         db.setUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, true);
         metadata.votes = db.voteRecipe(recipeId, 1);
       } else { // request wants to downvote

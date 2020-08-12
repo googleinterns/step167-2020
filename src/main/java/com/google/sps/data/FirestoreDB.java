@@ -140,8 +140,7 @@ public class FirestoreDB implements DBInterface {
     if (!user.exists()) {
       return false;
     }
-    Boolean inMap =
-        user.getBoolean(DBUtils.getNestedPropertyName(mapName, recipeId));
+    Boolean inMap = user.getBoolean(DBUtils.getNestedPropertyName(mapName, recipeId));
     return inMap;
   }
 
