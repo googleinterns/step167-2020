@@ -1,4 +1,6 @@
 {
-    "title":"A recipe without instructions",
-    "id":"ID_OF_RECIPE"
+    "metadata":{
+        "title":"A recipe with a name",
+        "id":"ID_OF_RECIPE"
+    }
 }

@@ -1,4 +1,6 @@
 {
-    "title":"A new title",
-    "content":"some new content"
+    "content":"A recipe with instructions",
+    "metadata":{
+        "title":"A recipe with a name"
+    }
 }

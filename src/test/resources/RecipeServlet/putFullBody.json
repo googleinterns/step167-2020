@@ -1,5 +1,7 @@
 {
-    "title":"A recipe with a name",
     "content":"A recipe with instructions",
-    "id":"ID_OF_RECIPE"
+    "metadata":{
+        "title":"A recipe with a name",
+        "id":"ID_OF_RECIPE"
+    }
 }

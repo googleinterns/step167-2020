@@ -1,4 +1,6 @@
 {
-    "title":"A recipe with instructions",
-    "content":"Identify this recipe!"
+    "content":"A recipe with instructions",
+    "metadata":{
+        "title":"A recipe with a name"
+    }
 }
