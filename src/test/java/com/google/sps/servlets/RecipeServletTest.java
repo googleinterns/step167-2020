@@ -13,6 +13,7 @@ import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import com.google.firebase.auth.UserRecord;
 import com.google.gson.Gson;
 import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.data.DBInterface;
@@ -126,10 +127,13 @@ public final class RecipeServletTest {
     HttpServletResponse response = mock(HttpServletResponse.class);
     FirebaseAuth mockFirebaseAuth = mock(FirebaseAuth.class);
     FirebaseToken mockFirebaseToken = mock(FirebaseToken.class);
+    UserRecord mockUserRecord = mock(UserRecord.class);
     PrintWriter pw = mock(PrintWriter.class);
 
     when(mockFirebaseToken.getUid()).thenReturn("USER_ID");
+    when(mockUserRecord.getEmail()).thenReturn("johnnyappleseed@null.com");
     when(mockFirebaseAuth.verifyIdToken(anyString(), anyBoolean())).thenReturn(mockFirebaseToken);
+    when(mockFirebaseAuth.getUser(anyString())).thenReturn(mockUserRecord);
 
     BufferedReader requestBodyReader =
         new BufferedReader(new FileReader(new File(resourcesPath + "postFullBody.json")));
@@ -600,7 +604,7 @@ public final class RecipeServletTest {
 
     when(request.getParameter("token")).thenReturn("USER_TOKEN");
     when(request.getParameter("saved")).thenReturn("false");
-    when(request.getParameter("tagIDs")).thenReturn(null);
+    when(request.getParameterValues("tagIDs")).thenReturn(null);
 
     RecipeMetadata testMetadata = new RecipeMetadata("RECIPE_ID");
     ArrayList<RecipeMetadata> recipeList = new ArrayList<>();
@@ -624,7 +628,7 @@ public final class RecipeServletTest {
 
     when(request.getParameter("token")).thenReturn(null);
     when(request.getParameter("saved")).thenReturn("false");
-    when(request.getParameter("tagIDs")).thenReturn("TAG1,TAG2");
+    when(request.getParameterValues("tagIDs")).thenReturn(new String[] {"TAG1", "TAG2"});
 
     RecipeMetadata testMetadata = new RecipeMetadata("RECIPE_ID");
     ArrayList<RecipeMetadata> recipeList = new ArrayList<>();
@@ -646,7 +650,7 @@ public final class RecipeServletTest {
 
     when(request.getParameter("token")).thenReturn("USER_TOKEN");
     when(request.getParameter("saved")).thenReturn("false");
-    when(request.getParameter("tagIDs")).thenReturn("TAG1,TAG2");
+    when(request.getParameterValues("tagIDs")).thenReturn(new String[] {"TAG1", "TAG2"});
 
     RecipeMetadata testMetadata = new RecipeMetadata("RECIPE_ID");
     ArrayList<RecipeMetadata> recipeList = new ArrayList<>();
@@ -711,7 +715,7 @@ public final class RecipeServletTest {
     Assert.assertEquals("USER_ID", actual);
   }
 
-  /*                           */
+  /*                  */
 
   /** MATCHUSER TESTS */
 

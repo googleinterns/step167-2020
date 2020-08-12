@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -46,15 +47,16 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/api/post")
 public class RecipeServlet extends HttpServlet {
   private Gson gson = new Gson();
-  private DBInterface dbInterface;
+  private Date date = new Date();
+  private DBInterface db;
 
   public RecipeServlet(DBInterface mockInterface) {
-    dbInterface = mockInterface;
+    db = mockInterface;
   }
 
   @Override
   public void init() {
-    dbInterface = new FirestoreDB();
+    db = new FirestoreDB();
   }
 
   @Override
@@ -94,9 +96,12 @@ public class RecipeServlet extends HttpServlet {
     }
 
     newRecipe.metadata.creatorId = uid;
-    String recipeId = dbInterface.addRecipe(newRecipe.metadata, newRecipe.content);
+    newRecipe.metadata.votes = 0;
+    newRecipe.metadata.timestamp = date.getTime();
+    newRecipe.metadata.creatorLdap = Auth.getUserEmail(uid);
+    String recipeId = db.addRecipe(newRecipe.metadata, newRecipe.content);
 
-    dbInterface.makeUserPropertyTrue(uid, recipeId, User.CREATED_RECIPES_KEY);
+    db.makeUserPropertyTrue(uid, recipeId, User.CREATED_RECIPES_KEY);
 
     response.setStatus(HttpServletResponse.SC_CREATED);
     response.setContentType("application/json");
@@ -120,8 +125,7 @@ public class RecipeServlet extends HttpServlet {
       return;
     }
 
-    dbInterface.editRecipeTitleContent(
-        newRecipe.metadata.id, newRecipe.metadata.title, newRecipe.content);
+    db.editRecipeTitleContent(newRecipe.metadata.id, newRecipe.metadata.title, newRecipe.content);
   }
 
   @Override
@@ -139,43 +143,45 @@ public class RecipeServlet extends HttpServlet {
       return;
     }
 
-    dbInterface.deleteComments(recipeId);
-    dbInterface.deleteRecipe(recipeId);
+    db.deleteComments(recipeId);
+    db.deleteRecipe(recipeId);
   }
 
   protected String getRecipeList(HttpServletRequest request, HttpServletResponse response) {
     String creatorToken = request.getParameter("token");
 
-    String tagParam = request.getParameter("tagIDs");
+    String tagIDs[] = request.getParameterValues("tagIDs");
     boolean isSavedRequest = Boolean.parseBoolean(request.getParameter("saved"));
 
-    boolean isTagQuery = !(tagParam == null || tagParam.equals("None"));
+    boolean isTagQuery = !(tagIDs == null || tagIDs.length == 0 || tagIDs[0].equals("None"));
     boolean isCreatorQuery = !(creatorToken == null || creatorToken.equals("None"));
 
     if (isSavedRequest || (isCreatorQuery && !isTagQuery)) {
+      // If frontend is requesting saved recipes or created recipes of a given user,
+      // make sure they are authenticated
       String uid = getUid(creatorToken, response);
       if (uid == null) {
         return null;
       }
 
+      // Then perform the corresponding query
       if (isSavedRequest) {
-        return gson.toJson(dbInterface.getRecipesSavedBy(uid, SortingMethod.TOP));
+        return gson.toJson(db.getRecipesSavedBy(uid, SortingMethod.TOP));
       } else {
-        return gson.toJson(dbInterface.getRecipesMatchingCreator(uid, SortingMethod.TOP));
+        return gson.toJson(db.getRecipesMatchingCreator(uid, SortingMethod.TOP));
       }
     } else if (isTagQuery && !isCreatorQuery) {
-      String[] tagIDs = tagParam.split(",");
-      return gson.toJson(
-          dbInterface.getRecipesMatchingTags(Arrays.asList(tagIDs), SortingMethod.TOP));
-    } else { // Currently addresses cases where both isTagQuery and isCreatorQuery, and where
-             // neither.
-      return gson.toJson(dbInterface.getAllRecipes(SortingMethod.TOP));
+      // If the frontend is requesting recipes satisfying a certain set of tags,
+      // then perform the query
+      return gson.toJson(db.getRecipesMatchingTags(Arrays.asList(tagIDs), SortingMethod.TOP));
+    } else { // Currently addresses cases where frontend is requesting both a tag query and
+             // a creator query, or none of the above query types
+      return gson.toJson(db.getAllRecipes(SortingMethod.TOP));
     }
   }
 
   protected String getDetailedRecipe(String recipeId) throws IOException {
-    Recipe recipe =
-        new Recipe(dbInterface.getRecipeContent(recipeId), dbInterface.getRecipeMetadata(recipeId));
+    Recipe recipe = new Recipe(db.getRecipeContent(recipeId), db.getRecipeMetadata(recipeId));
     return gson.toJson(recipe);
   }
 
@@ -199,7 +205,7 @@ public class RecipeServlet extends HttpServlet {
       return null;
     }
 
-    if (!dbInterface.createdRecipe(uid, recipeId)) {
+    if (!db.createdRecipe(uid, recipeId)) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return null;
     }
