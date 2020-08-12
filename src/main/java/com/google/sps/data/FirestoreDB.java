@@ -188,7 +188,10 @@ public class FirestoreDB implements DBInterface {
     DocumentReference userRef = DBUtils.user(userId);
     DocumentSnapshot user = DBUtils.blockOnFuture(userRef.get());
     Map<String, Boolean> savedRecipeIdsMap =
-        (Map<String, Boolean>) user.get(User.SAVED_RECIPES_KEY
+        (Map<String, Boolean>) user.get(User.SAVED_RECIPES_KEY);
+    return new ArrayList<String>(savedRecipeIdsMap.keySet());
+  }
+
   public String addComment(Comment newComment, String recipeId) {
     DocumentReference newCommentRef = DBUtils.comments(recipeId).document();
     DBUtils.blockOnFuture(newCommentRef.set(newComment));

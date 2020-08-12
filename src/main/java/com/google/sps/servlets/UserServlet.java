@@ -26,7 +26,9 @@ import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
 import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.data.Comment;
+import com.google.sps.meltingpot.data.DBInterface;
 import com.google.sps.meltingpot.data.DBUtils;
+import com.google.sps.meltingpot.data.FirestoreDB;
 import com.google.sps.meltingpot.data.User;
 import java.io.IOException;
 import java.lang.Boolean;
@@ -45,6 +47,19 @@ import javax.servlet.http.HttpServletResponse;
 public class UserServlet extends HttpServlet {
   private Gson gson = new Gson();
 
+  private DBInterface db;
+
+  public UserServlet(DBInterface mock) {
+    this.db = mock;
+  }
+
+  public UserServlet() {}
+
+  @Override
+  public void init() {
+    db = new FirestoreDB();
+  }
+
   /** Add a new user document to the Firebase users collection. */
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -56,12 +71,9 @@ public class UserServlet extends HttpServlet {
       return;
     }
     String uid = decodedToken.getUid();
-
-    DocumentReference newUserRef = DBUtils.users().document(uid);
-    User newUser = new User(uid);
-    ApiFuture addUserFuture = newUserRef.set(newUser);
-
-    DBUtils.blockOnFuture(addUserFuture);
+    
+    // Call the FirestoreDB method.
+    db.addUser(uid);
 
     response.setStatus(HttpServletResponse.SC_CREATED);
   }
@@ -84,12 +96,9 @@ public class UserServlet extends HttpServlet {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         return;
       }
-
-      DocumentReference userRef = DBUtils.user(uid);
-      String nestedPropertyName = DBUtils.getNestedPropertyName(User.SAVED_RECIPES_KEY, recipeID);
-      ApiFuture addToSavedPostsFuture =
-          userRef.update(Collections.singletonMap(nestedPropertyName, true));
-      DBUtils.blockOnFuture(addToSavedPostsFuture);
+      
+      // Call the FirestoreDB method.
+      db.makeUserPropertyTrue(uid, recipeId, User.SAVED_RECIPES_KEY);
     }
   }
 }
