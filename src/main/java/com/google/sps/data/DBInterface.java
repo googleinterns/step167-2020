@@ -5,7 +5,7 @@ import java.util.List;
 public interface DBInterface {
   public String getRecipeContent(String Id);
   public RecipeMetadata getRecipeMetadata(String Id);
-  public String addRecipe(RecipeMetadata newRecipe, String newContent);
+  public String addRecipe(Recipe newRecipe);
   public void deleteRecipe(String Id);
 
   public void editRecipeTitleContent(String Id, String editedTitle, String editedContent);

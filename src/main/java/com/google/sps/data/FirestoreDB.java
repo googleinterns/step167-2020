@@ -32,14 +32,14 @@ public class FirestoreDB implements DBInterface {
     return DBUtils.blockOnFuture(DBUtils.recipeMetadata(Id).get()).toObject(RecipeMetadata.class);
   }
 
-  public String addRecipe(RecipeMetadata newRecipeMetadata, String newContent) {
+  public String addRecipe(Recipe newRecipe) {
     DocumentReference newContentRef = DBUtils.recipes().document();
-    newRecipeMetadata.id = newContentRef.getId();
-    DocumentReference newRecipeMetadataRef = DBUtils.recipeMetadata(newRecipeMetadata.id);
+    newRecipe.metadata.id = newContentRef.getId();
+    DocumentReference newRecipeMetadataRef = DBUtils.recipeMetadata(newRecipe.metadata.id);
     DBUtils.blockOnFuture(
-        newContentRef.set(Collections.singletonMap(Recipe.CONTENT_KEY, newContent)));
-    DBUtils.blockOnFuture(newRecipeMetadataRef.set(newRecipeMetadata));
-    return newRecipeMetadata.id;
+        newContentRef.set(Collections.singletonMap(Recipe.CONTENT_KEY, newRecipe.content)));
+    DBUtils.blockOnFuture(newRecipeMetadataRef.set(newRecipe.metadata));
+    return newRecipe.metadata.id;
   }
   public void deleteRecipe(String Id) {
     DBUtils.blockOnFuture(DBUtils.recipe(Id).delete());

@@ -99,7 +99,7 @@ public class RecipeServlet extends HttpServlet {
     newRecipe.metadata.votes = 0;
     newRecipe.metadata.timestamp = date.getTime();
     newRecipe.metadata.creatorLdap = Auth.getUserEmail(uid);
-    String recipeId = db.addRecipe(newRecipe.metadata, newRecipe.content);
+    String recipeId = db.addRecipe(newRecipe);
 
     db.makeUserPropertyTrue(uid, recipeId, User.CREATED_RECIPES_KEY);
 

@@ -143,7 +143,7 @@ public final class RecipeServletTest {
     doNothing().when(pw).println(anyString());
     when(response.getWriter()).thenReturn(pw);
 
-    when(mockDbInterface.addRecipe(anyObject(), anyString())).thenReturn("RECIPE_ID");
+    when(mockDbInterface.addRecipe(anyObject())).thenReturn("RECIPE_ID");
 
     Auth.testModeWithParams(mockFirebaseAuth);
     recipeServlet.doPost(request, response);
