@@ -90,7 +90,7 @@ public class FirestoreDB implements DBInterface {
         getHidden ? DBUtils.tags() : DBUtils.tags().whereEqualTo(Tag.HIDDEN_KEY, false);
     return DBUtils.blockOnFuture(tagsQuery.get()).toObjects(Tag.class);
   }
-  
+
   public List<Tag> getTagsMatchingIds(List<String> Ids) {
     Query tagsQuery = DBUtils.tags().whereIn(DBObject.ID_KEY, Ids);
     return DBUtils.blockOnFuture(tagsQuery.get()).toObjects(Tag.class);
