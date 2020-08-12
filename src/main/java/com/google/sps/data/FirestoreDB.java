@@ -158,7 +158,8 @@ public class FirestoreDB implements DBInterface {
 
   private List<RecipeMetadata> getRecipeMetadataQuery(
       Query recipesQuery, SortingMethod sortingMethod) {
-    switch (sortingMethod) {
+    switch (sortingMethod) { // Note: this does not currently work with tagID queries, requires
+                             // custom index
       case TOP:
         recipesQuery = recipesQuery.orderBy(Recipe.VOTES_KEY, Query.Direction.DESCENDING);
         break;
@@ -179,9 +180,9 @@ public class FirestoreDB implements DBInterface {
   public Query recipesMatchingTags(Iterable<String> tagIds, Iterator<String> iter) {
     if (iter.hasNext()) {
       String nextTag = iter.next();
-      return recipesMatchingTags(tagIds, iter).whereEqualTo("tags." + nextTag, true);
+      return recipesMatchingTags(tagIds, iter).whereEqualTo("tagIds." + nextTag, true);
     }
-    return DBUtils.recipes();
+    return DBUtils.recipeMetadata();
   }
 
   public List<String> savedRecipeIds(String userId) {
