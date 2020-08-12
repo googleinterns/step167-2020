@@ -79,32 +79,33 @@ public class VoteServlet extends HttpServlet {
     False (downvote request) | Downvote| Downvote| Neutral
     */
 
+    String uid = authToken.getUid();
     RecipeMetadata metadata = new RecipeMetadata();
-    Boolean votedRecipe = db.inUserMap(authToken.getUid(), recipeId, User.VOTED_RECIPES_KEY);
+    Boolean votedRecipe = db.inUserMap(uid, recipeId, User.VOTED_RECIPES_KEY);
     if(votedRecipe != null) {
       if(votedRecipe == true) { // previously upvoted
         if(vote.equals("true")) { //request wants to reset the upvote
-          db.deleteUserProperty(authToken.getUid(), recipeId, User.VOTED_RECIPES_KEY);
+          db.deleteUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY);
           metadata.votes = db.voteRecipe(recipeId, -1);
         } else { // request wants to change upvote to downvote
-          db.setUserProperty(authToken.getUid(), recipeId, User.VOTED_RECIPES_KEY, false);
+          db.setUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, false);
           metadata.votes = db.voteRecipe(recipeId, -2);
         }
       } else { // previously downvoted 
         if(vote.equals("true")) { // request wants to change downvote to upvote
-          db.setUserProperty(authToken.getUid(), recipeId, User.VOTED_RECIPES_KEY, true);
+          db.setUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, true);
           metadata.votes = db.voteRecipe(recipeId, 2);
         } else { // request wants to reset the downvote
-          db.deleteUserProperty(authToken.getUid(), recipeId, User.VOTED_RECIPES_KEY);
+          db.deleteUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY);
           metadata.votes = db.voteRecipe(recipeId, 1);
         }
       }
     } else {
       if(vote.equals("true")) { // request wants to upvote
-        db.setUserProperty(authToken.getUid(), recipeId, User.VOTED_RECIPES_KEY, true);
+        db.setUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, true);
         metadata.votes = db.voteRecipe(recipeId, 1);
       } else { // request wants to downvote
-        db.setUserProperty(authToken.getUid(), recipeId, User.VOTED_RECIPES_KEY, false);
+        db.setUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, false);
         metadata.votes = db.voteRecipe(recipeId, -1);
       }
     }
