@@ -81,19 +81,18 @@ public class CommentServlet extends HttpServlet {
     String recipeID = request.getParameter("recipeID"); // Parent recipe of comment.
 
     String token = request.getParameter("token");
-    FirebaseToken decodedToken = Auth.verifyIdToken(token);
-    if (decodedToken == null) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return;
-    }
 
     Comment newComment = gson.fromJson(commentData, Comment.class);
     if (newComment.content == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
+    String uid = Auth.getUid(token, response);
+    if (uid == null) {
+      return;
+    }
 
-    newComment.creatorId = decodedToken.getUid();
+    newComment.creatorId = uid;
     // Call FirestoreDB addComment method.
     db.addComment(newComment, recipeID);
     response.setStatus(HttpServletResponse.SC_CREATED);
@@ -111,10 +110,12 @@ public class CommentServlet extends HttpServlet {
     }
 
     String token = request.getParameter("token");
-    FirebaseToken decodedToken = Auth.verifyIdToken(token);
+    String uid = Auth.getUid(token, response);
+    if (uid == null) {
+      return;
+    }
 
-    if (decodedToken == null
-        || !db.isCreatedComment(recipeID, commentID, decodedToken.getUid())) {
+    if (!db.isCreatedComment(recipeID, commentID, uid)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }

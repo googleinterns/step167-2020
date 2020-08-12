@@ -1,11 +1,6 @@
 package com.google.sps.meltingpot.servlets;
 
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -29,6 +24,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -669,7 +665,7 @@ public final class RecipeServletTest {
         .thenThrow(new IllegalArgumentException());
 
     Auth.testModeWithParams(mockFirebaseAuth);
-    String actual = recipeServlet.getUid("MISSING_TOKEN", response);
+    String actual = Auth.getUid("MISSING_TOKEN", response);
 
     verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
@@ -685,7 +681,7 @@ public final class RecipeServletTest {
         .thenThrow(new FirebaseAuthException("Invalid token", "Invalid token"));
 
     Auth.testModeWithParams(mockFirebaseAuth);
-    String actual = recipeServlet.getUid("BAD_TOKEN", response);
+    String actual = Auth.getUid("BAD_TOKEN", response);
 
     verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
@@ -702,7 +698,7 @@ public final class RecipeServletTest {
     when(mockFirebaseAuth.verifyIdToken(anyString(), anyBoolean())).thenReturn(mockFirebaseToken);
 
     Auth.testModeWithParams(mockFirebaseAuth);
-    String actual = recipeServlet.getUid("GOOD_TOKEN", response);
+    String actual = Auth.getUid("GOOD_TOKEN", response);
 
     Assert.assertEquals("USER_ID", actual);
   }

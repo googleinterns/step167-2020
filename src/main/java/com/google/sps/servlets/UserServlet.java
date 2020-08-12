@@ -60,12 +60,10 @@ public class UserServlet extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String token = request.getParameter("token");
 
-    FirebaseToken decodedToken = Auth.verifyIdToken(token);
-    if (decodedToken == null) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    String uid = Auth.getUid(token, response);
+    if (uid == null) {
       return;
     }
-    String uid = decodedToken.getUid();
 
     // Call the FirestoreDB method.
     db.addUser(uid);
@@ -79,12 +77,11 @@ public class UserServlet extends HttpServlet {
     String token = request.getParameter("token");
     boolean isSaveRequest = Boolean.parseBoolean(request.getParameter("saved"));
 
-    FirebaseToken decodedToken = Auth.verifyIdToken(token);
-    if (decodedToken == null) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    String uid = Auth.getUid(token, response);
+    if (uid == null) {
+      // Auth sets response status to unauthorized.
       return;
     }
-    String uid = decodedToken.getUid();
 
     if (isSaveRequest) {
       if (recipeID == null) {
@@ -94,6 +91,7 @@ public class UserServlet extends HttpServlet {
 
       // Call the FirestoreDB method.
       db.makeUserPropertyTrue(uid, recipeID, User.SAVED_RECIPES_KEY);
+      response.setStatus(HttpServletResponse.SC_OK);
     }
   }
 }
