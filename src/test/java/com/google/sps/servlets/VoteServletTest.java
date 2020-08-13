@@ -122,6 +122,42 @@ public final class VoteServletTest {
   }
 
   @Test
+  public void putUpvotePreviouslyUpvotedWithoutUserInDB() throws IOException, FirebaseAuthException {
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    FirebaseAuth mockFirebaseAuth = mock(FirebaseAuth.class);
+    FirebaseToken authToken = mock(FirebaseToken.class);
+
+    when(request.getParameter("recipeId")).thenReturn(fakeRecipeId);
+    when(request.getParameter("vote")).thenReturn("true");
+    when(request.getParameter("token")).thenReturn(fakeToken);
+    when(db.isDocument(fakeRecipeId, DBUtils.DB_RECIPES_COLLECTION)).thenReturn(true);
+    when(db.voteRecipe(fakeRecipeId, -1)).thenReturn((long) fakeRecipeVotes - 1);
+    when(mockFirebaseAuth.verifyIdToken(fakeToken, true)).thenReturn(authToken);
+    when(db.isUser(fakeUserId)).thenReturn(false);
+    when(db.inUserMap(fakeUserId, fakeRecipeId, User.VOTED_RECIPES_KEY)).thenReturn(true);
+    when(authToken.getUid()).thenReturn(fakeUserId);
+
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    when(response.getWriter()).thenReturn(pw);
+
+    Auth.testModeWithParams(mockFirebaseAuth);
+
+    voteServlet.doPut(request, response);
+
+    verify(db).deleteUserProperty(fakeUserId, fakeRecipeId, User.VOTED_RECIPES_KEY);
+    verify(db).voteRecipe(fakeRecipeId, -1);
+    verify(db).addUser(fakeUserId);
+    verify(response, never()).setStatus(anyInt());
+    verify(response).getWriter();
+
+    RecipeMetadata metadata = new RecipeMetadata();
+    metadata.votes = fakeRecipeVotes - 1;
+    Assert.assertEquals(gson.toJson(metadata), sw.toString());
+  }
+
+  @Test
   public void putUpvotePreviouslyUpvoted() throws IOException, FirebaseAuthException {
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
@@ -134,6 +170,7 @@ public final class VoteServletTest {
     when(db.isDocument(fakeRecipeId, DBUtils.DB_RECIPES_COLLECTION)).thenReturn(true);
     when(db.voteRecipe(fakeRecipeId, -1)).thenReturn((long) fakeRecipeVotes - 1);
     when(mockFirebaseAuth.verifyIdToken(fakeToken, true)).thenReturn(authToken);
+    when(db.isUser(fakeUserId)).thenReturn(true);
     when(db.inUserMap(fakeUserId, fakeRecipeId, User.VOTED_RECIPES_KEY)).thenReturn(true);
     when(authToken.getUid()).thenReturn(fakeUserId);
 
@@ -168,6 +205,7 @@ public final class VoteServletTest {
     when(db.isDocument(fakeRecipeId, DBUtils.DB_RECIPES_COLLECTION)).thenReturn(true);
     when(db.voteRecipe(fakeRecipeId, -2)).thenReturn((long) fakeRecipeVotes - 2);
     when(mockFirebaseAuth.verifyIdToken(fakeToken, true)).thenReturn(authToken);
+    when(db.isUser(fakeUserId)).thenReturn(true);
     when(db.inUserMap(fakeUserId, fakeRecipeId, User.VOTED_RECIPES_KEY)).thenReturn(true);
     when(authToken.getUid()).thenReturn(fakeUserId);
 
@@ -202,6 +240,7 @@ public final class VoteServletTest {
     when(db.isDocument(fakeRecipeId, DBUtils.DB_RECIPES_COLLECTION)).thenReturn(true);
     when(db.voteRecipe(fakeRecipeId, 2)).thenReturn((long) fakeRecipeVotes + 2);
     when(mockFirebaseAuth.verifyIdToken(fakeToken, true)).thenReturn(authToken);
+    when(db.isUser(fakeUserId)).thenReturn(true);
     when(db.inUserMap(fakeUserId, fakeRecipeId, User.VOTED_RECIPES_KEY)).thenReturn(false);
     when(authToken.getUid()).thenReturn(fakeUserId);
 
@@ -236,6 +275,7 @@ public final class VoteServletTest {
     when(db.isDocument(fakeRecipeId, DBUtils.DB_RECIPES_COLLECTION)).thenReturn(true);
     when(db.voteRecipe(fakeRecipeId, 1)).thenReturn((long) fakeRecipeVotes + 1);
     when(mockFirebaseAuth.verifyIdToken(fakeToken, true)).thenReturn(authToken);
+    when(db.isUser(fakeUserId)).thenReturn(true);
     when(db.inUserMap(fakeUserId, fakeRecipeId, User.VOTED_RECIPES_KEY)).thenReturn(false);
     when(authToken.getUid()).thenReturn(fakeUserId);
 
@@ -270,6 +310,7 @@ public final class VoteServletTest {
     when(db.isDocument(fakeRecipeId, DBUtils.DB_RECIPES_COLLECTION)).thenReturn(true);
     when(db.voteRecipe(fakeRecipeId, 1)).thenReturn((long) fakeRecipeVotes + 1);
     when(mockFirebaseAuth.verifyIdToken(fakeToken, true)).thenReturn(authToken);
+    when(db.isUser(fakeUserId)).thenReturn(true);
     when(db.inUserMap(fakeUserId, fakeRecipeId, User.VOTED_RECIPES_KEY)).thenReturn(null);
     when(authToken.getUid()).thenReturn(fakeUserId);
 
@@ -304,6 +345,7 @@ public final class VoteServletTest {
     when(db.isDocument(fakeRecipeId, DBUtils.DB_RECIPES_COLLECTION)).thenReturn(true);
     when(db.voteRecipe(fakeRecipeId, -1)).thenReturn((long) fakeRecipeVotes - 1);
     when(mockFirebaseAuth.verifyIdToken(fakeToken, true)).thenReturn(authToken);
+    when(db.isUser(fakeUserId)).thenReturn(true);
     when(db.inUserMap(fakeUserId, fakeRecipeId, User.VOTED_RECIPES_KEY)).thenReturn(null);
     when(authToken.getUid()).thenReturn(fakeUserId);
 

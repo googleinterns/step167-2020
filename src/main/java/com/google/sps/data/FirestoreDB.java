@@ -102,6 +102,12 @@ public class FirestoreDB implements DBInterface {
     return document.exists();
   }
 
+  public boolean isUser(String userId) {
+    DocumentReference userRef = DBUtils.user(userId);
+    DocumentSnapshot user = DBUtils.blockOnFuture(userRef.get());
+    return user.exists();
+  }
+
   public User getUser(String userId) {
     DocumentReference userRef = DBUtils.user(userId);
     DocumentSnapshot user = DBUtils.blockOnFuture(userRef.get());
@@ -138,7 +144,7 @@ public class FirestoreDB implements DBInterface {
     DocumentSnapshot user = DBUtils.blockOnFuture(DBUtils.user(userId).get());
 
     if (!user.exists()) {
-      return false;
+      return null;
     }
     Boolean inMap = user.getBoolean(DBUtils.getNestedPropertyName(mapName, recipeId));
     return inMap;

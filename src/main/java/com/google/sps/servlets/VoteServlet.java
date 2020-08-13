@@ -68,6 +68,11 @@ public class VoteServlet extends HttpServlet {
       return;
     }
 
+    String uid = authToken.getUid();
+    if(!db.isUser(uid)) {
+      db.addUser(uid);
+    }
+
     /*
     Expected Behavior: Go to position in table
     vote \  Current Position | Upvoted | Neutral | Downvoted
@@ -76,7 +81,6 @@ public class VoteServlet extends HttpServlet {
     False (downvote request) | Downvote| Downvote| Neutral
     */
 
-    String uid = authToken.getUid();
     RecipeMetadata metadata = new RecipeMetadata();
     Boolean votedRecipe = db.inUserMap(uid, recipeId, User.VOTED_RECIPES_KEY);
     if (votedRecipe != null) {
@@ -97,7 +101,7 @@ public class VoteServlet extends HttpServlet {
           metadata.votes = db.voteRecipe(recipeId, 1);
         }
       }
-    } else {
+    } else { // previously neutral
       if (vote.equals("true")) { // request wants to upvote
         db.setUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, true);
         metadata.votes = db.voteRecipe(recipeId, 1);

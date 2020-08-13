@@ -101,6 +101,14 @@ public interface DBInterface {
   public boolean isDocument(String docId, String collection);
 
   /**
+   * Returns whether the user document exists
+   *
+   * @param userId the user's Firebase ID.
+   * @return boolean that tells you whether it exists or not
+   */
+  public boolean isUser(String userId);
+
+  /**
    * Returns a User object from userId.
    *
    * @param userId the user's Firebase ID.
