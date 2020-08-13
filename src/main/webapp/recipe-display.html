@@ -18,7 +18,7 @@
     </div>
     <div id="comments"></div>
     <div id="votes">
-      Votes: 
+      Votes:
     </div>
     <button type="button" id="delete-post">Delete Post</button>
     <button type="button" id="upvote">Toggle Upvote</button>
@@ -41,9 +41,12 @@
       var submitCommButton = document.getElementById("submit-comment")
       var commentLabel = document.getElementById("comment-label")
       var commentContent = document.getElementById("comment-content")
-      var votes = document.getElementById("votes")
+      var votesDiv = document.getElementById("votes")
       var upvoteButton = document.getElementById("upvote")
       var downvoteButton = document.getElementById("downvote")
+
+      var votes = 0
+      var voted = 0
 
       /** On window load, initialize the page. */
       window.onload = function () {
@@ -53,7 +56,7 @@
       /** Load page elements. */
       function initPage() {
         // Load the recipe and comments on the page.
-        getDetailedRecipe(getRecipeID())
+        getDetailedRecipe(getRecipeID(), app)
         getComments(getRecipeID())
 
         deletePostButton.addEventListener("click", deletePost)
@@ -66,6 +69,7 @@
         // Set Firebase auth state change listener.
         app.auth().onAuthStateChanged(function (user) {
           toggleElementVisibility(user)
+          getUserRecipeProperties(getRecipeID())
         })
       }
 
@@ -80,6 +84,28 @@
         }
       }
 
+      function getUserRecipeProperties(ID) {
+        if (app.auth().currentUser) {
+          app
+            .auth()
+            .currentUser.getIdToken(/* forceRefresh */ true)
+            .then((idToken) =>
+              fetch("api/vote?recipeIds=" + ID + "&token=" + idToken)
+                .then((res) => res.json())
+                .then((data) => {
+                  console.log(data)
+                  if (data[0] === true) {
+                    voted = 1
+                  } else if (data[0] === null) {
+                    voted = 0
+                  } else if (data[0] === false) {
+                    voted = -1
+                  }
+                })
+            )
+        }
+      }
+
       /** Returns the recipe ID in the query string for this page. */
       function getRecipeID() {
         const params = new URLSearchParams(window.location.search)
@@ -90,7 +116,6 @@
       function submitComment() {
         var commentContent = document.getElementById("comment-content")
         var recipeID = getRecipeID()
-
         if (app.auth().currentUser) {
           app
             .auth()
@@ -134,12 +159,13 @@
           })
       }
 
-      function getDetailedRecipe(ID) {
+      function getDetailedRecipe(ID, app) {
         fetch("/api/post?recipeID=" + ID)
           .then((response) => response.json())
           .then((recipe) => {
             const recipeEl = document.getElementById("recipe")
-            votes.innerHTML = "Votes: " + recipe.metadata.votes;
+            votes = recipe.metadata.votes
+            votesDiv.innerHTML = "Votes: " + recipe.metadata.votes
             removeAllChildNodes(recipeEl)
             recipeEl.appendChild(createRecipeListElement(recipe))
           })
@@ -175,6 +201,32 @@
         var recipeID = getRecipeID()
 
         if (app.auth().currentUser) {
+          if (voted === 1) {
+            if (vote) {
+              voted = 0
+              votes += -1
+            } else {
+              voted = -1
+              votes += -2
+            }
+          } else if (voted === 0) {
+            if (vote) {
+              voted = 1
+              votes += 1
+            } else {
+              voted = -1
+              votes += -1
+            }
+          } else if (voted == -1) {
+            if (vote) {
+              voted = 1
+              votes += 2
+            } else {
+              voted = 0
+              votes += 1
+            }
+          }
+          votesDiv.innerHTML = "Votes: " + votes
           app
             .auth()
             .currentUser.getIdToken(/* forceRefresh */ true)
@@ -183,11 +235,11 @@
                 method: "PUT",
               }).then((response) => {
                 if (response.ok) {
-                  return response.json();
+                  return response.json()
                 } else {
                   alert("Error " + response.status.toString())
                 }
-              }).then(data => votes.innerHTML = "Votes: " + data.votes)
+              })
             })
             .catch(function (error) {
               alert("Error! Could not retrieve user ID token.")

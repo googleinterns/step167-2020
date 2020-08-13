@@ -46,6 +46,27 @@ public class VoteServlet extends HttpServlet {
   }
 
   @Override
+  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String[] recipeIds = request.getParameterValues("recipeIds");
+    String token = request.getParameter("token");
+
+    if (recipeIds == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    FirebaseToken authToken = Auth.verifyIdToken(token);
+    if (authToken == null) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return;
+    }
+
+    response.setContentType("application/json");
+    response.getWriter().println(
+        gson.toJson(db.inUserMap(authToken.getUid(), recipeIds, User.VOTED_RECIPES_KEY)));
+  }
+
+  @Override
   public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String recipeId = request.getParameter("recipeId");
     String vote = request.getParameter("vote");
@@ -69,7 +90,7 @@ public class VoteServlet extends HttpServlet {
     }
 
     String uid = authToken.getUid();
-    if(!db.isUser(uid)) {
+    if (!db.isUser(uid)) {
       db.addUser(uid);
     }
 

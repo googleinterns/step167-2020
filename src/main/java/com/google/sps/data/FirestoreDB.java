@@ -5,8 +5,8 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.FieldValue;
 import com.google.cloud.firestore.Query;
-import com.google.cloud.firestore.Transaction;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.Transaction;
 import com.google.cloud.firestore.WriteBatch;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -126,12 +126,12 @@ public class FirestoreDB implements DBInterface {
   public void setUserProperty(String userId, String objectId, String collection, boolean val) {
     DocumentReference userRef = DBUtils.user(userId);
     String nestedPropertyName = DBUtils.getNestedPropertyName(collection, objectId);
-    ApiFuture addUserPropertyFuture =
-        userRef.update(nestedPropertyName, val);
+    ApiFuture addUserPropertyFuture = userRef.update(nestedPropertyName, val);
     DBUtils.blockOnFuture(addUserPropertyFuture);
   }
 
-  public void setUserProperty(String userId, String objectId, String collection, boolean val, Transaction t) {
+  public void setUserProperty(
+      String userId, String objectId, String collection, boolean val, Transaction t) {
     DocumentReference userRef = DBUtils.user(userId);
     String nestedPropertyName = DBUtils.getNestedPropertyName(collection, objectId);
     t.update(userRef, nestedPropertyName, val);
@@ -157,6 +157,20 @@ public class FirestoreDB implements DBInterface {
       return null;
     }
     Boolean inMap = user.getBoolean(DBUtils.getNestedPropertyName(mapName, recipeId));
+    return inMap;
+  }
+
+  public Boolean[] inUserMap(String userId, String[] recipeIds, String mapName) {
+    DocumentSnapshot user = DBUtils.blockOnFuture(DBUtils.user(userId).get());
+
+    if (!user.exists()) {
+      return null;
+    }
+
+    Boolean[] inMap = new Boolean[recipeIds.length];
+    for (int i = 0; i < recipeIds.length; i++) {
+      inMap[i] = user.getBoolean(DBUtils.getNestedPropertyName(mapName, recipeIds[i]));
+    }
     return inMap;
   }
 

@@ -1,7 +1,7 @@
 package com.google.sps.meltingpot.data;
 
-import com.google.cloud.firestore.Transaction;
 import com.google.cloud.firestore.Query;
+import com.google.cloud.firestore.Transaction;
 import java.util.Iterator;
 import java.util.List;
 
@@ -148,14 +148,15 @@ public interface DBInterface {
    * Sets a property's value to val for a certain user document. Can be used to let a user add a
    * recipe to saved or created, or to let user follow a tag.
    * Done within a transaction.
-   * 
+   *
    * @param userId the user's Firebase ID
    * @param objectId the ID of either a recipe if the intent is to save/create, or of a tag for tag
    *     following.
    * @param collection a KEY constant from User class indicating which mode -- save, create, or
    *     follow tag.
    */
-  public void setUserProperty(String userId, String objectId, String collection, boolean val, Transaction t);
+  public void setUserProperty(
+      String userId, String objectId, String collection, boolean val, Transaction t);
 
   /**
    * Deletes a property value for a certain user document. Can be used to let a user delete a recipe
@@ -189,6 +190,16 @@ public interface DBInterface {
    *     does not exist
    */
   public Boolean inUserMap(String userId, String recipeId, String mapName);
+
+  /**
+   * inUserMap, but for arrays
+   *
+   * @param userId the user's Firebase ID.
+   * @param recipeIds the recipes Firebase IDs.
+   * @return array of [true if it is in the map as true, false if in map as false, null if not in
+   *     map or user does not exist]
+   */
+  public Boolean[] inUserMap(String userId, String[] recipeIds, String mapName);
 
   /**
    * Checks if a specified user has a given recipe as true in a given map field.
