@@ -81,37 +81,36 @@ public class VoteServlet extends HttpServlet {
     False (downvote request) | Downvote| Downvote| Neutral
     */
 
-    RecipeMetadata metadata = new RecipeMetadata();
-    Boolean votedRecipe = db.inUserMap(uid, recipeId, User.VOTED_RECIPES_KEY);
-    if (votedRecipe != null) {
-      if (votedRecipe == true) { // previously upvoted
-        if (vote.equals("true")) { // request wants to reset the upvote
-          db.deleteUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY);
-          metadata.votes = db.voteRecipe(recipeId, -1);
-        } else { // request wants to change upvote to downvote
-          db.setUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, false);
-          metadata.votes = db.voteRecipe(recipeId, -2);
+    DBUtils.blockOnFuture(DBUtils.database.runTransaction(transaction -> {
+      Boolean votedRecipe = db.inUserMap(uid, recipeId, User.VOTED_RECIPES_KEY, transaction);
+      if (votedRecipe != null) {
+        if (votedRecipe == true) { // previously upvoted
+          if (vote.equals("true")) { // request wants to reset the upvote
+            db.voteRecipe(recipeId, -1, transaction);
+            db.deleteUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, transaction);
+          } else { // request wants to change upvote to downvote
+            db.voteRecipe(recipeId, -2, transaction);
+            db.setUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, false, transaction);
+          }
+        } else { // previously downvoted
+          if (vote.equals("true")) { // request wants to change downvote to upvote
+            db.voteRecipe(recipeId, 2, transaction);
+            db.setUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, true, transaction);
+          } else { // request wants to reset the downvote
+            db.voteRecipe(recipeId, 1, transaction);
+            db.deleteUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, transaction);
+          }
         }
-      } else { // previously downvoted
-        if (vote.equals("true")) { // request wants to change downvote to upvote
-          db.setUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, true);
-          metadata.votes = db.voteRecipe(recipeId, 2);
-        } else { // request wants to reset the downvote
-          db.deleteUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY);
-          metadata.votes = db.voteRecipe(recipeId, 1);
+      } else { // previously neutral
+        if (vote.equals("true")) { // request wants to upvote
+          db.voteRecipe(recipeId, 1, transaction);
+          db.setUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, true, transaction);
+        } else { // request wants to downvote
+          db.voteRecipe(recipeId, -1, transaction);
+          db.setUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, false, transaction);
         }
       }
-    } else { // previously neutral
-      if (vote.equals("true")) { // request wants to upvote
-        db.setUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, true);
-        metadata.votes = db.voteRecipe(recipeId, 1);
-      } else { // request wants to downvote
-        db.setUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, false);
-        metadata.votes = db.voteRecipe(recipeId, -1);
-      }
-    }
-
-    response.setContentType("application/json");
-    response.getWriter().print(gson.toJson(metadata));
+      return 0;
+    }));
   }
 }

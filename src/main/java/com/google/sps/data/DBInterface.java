@@ -1,5 +1,6 @@
 package com.google.sps.meltingpot.data;
 
+import com.google.cloud.firestore.Transaction;
 import com.google.cloud.firestore.Query;
 import java.util.Iterator;
 import java.util.List;
@@ -54,7 +55,7 @@ public interface DBInterface {
    * @param voteDiff int value that should be added to the current votes on the recipe
    * @return recipe vote count after the update
    */
-  public Long voteRecipe(String Id, int voteDiff);
+  public long voteRecipe(String Id, int voteDiff, Transaction t);
 
   /**
    * Gets a sorted list of all recipe metadata.
@@ -132,7 +133,7 @@ public interface DBInterface {
   public void deleteUser(String userId);
 
   /**
-   * Sets a property's value to "true" for a certain user document. Can be used to let a user add a
+   * Sets a property's value to val for a certain user document. Can be used to let a user add a
    * recipe to saved or created, or to let user follow a tag.
    *
    * @param userId the user's Firebase ID
@@ -142,6 +143,19 @@ public interface DBInterface {
    *     follow tag.
    */
   public void setUserProperty(String userId, String objectId, String collection, boolean val);
+
+  /**
+   * Sets a property's value to val for a certain user document. Can be used to let a user add a
+   * recipe to saved or created, or to let user follow a tag.
+   * Done within a transaction.
+   * 
+   * @param userId the user's Firebase ID
+   * @param objectId the ID of either a recipe if the intent is to save/create, or of a tag for tag
+   *     following.
+   * @param collection a KEY constant from User class indicating which mode -- save, create, or
+   *     follow tag.
+   */
+  public void setUserProperty(String userId, String objectId, String collection, boolean val, Transaction t);
 
   /**
    * Deletes a property value for a certain user document. Can be used to let a user delete a recipe
@@ -155,6 +169,18 @@ public interface DBInterface {
   public void deleteUserProperty(String userId, String objectId, String collection);
 
   /**
+   * Deletes a property value for a certain user document. Can be used to let a user delete a recipe
+   * from saved or created, or to let user unfollow a tag.
+   * Done within a transaction.
+   *
+   * @param userId the user's Firebase ID
+   * @param objectId the ID of either a recipe if the intent is to unsave/create, or of a tag for
+   *     tag unfollowing.
+   * @param collection a KEY constant from User class indicating which mode -- save, create, or tag.
+   */
+  public void deleteUserProperty(String userId, String objectId, String collection, Transaction t);
+
+  /**
    * Checks if a specified user has a given recipe as true in a given map field.
    *
    * @param userId the user's Firebase ID.
@@ -163,6 +189,17 @@ public interface DBInterface {
    *     does not exist
    */
   public Boolean inUserMap(String userId, String recipeId, String mapName);
+
+  /**
+   * Checks if a specified user has a given recipe as true in a given map field.
+   * Done within a transaction.
+   *
+   * @param userId the user's Firebase ID.
+   * @param recipeId the recipe's Firebase ID.
+   * @return true if it is in the map as true, false if in map as false, null if not in map or user
+   *     does not exist
+   */
+  public Boolean inUserMap(String userId, String recipeId, String mapName, Transaction t);
 
   /**
    * Returns a list of all recipe metadata with any of the tags in the tag IDs list.
