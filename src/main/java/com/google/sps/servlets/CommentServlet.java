@@ -28,6 +28,7 @@ import com.google.sps.meltingpot.data.FirestoreDB;
 import com.google.sps.meltingpot.data.SortingMethod;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.stream.Collectors;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -38,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/api/comment")
 public class CommentServlet extends HttpServlet {
   private Gson gson = new Gson();
+  private Date date = new Date();
   private DBInterface db;
 
   public CommentServlet(DBInterface mock) {
@@ -93,6 +95,9 @@ public class CommentServlet extends HttpServlet {
     }
 
     newComment.creatorId = uid;
+    newComment.votes = 0;
+    newComment.timestamp = date.getTime();
+    newComment.ldap = Auth.getUserEmail(uid);
     // Call FirestoreDB addComment method.
     db.addComment(newComment, recipeID);
     response.setStatus(HttpServletResponse.SC_CREATED);
@@ -104,7 +109,7 @@ public class CommentServlet extends HttpServlet {
     String commentID = request.getParameter("commentID");
     String commentBody = request.getParameter("commentBody");
 
-    if (recipeID == null || commentID == null || commentBody == null) {
+    if (recipeID == null || commentID == null || commentBody == null || commentBody.isEmpty()) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }

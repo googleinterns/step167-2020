@@ -310,7 +310,7 @@
         const recipeElement = document.createElement("div")
         recipeElement.appendChild(createBasicElement(recipe.metadata.title, "h2"))
         recipeElement.appendChild(createBasicElement(recipe.content, "p"))
-        if (app.auth().currentUser && recipe.creatorId == app.auth().currentUser.uid) {
+        if (app.auth().currentUser && recipe.metadata.creatorId == app.auth().currentUser.uid) {
           const deleteBtn = document.createElement("button")
           deleteBtn.type = "button"
           recipeElement.appendChild(deleteBtn)
