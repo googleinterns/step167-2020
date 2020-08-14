@@ -22,13 +22,13 @@ import com.google.sps.meltingpot.data.User;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import java.util.HashMap;
 
 @RunWith(JUnit4.class)
 public final class VoteServletTest {

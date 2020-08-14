@@ -135,7 +135,7 @@ public interface DBInterface {
 
   /**
    * Sets a property's value to val for a certain user document. Can be used to let a user add a
-   * recipe to saved or created, or to let user follow a tag.
+   * recipe to saved or created, or to let user follow a tag. Not thread safe.
    *
    * @param userId the user's Firebase ID
    * @param objectId the ID of either a recipe if the intent is to save/create, or of a tag for tag
@@ -162,7 +162,7 @@ public interface DBInterface {
 
   /**
    * Deletes a property value for a certain user document. Can be used to let a user delete a recipe
-   * from saved or created, or to let user unfollow a tag.
+   * from saved or created, or to let user unfollow a tag. Not thread safe.
    *
    * @param userId the user's Firebase ID
    * @param objectId the ID of either a recipe if the intent is to unsave/create, or of a tag for
@@ -185,7 +185,7 @@ public interface DBInterface {
   public void deleteUserProperty(String userId, String objectId, String collection, Transaction t);
 
   /**
-   * Checks if a specified user has a given recipe as true in a given map field.
+   * Checks if a specified user has a given recipe as true in a given map field. Not thread safe.
    *
    * @param userId the user's Firebase ID.
    * @param recipeId the recipe's Firebase ID.
