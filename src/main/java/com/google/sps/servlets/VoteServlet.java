@@ -63,7 +63,7 @@ public class VoteServlet extends HttpServlet {
 
     response.setContentType("application/json");
     response.getWriter().println(
-        gson.toJson(db.inUserMap(authToken.getUid(), recipeIds, User.VOTED_RECIPES_KEY)));
+        gson.toJson(db.getUserProperty(authToken.getUid(), recipeIds, User.VOTED_RECIPES_KEY)));
   }
 
   @Override
@@ -71,6 +71,12 @@ public class VoteServlet extends HttpServlet {
     String recipeId = request.getParameter("recipeId");
     String vote = request.getParameter("vote");
     String token = request.getParameter("token");
+
+    FirebaseToken authToken = Auth.verifyIdToken(token);
+    if (authToken == null) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return;
+    }
 
     if (recipeId == null || vote == null || (!vote.equals("true") && !vote.equals("false"))) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -80,12 +86,6 @@ public class VoteServlet extends HttpServlet {
     if (!db.isDocument(recipeId, DBUtils.DB_RECIPES_COLLECTION)) {
       // recipe does not exist
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      return;
-    }
-
-    FirebaseToken authToken = Auth.verifyIdToken(token);
-    if (authToken == null) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
 
@@ -103,7 +103,7 @@ public class VoteServlet extends HttpServlet {
     */
 
     DBUtils.blockOnFuture(DBUtils.database.runTransaction(transaction -> {
-      Boolean votedRecipe = db.inUserMap(uid, recipeId, User.VOTED_RECIPES_KEY, transaction);
+      Boolean votedRecipe = db.getUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, transaction);
       if (votedRecipe != null) {
         if (votedRecipe == true) { // previously upvoted
           if (vote.equals("true")) { // request wants to reset the upvote

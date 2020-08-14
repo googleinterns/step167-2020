@@ -53,6 +53,7 @@ public interface DBInterface {
    *
    * @param Id recipe's Firestore ID
    * @param voteDiff int value that should be added to the current votes on the recipe
+   * @param t The transaction that this operation wil take place in
    * @return recipe vote count after the update
    */
   public long voteRecipe(String Id, int voteDiff, Transaction t);
@@ -154,6 +155,7 @@ public interface DBInterface {
    *     following.
    * @param collection a KEY constant from User class indicating which mode -- save, create, or
    *     follow tag.
+   * @param t The transaction this operation should take place in
    */
   public void setUserProperty(
       String userId, String objectId, String collection, boolean val, Transaction t);
@@ -178,6 +180,7 @@ public interface DBInterface {
    * @param objectId the ID of either a recipe if the intent is to unsave/create, or of a tag for
    *     tag unfollowing.
    * @param collection a KEY constant from User class indicating which mode -- save, create, or tag.
+   * @param t The transaction this operation should take place in
    */
   public void deleteUserProperty(String userId, String objectId, String collection, Transaction t);
 
@@ -189,17 +192,17 @@ public interface DBInterface {
    * @return true if it is in the map as true, false if in map as false, null if not in map or user
    *     does not exist
    */
-  public Boolean inUserMap(String userId, String recipeId, String mapName);
+  public Boolean getUserProperty(String userId, String recipeId, String mapName);
 
   /**
-   * inUserMap, but for arrays
+   * getUserProperty, but for arrays
    *
    * @param userId the user's Firebase ID.
    * @param recipeIds the recipes Firebase IDs.
    * @return array of [true if it is in the map as true, false if in map as false, null if not in
-   *     map or user does not exist]
+   *     map], or just null if the user does not exist.
    */
-  public Boolean[] inUserMap(String userId, String[] recipeIds, String mapName);
+  public Boolean[] getUserProperty(String userId, String[] recipeIds, String mapName);
 
   /**
    * Checks if a specified user has a given recipe as true in a given map field.
@@ -207,10 +210,11 @@ public interface DBInterface {
    *
    * @param userId the user's Firebase ID.
    * @param recipeId the recipe's Firebase ID.
+   * @param t The transaction this operation should take place in
    * @return true if it is in the map as true, false if in map as false, null if not in map or user
    *     does not exist
    */
-  public Boolean inUserMap(String userId, String recipeId, String mapName, Transaction t);
+  public Boolean getUserProperty(String userId, String recipeId, String mapName, Transaction t);
 
   /**
    * Returns a list of all recipe metadata with any of the tags in the tag IDs list.

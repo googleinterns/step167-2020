@@ -150,7 +150,7 @@ public class FirestoreDB implements DBInterface {
     t.update(userRef, nestedPropertyName, FieldValue.delete());
   }
 
-  public Boolean inUserMap(String userId, String recipeId, String mapName) {
+  public Boolean getUserProperty(String userId, String recipeId, String mapName) {
     DocumentSnapshot user = DBUtils.blockOnFuture(DBUtils.user(userId).get());
 
     if (!user.exists()) {
@@ -160,7 +160,7 @@ public class FirestoreDB implements DBInterface {
     return inMap;
   }
 
-  public Boolean[] inUserMap(String userId, String[] recipeIds, String mapName) {
+  public Boolean[] getUserProperty(String userId, String[] recipeIds, String mapName) {
     DocumentSnapshot user = DBUtils.blockOnFuture(DBUtils.user(userId).get());
 
     if (!user.exists()) {
@@ -174,7 +174,7 @@ public class FirestoreDB implements DBInterface {
     return inMap;
   }
 
-  public Boolean inUserMap(String userId, String recipeId, String mapName, Transaction t) {
+  public Boolean getUserProperty(String userId, String recipeId, String mapName, Transaction t) {
     DocumentSnapshot user = DBUtils.blockOnFuture(t.get(DBUtils.user(userId)));
 
     if (!user.exists()) {

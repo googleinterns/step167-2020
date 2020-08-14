@@ -320,7 +320,7 @@ public final class RecipeServletTest {
     when(request.getParameter("token")).thenReturn("goodToken");
 
     doNothing().when(mockDbInterface).editRecipeTitleContent(anyString(), anyString(), anyString());
-    when(mockDbInterface.inUserMap(anyString(), anyString(), anyString())).thenReturn(false);
+    when(mockDbInterface.getUserProperty(anyString(), anyString(), anyString())).thenReturn(false);
 
     Auth.testModeWithParams(mockFirebaseAuth);
     recipeServlet.doPut(request, response);
@@ -344,7 +344,7 @@ public final class RecipeServletTest {
     when(request.getParameter("token")).thenReturn("goodToken");
 
     doNothing().when(mockDbInterface).editRecipeTitleContent(anyString(), anyString(), anyString());
-    when(mockDbInterface.inUserMap(anyString(), anyString(), anyString())).thenReturn(true);
+    when(mockDbInterface.getUserProperty(anyString(), anyString(), anyString())).thenReturn(true);
 
     Auth.testModeWithParams(mockFirebaseAuth);
     recipeServlet.doPut(request, response);
@@ -413,7 +413,7 @@ public final class RecipeServletTest {
     when(request.getParameter("recipeID")).thenReturn("RECIPE_ID");
     when(request.getParameter("token")).thenReturn("goodToken");
 
-    when(mockDbInterface.inUserMap(anyString(), anyString(), anyString())).thenReturn(false);
+    when(mockDbInterface.getUserProperty(anyString(), anyString(), anyString())).thenReturn(false);
 
     Auth.testModeWithParams(mockFirebaseAuth);
     recipeServlet.doDelete(request, response);
@@ -434,7 +434,7 @@ public final class RecipeServletTest {
     when(request.getParameter("recipeID")).thenReturn("RECIPE_ID");
     when(request.getParameter("token")).thenReturn("goodToken");
 
-    when(mockDbInterface.inUserMap(anyString(), anyString(), anyString())).thenReturn(true);
+    when(mockDbInterface.getUserProperty(anyString(), anyString(), anyString())).thenReturn(true);
     doNothing().when(mockDbInterface).deleteComments(anyString());
     doNothing().when(mockDbInterface).deleteRecipe(anyString());
 
@@ -744,7 +744,7 @@ public final class RecipeServletTest {
     when(mockFirebaseToken.getUid()).thenReturn("USER_ID");
     when(mockFirebaseAuth.verifyIdToken(anyString(), anyBoolean())).thenReturn(mockFirebaseToken);
 
-    when(mockDbInterface.inUserMap(anyString(), anyString(), anyString())).thenReturn(false);
+    when(mockDbInterface.getUserProperty(anyString(), anyString(), anyString())).thenReturn(false);
 
     Auth.testModeWithParams(mockFirebaseAuth);
     String actual = recipeServlet.matchUser("WRONG_TOKEN", "RECIPE_ID", response);
@@ -763,7 +763,7 @@ public final class RecipeServletTest {
     when(mockFirebaseToken.getUid()).thenReturn("USER_ID");
     when(mockFirebaseAuth.verifyIdToken(anyString(), anyBoolean())).thenReturn(mockFirebaseToken);
 
-    when(mockDbInterface.inUserMap(anyString(), anyString(), anyString())).thenReturn(true);
+    when(mockDbInterface.getUserProperty(anyString(), anyString(), anyString())).thenReturn(true);
 
     Auth.testModeWithParams(mockFirebaseAuth);
     String actual = recipeServlet.matchUser("GOOD_TOKEN", "RECIPE_ID", response);

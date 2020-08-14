@@ -201,7 +201,7 @@ public class RecipeServlet extends HttpServlet {
       return null;
     }
 
-    if (!db.inUserMap(uid, recipeId, DBUtils.DB_RECIPES_COLLECTION)) {
+    if (!db.getUserProperty(uid, recipeId, DBUtils.DB_RECIPES_COLLECTION)) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return null;
     }
