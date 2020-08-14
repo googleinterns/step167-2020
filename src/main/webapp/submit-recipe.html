@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <title>Melting Pot</title>
     <link rel="stylesheet" href="style.css" />
+    <script type="module" src="/scripts/init.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   </head>
   <body>
@@ -82,7 +83,7 @@
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  title: titleInput.value,
+                 metadata: { title: titleInput.value },
                   content: instructionsInput.value,
                 }),
               }).then((response) => {

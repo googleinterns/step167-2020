@@ -4,7 +4,7 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 
-public class Comment {
+public class Comment extends DBObject {
   public static final String CONTENT_KEY = "content";
   public static final String TIMESTAMP_KEY = "timestamp";
   public static final String CREATOR_ID_KEY = "creatorId";
@@ -17,6 +17,10 @@ public class Comment {
 
   public Comment() {
     super();
+  }
+
+  public Comment(String id) {
+    super(id);
   }
 
   public Comment(String content, String creatorId) {

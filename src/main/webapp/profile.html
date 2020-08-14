@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <title>Melting Pot</title>
     <link rel="stylesheet" href="style.css" />
+    <script type="module" src="/scripts/init.js"></script>
   </head>
   <body>
     <!-- Page content -->
@@ -92,7 +93,7 @@
       /** Retrieves a user's saved posts. */
       function getUserSavedRecipes(idToken) {
         fetch("/api/post?token=" + idToken + "&saved=true").then(async (response) => {
-          if (response.status < 200 || response.status >= 300) {
+          if (!response.ok) {
             alert("Error " + response.status.toString())
           } else {
             let savedRecipes = await response.json()
@@ -109,7 +110,7 @@
       /** Get the signed in user's created posts. */
       function getUserCreatedRecipes(idToken) {
         fetch("/api/post?token=" + idToken).then(async (response) => {
-          if (response.status < 200 || response.status >= 300) {
+          if (!response.ok) {
             alert("Error " + response.status.toString())
           } else {
             let createdRecipes = await response.json()

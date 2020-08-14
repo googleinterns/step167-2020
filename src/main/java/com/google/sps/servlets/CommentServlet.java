@@ -71,7 +71,7 @@ public class CommentServlet extends HttpServlet {
     }
 
     response.setContentType("application/json");
-    response.getWriter().println(json);
+    response.getWriter().print(json);
   }
 
   @Override
@@ -83,7 +83,7 @@ public class CommentServlet extends HttpServlet {
     String token = request.getParameter("token");
 
     Comment newComment = gson.fromJson(commentData, Comment.class);
-    if (newComment.content == null) {
+    if (recipeID == null || newComment.content == null || newComment.content.isEmpty()) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
@@ -116,7 +116,7 @@ public class CommentServlet extends HttpServlet {
     }
 
     if (!db.isCreatedComment(recipeID, commentID, uid)) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return;
     }
     

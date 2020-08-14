@@ -25,6 +25,7 @@ import com.google.sps.meltingpot.data.DBInterface;
 import com.google.sps.meltingpot.data.DBUtils;
 import com.google.sps.meltingpot.data.FirestoreDB;
 import com.google.sps.meltingpot.data.User;
+import com.google.sps.meltingpot.data.UserRequestType;
 import java.io.IOException;
 import java.lang.Boolean;
 import java.util.ArrayList;
@@ -75,7 +76,7 @@ public class UserServlet extends HttpServlet {
   public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String recipeID = request.getParameter("recipeID");
     String token = request.getParameter("token");
-    boolean isSaveRequest = Boolean.parseBoolean(request.getParameter("saved"));
+    UserRequestType requestType = UserRequestType.valueOf(request.getParameter("type"));
 
     String uid = Auth.getUid(token, response);
     if (uid == null) {
@@ -83,15 +84,20 @@ public class UserServlet extends HttpServlet {
       return;
     }
 
-    if (isSaveRequest) {
-      if (recipeID == null) {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        return;
-      }
+    switch (requestType) {
+      case SAVE:
+        if (recipeID == null) {
+           response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+         return;
+        }
 
-      // Call the FirestoreDB method.
-      db.makeUserPropertyTrue(uid, recipeID, User.SAVED_RECIPES_KEY);
-      response.setStatus(HttpServletResponse.SC_OK);
+        // Call the FirestoreDB method.
+        db.makeUserPropertyTrue(uid, recipeID, User.SAVED_RECIPES_KEY);
+        response.setStatus(HttpServletResponse.SC_OK);
+        break;
     }
   }
+
+  @Override
+  public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {}
 }

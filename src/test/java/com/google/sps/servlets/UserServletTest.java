@@ -8,6 +8,7 @@ import com.google.firebase.auth.FirebaseToken;
 import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.data.DBInterface;
 import com.google.sps.meltingpot.data.User;
+import com.google.sps.meltingpot.data.UserRequestType;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -79,7 +80,7 @@ public final class UserServletTest {
    */
   @Test
   public void putUnauthorized() throws IOException, FirebaseAuthException {
-
+    when(request.getParameter("type")).thenReturn("SAVE");
     when(firebaseAuth.verifyIdToken(anyString(), eq(true)))
         .thenThrow(new IllegalArgumentException());
 
@@ -100,7 +101,7 @@ public final class UserServletTest {
 
     when(request.getParameter("recipeID")).thenReturn(null);
     when(request.getParameter("token")).thenReturn("validToken");
-    when(request.getParameter("saved")).thenReturn("true");
+    when(request.getParameter("type")).thenReturn("SAVE");
 
     when(firebaseToken.getUid()).thenReturn("userID");
     when(firebaseAuth.verifyIdToken(anyString(), eq(true)))
@@ -122,7 +123,7 @@ public final class UserServletTest {
 
     when(request.getParameter("recipeID")).thenReturn("recipeID");
     when(request.getParameter("token")).thenReturn("validToken");
-    when(request.getParameter("saved")).thenReturn("true");
+    when(request.getParameter("type")).thenReturn("SAVE");
 
     when(firebaseToken.getUid()).thenReturn("userID");
     when(firebaseAuth.verifyIdToken(anyString(), eq(true)))

@@ -196,6 +196,7 @@ public class FirestoreDB implements DBInterface {
 
   public String addComment(Comment newComment, String recipeId) {
     DocumentReference newCommentRef = DBUtils.comments(recipeId).document();
+    newComment.id = newCommentRef.getId();
     DBUtils.blockOnFuture(newCommentRef.set(newComment));
     return newCommentRef.getId();
   }

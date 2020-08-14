@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <title>Melting Pot</title>
     <link rel="stylesheet" href="style.css" />
+    <script type="module" src="/scripts/init.js"></script>
     <!-- Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   </head>
@@ -93,7 +94,7 @@
             .auth()
             .currentUser.getIdToken(/* forceRefresh */ true)
             .then(function (idToken) {
-              fetch("/api/user?recipeID=" + recipeID + "&token=" + idToken + "&saved=true", {
+              fetch("/api/user?recipeID=" + recipeID + "&token=" + idToken + "&type=SAVE", {
                 method: "PUT",
                 headers: {
                   "Content-Type": "application/json",
@@ -292,7 +293,7 @@
         const commentEl = document.createElement("div")
         commentEl.id = comment.id
         commentEl.appendChild(createBasicElement(comment.content, "p"))
-        if (comment.creatorId == app.auth().currentUser.uid) {
+        if (app.auth().currentUser && (comment.creatorId == app.auth().currentUser.uid)) {
           const editBtn = document.createElement("button")
           editBtn.type = "button"
           commentEl.appendChild(editBtn)
@@ -309,7 +310,7 @@
         const recipeElement = document.createElement("div")
         recipeElement.appendChild(createBasicElement(recipe.metadata.title, "h2"))
         recipeElement.appendChild(createBasicElement(recipe.content, "p"))
-        if (recipe.creatorId == app.auth().currentUser.uid) {
+        if (app.auth().currentUser && (recipe.creatorId == app.auth().currentUser.uid)) {
           const deleteBtn = document.createElement("button")
           deleteBtn.type = "button"
           recipeElement.appendChild(deleteBtn)
