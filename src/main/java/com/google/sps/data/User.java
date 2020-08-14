@@ -7,6 +7,7 @@ import com.google.cloud.firestore.DocumentSnapshot;
 public class User extends DBObject {
   public static final String CREATED_RECIPES_KEY = "created-recipe-ids";
   public static final String SAVED_RECIPES_KEY = "saved-recipe-ids";
+  public static final String VOTED_RECIPES_KEY = "voted-recipe-ids";
   public static final String TAGS_FOLLOWED_KEY = "followed-tag-ids";
 
   public User(String id) {

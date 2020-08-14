@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/** Handles recipe post requests. */
+/** Handles tag requests. */
 @WebServlet("/api/tag")
 public class TagServlet extends HttpServlet {
   private Gson gson = new Gson();
