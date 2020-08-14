@@ -28,11 +28,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import java.util.HashMap;
 
 @RunWith(JUnit4.class)
 public final class VoteServletTest {
   private DBInterface db = mock(DBInterface.class);
   private final VoteServlet voteServlet = new VoteServlet(db);
+  private FirebaseToken mockFirebaseToken = mock(FirebaseToken.class);
   private Gson gson = new Gson();
 
   private static final int fakeRecipeVotes = 15;
@@ -41,12 +43,17 @@ public final class VoteServletTest {
   private static final String fakeToken = "02jud849ax03e";
 
   @Test
-  public void putMissingRecipe() throws IOException {
+  public void putMissingRecipe() throws IOException, FirebaseAuthException {
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
+    FirebaseAuth mockFirebaseAuth = mock(FirebaseAuth.class);
 
     when(request.getParameter("recipeId")).thenReturn(null);
     when(request.getParameter("vote")).thenReturn("true");
+    when(request.getParameter("token")).thenReturn(fakeToken);
+    when(mockFirebaseAuth.verifyIdToken(fakeToken, true)).thenReturn(mockFirebaseToken);
+
+    Auth.testModeWithParams(mockFirebaseAuth);
 
     voteServlet.doPut(request, response);
 
@@ -55,12 +62,17 @@ public final class VoteServletTest {
   }
 
   @Test
-  public void putMissingVote() throws IOException {
+  public void putMissingVote() throws IOException, FirebaseAuthException {
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
+    FirebaseAuth mockFirebaseAuth = mock(FirebaseAuth.class);
 
     when(request.getParameter("recipeId")).thenReturn(fakeRecipeId);
     when(request.getParameter("vote")).thenReturn(null);
+    when(request.getParameter("token")).thenReturn(fakeToken);
+    when(mockFirebaseAuth.verifyIdToken(fakeToken, true)).thenReturn(mockFirebaseToken);
+
+    Auth.testModeWithParams(mockFirebaseAuth);
 
     voteServlet.doPut(request, response);
 
@@ -69,14 +81,18 @@ public final class VoteServletTest {
   }
 
   @Test
-  public void putRecipeDoesNotExist() throws IOException {
+  public void putRecipeDoesNotExist() throws IOException, FirebaseAuthException {
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
     FirebaseAuth mockFirebaseAuth = mock(FirebaseAuth.class);
 
     when(request.getParameter("recipeId")).thenReturn(fakeRecipeId);
     when(request.getParameter("vote")).thenReturn("true");
+    when(request.getParameter("token")).thenReturn(fakeToken);
     when(db.isDocument(fakeRecipeId, DBUtils.DB_RECIPES_COLLECTION)).thenReturn(false);
+    when(mockFirebaseAuth.verifyIdToken(fakeToken, true)).thenReturn(mockFirebaseToken);
+
+    Auth.testModeWithParams(mockFirebaseAuth);
 
     voteServlet.doPut(request, response);
 
