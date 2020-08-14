@@ -17,7 +17,12 @@
       <button type="button" id="submit-comment" value="Submit">Submit</button>
     </div>
     <div id="comments"></div>
+    <div id="votes">
+      Votes:
+    </div>
     <button type="button" id="delete-post">Delete Post</button>
+    <button type="button" id="upvote">Toggle Upvote</button>
+    <button type="button" id="downvote">Toggle Downvote</button>
 
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
@@ -36,6 +41,12 @@
       var submitCommButton = document.getElementById("submit-comment")
       var commentLabel = document.getElementById("comment-label")
       var commentContent = document.getElementById("comment-content")
+      var votesDiv = document.getElementById("votes")
+      var upvoteButton = document.getElementById("upvote")
+      var downvoteButton = document.getElementById("downvote")
+
+      var votes = 0
+      var voted = 0
 
       /** On window load, initialize the page. */
       window.onload = function () {
@@ -45,17 +56,20 @@
       /** Load page elements. */
       function initPage() {
         // Load the recipe and comments on the page.
-        getDetailedRecipe(getRecipeID())
+        getDetailedRecipe(getRecipeID(), app)
         getComments(getRecipeID())
 
         deletePostButton.addEventListener("click", deletePost)
         submitCommButton.addEventListener("click", submitComment)
+        upvoteButton.addEventListener("click", () => toggleVote(true))
+        downvoteButton.addEventListener("click", () => toggleVote(false))
 
         toggleElementVisibility(app.auth().currentUser)
 
         // Set Firebase auth state change listener.
         app.auth().onAuthStateChanged(function (user) {
           toggleElementVisibility(user)
+          getUserRecipeProperties(getRecipeID())
         })
       }
 
@@ -70,6 +84,28 @@
         }
       }
 
+      function getUserRecipeProperties(ID) {
+        if (app.auth().currentUser) {
+          app
+            .auth()
+            .currentUser.getIdToken(/* forceRefresh */ true)
+            .then((idToken) =>
+              fetch("api/vote?recipeIds=" + ID + "&token=" + idToken)
+                .then((res) => res.json())
+                .then((data) => {
+                  console.log(data)
+                  if (data[0] === true) {
+                    voted = 1
+                  } else if (data[0] === null) {
+                    voted = 0
+                  } else if (data[0] === false) {
+                    voted = -1
+                  }
+                })
+            )
+        }
+      }
+
       /** Returns the recipe ID in the query string for this page. */
       function getRecipeID() {
         const params = new URLSearchParams(window.location.search)
@@ -80,7 +116,6 @@
       function submitComment() {
         var commentContent = document.getElementById("comment-content")
         var recipeID = getRecipeID()
-
         if (app.auth().currentUser) {
           app
             .auth()
@@ -124,11 +159,13 @@
           })
       }
 
-      function getDetailedRecipe(ID) {
+      function getDetailedRecipe(ID, app) {
         fetch("/api/post?recipeID=" + ID)
           .then((response) => response.json())
           .then((recipe) => {
             const recipeEl = document.getElementById("recipe")
+            votes = recipe.metadata.votes
+            votesDiv.innerHTML = "Votes: " + recipe.metadata.votes
             removeAllChildNodes(recipeEl)
             recipeEl.appendChild(createRecipeListElement(recipe))
           })
@@ -157,6 +194,58 @@
             })
         } else {
           alert("User must be signed in to submit a comment.")
+        }
+      }
+
+      function toggleVote(vote) {
+        var recipeID = getRecipeID()
+
+        if (app.auth().currentUser) {
+          if (voted === 1) {
+            if (vote) {
+              voted = 0
+              votes += -1
+            } else {
+              voted = -1
+              votes += -2
+            }
+          } else if (voted === 0) {
+            if (vote) {
+              voted = 1
+              votes += 1
+            } else {
+              voted = -1
+              votes += -1
+            }
+          } else if (voted == -1) {
+            if (vote) {
+              voted = 1
+              votes += 2
+            } else {
+              voted = 0
+              votes += 1
+            }
+          }
+          votesDiv.innerHTML = "Votes: " + votes
+          app
+            .auth()
+            .currentUser.getIdToken(/* forceRefresh */ true)
+            .then(function (idToken) {
+              fetch("/api/vote?recipeId=" + recipeID + "&vote=" + vote + "&token=" + idToken, {
+                method: "PUT",
+              }).then((response) => {
+                if (response.ok) {
+                  return response.json()
+                } else {
+                  alert("Error " + response.status.toString())
+                }
+              })
+            })
+            .catch(function (error) {
+              alert("Error! Could not retrieve user ID token.")
+            })
+        } else {
+          alert("User must be signed in to vote.")
         }
       }
 

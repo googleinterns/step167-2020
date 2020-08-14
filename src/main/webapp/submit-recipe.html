@@ -82,7 +82,9 @@
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  title: titleInput.value,
+                  metadata: {
+                    title: titleInput.value,
+                  },
                   content: instructionsInput.value,
                 }),
               }).then((response) => {
