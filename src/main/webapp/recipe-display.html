@@ -18,7 +18,6 @@
       <button type="button" id="submit-comment" value="Submit">Submit</button>
     </div>
     <div id="comments"></div>
-    <button type="button" id="delete-post" value="Delete">Delete Post</button>
     <button type="button" id="save-post">Save this recipe</button>
     <p id="saved"></p>
 
@@ -35,7 +34,6 @@
     <script type="module">
       import { app } from "/scripts/init.js"
 
-      var deletePostButton = document.getElementById("delete-post")
       var savePostButton = document.getElementById("save-post")
       var submitCommButton = document.getElementById("submit-comment")
       var commentLabel = document.getElementById("comment-label")
@@ -56,7 +54,6 @@
         getDetailedRecipe(getRecipeID())
         getComments(getRecipeID())
 
-        deletePostButton.addEventListener("click", deletePost)
         savePostButton.addEventListener("click", savePost)
         submitCommButton.addEventListener("click", submitComment)
 
@@ -73,7 +70,7 @@
         if (app == null) {
           return
         }
-        var elements = [deletePostButton, savePostButton, submitCommButton, commentLabel, commentContent]
+        var elements = [savePostButton, submitCommButton, commentLabel, commentContent]
         for (var el of elements) {
           el.hidden = !isVisible
         }
