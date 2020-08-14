@@ -110,7 +110,8 @@ public class RecipeServlet extends HttpServlet {
   public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
     Recipe newRecipe = gson.fromJson(data, Recipe.class);
-    if (newRecipe.metadata == null || newRecipe.content == null || newRecipe.metadata.title == null
+    if (newRecipe == null || newRecipe.metadata == null || newRecipe.content == null
+        || newRecipe.content.isEmpty() || newRecipe.metadata.title == null
         || newRecipe.metadata.id == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;

@@ -178,7 +178,7 @@ public final class CommentServletTest {
     when(request.getReader()).thenReturn(requestBodyReader);
     when(request.getParameter("recipeID")).thenReturn("recipeID");
     when(request.getParameter("token")).thenReturn("validTokenEncoded");
-    
+
     when(firebaseAuth.getUser(anyString())).thenReturn(userRecord);
     when(userRecord.getEmail()).thenReturn("johnnyappleseed@null.com");
 
@@ -204,7 +204,7 @@ public final class CommentServletTest {
     verify(db, never()).isCreatedComment(anyString(), anyString(), anyString());
     verify(db, never()).editCommentContent(anyString(), anyString(), anyString());
   }
-  
+
   /**
    * A comment put request was made, but the comment ID was null.
    * The servlet should return a "bad request" error.
@@ -221,7 +221,7 @@ public final class CommentServletTest {
     verify(db, never()).isCreatedComment(anyString(), anyString(), anyString());
     verify(db, never()).editCommentContent(anyString(), anyString(), anyString());
   }
-  
+
   /**
    * A comment put request was made, but the comment body was null.
    * The servlet should return a "bad request" error.
@@ -238,7 +238,7 @@ public final class CommentServletTest {
     verify(db, never()).isCreatedComment(anyString(), anyString(), anyString());
     verify(db, never()).editCommentContent(anyString(), anyString(), anyString());
   }
-  
+
   /**
    * A comment put request was made, but the comment body was empty.
    * The servlet should return a "bad request" error.
@@ -255,12 +255,12 @@ public final class CommentServletTest {
     verify(db, never()).isCreatedComment(anyString(), anyString(), anyString());
     verify(db, never()).editCommentContent(anyString(), anyString(), anyString());
   }
-  
+
   /**
    * A comment put request was made, but the requester was unauthorized.
    * The servlet should return a "forbidden" error.
    */
-  @Test 
+  @Test
   public void putUnauthorized() throws IOException, FirebaseAuthException {
     FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
@@ -281,11 +281,11 @@ public final class CommentServletTest {
     verify(response, times(1)).setStatus(HttpServletResponse.SC_FORBIDDEN);
     verify(db, never()).editCommentContent(anyString(), anyString(), anyString());
   }
-  
+
   /**
    * A comment put request was made, and the comment was successfully edited in Firebase.
    */
-  @Test 
+  @Test
   public void putIsSuccessFul() throws IOException, FirebaseAuthException {
     FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
@@ -305,5 +305,20 @@ public final class CommentServletTest {
 
     verify(response, never()).setStatus(anyInt());
     verify(db, times(1)).editCommentContent("commentID", "recipeID", "commentBody");
+  }
+
+  /**
+   * A comment delete request was made, but the comment ID was null.
+   * The servlet should return a "bad request" error.
+   */
+  @Test
+  public void deleteNullCommentID() throws IOException {
+    when(request.getParameter("recipeID")).thenReturn("recipeID");
+    when(request.getParameter("commentID")).thenReturn(null);
+
+    commentServlet.doDelete(request, response);
+
+    verify(response, times(1)).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    verify(db, never()).deleteComment(anyString(), anyString());
   }
 }
