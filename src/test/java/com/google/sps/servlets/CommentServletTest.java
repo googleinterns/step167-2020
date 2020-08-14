@@ -44,8 +44,8 @@ public final class CommentServletTest {
 
   private static final String resourcesPath = "target/test-classes/CommentServlet/";
 
-  @Before 
-  public void setUp(){
+  @Before
+  public void setUp() {
     db = mock(DBInterface.class);
     commentServlet = new CommentServlet(db);
     request = mock(HttpServletRequest.class);
@@ -55,11 +55,11 @@ public final class CommentServletTest {
     Auth.testModeWithParams(firebaseAuth);
   }
 
-  /** 
+  /**
    * A request has been made for comments, but no recipe ID was included.
    * Nothing should be written to the servlet's response.
    */
-  @Test 
+  @Test
   public void getRecipeIDNull() throws IOException {
     when(request.getParameter("recipeID")).thenReturn(null);
 
@@ -69,13 +69,13 @@ public final class CommentServletTest {
     verify(response, never()).getWriter();
     verify(response, never()).setContentType(anyString());
   }
-  
-  /** 
+
+  /**
    * A request has been made for comments, but there were none associated with the recipe specified.
    * Nothing should be written to the servlet's response.
    */
   @Test
-  public void getNullCommentsJSON() throws IOException{
+  public void getNullCommentsJSON() throws IOException {
     when(request.getParameter("recipeID")).thenReturn("recipeID");
     when(db.getAllCommentsInRecipe(anyString(), any(SortingMethod.class))).thenReturn(null);
 
@@ -85,8 +85,8 @@ public final class CommentServletTest {
     verify(response, never()).getWriter();
     verify(response, never()).setContentType(anyString());
   }
-   
-  /** 
+
+  /**
    * A successful request for comments has been made.
    * The servlet should respond with a list of the comments associated with the recipe.
    */
@@ -105,12 +105,12 @@ public final class CommentServletTest {
     verify(response, times(1)).setContentType("application/json");
     Assert.assertEquals(gson.toJson(exampleCommentList), sw.toString());
   }
-  
-  /** 
-   * A comment post request was made, but the content field was null. 
+
+  /**
+   * A comment post request was made, but the content field was null.
    * The servlet should return a "bad request" error.
    */
-  @Test 
+  @Test
   public void postNullContent() throws IOException {
     BufferedReader requestBodyReader =
         new BufferedReader(new FileReader(new File(resourcesPath + "nullContentComment.json")));
@@ -118,16 +118,16 @@ public final class CommentServletTest {
     when(request.getParameter("recipeID")).thenReturn("recipeID");
 
     commentServlet.doPost(request, response);
-    
+
     verify(response, times(1)).setStatus(HttpServletResponse.SC_BAD_REQUEST);
     verify(db, never()).addComment(any(Comment.class), anyString());
   }
 
-   /** 
-   * A comment post request was made, but the content field was empty. 
+  /**
+   * A comment post request was made, but the content field was empty.
    * The servlet should return a "bad request" error.
    */
-  @Test 
+  @Test
   public void postEmptyContent() throws IOException {
     BufferedReader requestBodyReader =
         new BufferedReader(new FileReader(new File(resourcesPath + "emptyContentComment.json")));
@@ -135,16 +135,16 @@ public final class CommentServletTest {
     when(request.getParameter("recipeID")).thenReturn("recipeID");
 
     commentServlet.doPost(request, response);
-    
+
     verify(response, times(1)).setStatus(HttpServletResponse.SC_BAD_REQUEST);
     verify(db, never()).addComment(any(Comment.class), anyString());
   }
-  
-  /** 
-   * A comment post request was made, but the recipe ID was null. 
+
+  /**
+   * A comment post request was made, but the recipe ID was null.
    * The servlet should return a "bad request" error.
    */
-  @Test 
+  @Test
   public void postWithoutRecipeID() throws IOException {
     BufferedReader requestBodyReader =
         new BufferedReader(new FileReader(new File(resourcesPath + "validComment.json")));
@@ -152,24 +152,23 @@ public final class CommentServletTest {
     when(request.getParameter("recipeID")).thenReturn(null);
 
     commentServlet.doPost(request, response);
-    
+
     verify(response, times(1)).setStatus(HttpServletResponse.SC_BAD_REQUEST);
     verify(db, never()).addComment(any(Comment.class), anyString());
   }
-  
-  /** 
+
+  /**
    * A comment post request was made, and the comment was successfully posted to Firebase.
    * The servlet should return a creation confirmation.
    */
-  @Test 
+  @Test
   public void postIsSuccessful() throws IOException, FirebaseAuthException {
     FirebaseToken firebaseToken = mock(FirebaseToken.class);
-    
+
     // Stub such that the user id from the client-side token is "userID."
-    when(firebaseAuth.verifyIdToken(anyString(), eq(true)))
-        .thenReturn(firebaseToken);
+    when(firebaseAuth.verifyIdToken(anyString(), eq(true))).thenReturn(firebaseToken);
     when(firebaseToken.getUid()).thenReturn("userID");
-    
+
     // Post a validly formatted comment with a valid query string.
     BufferedReader requestBodyReader =
         new BufferedReader(new FileReader(new File(resourcesPath + "validComment.json")));

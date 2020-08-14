@@ -87,8 +87,8 @@ public class UserServlet extends HttpServlet {
     switch (requestType) {
       case SAVE:
         if (recipeID == null) {
-           response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-         return;
+          response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+          return;
         }
 
         // Call the FirestoreDB method.
@@ -99,5 +99,6 @@ public class UserServlet extends HttpServlet {
   }
 
   @Override
-  public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+  public void doDelete(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {}
 }

@@ -29,8 +29,8 @@ public final class UserServletTest {
   private HttpServletResponse response;
   private FirebaseAuth firebaseAuth;
 
-  @Before 
-  public void setUp(){
+  @Before
+  public void setUp() {
     db = mock(DBInterface.class);
     userServlet = new UserServlet(db);
     request = mock(HttpServletRequest.class);
@@ -39,9 +39,9 @@ public final class UserServletTest {
     // Inject the mock Firebase Auth object into Auth class.
     Auth.testModeWithParams(firebaseAuth);
   }
-  
-  /** 
-   * An unauthorized request to add a user to Firestore has been made. 
+
+  /**
+   * An unauthorized request to add a user to Firestore has been made.
    * No user should be added.
    */
   @Test
@@ -50,22 +50,21 @@ public final class UserServletTest {
         .thenThrow(new IllegalArgumentException());
 
     userServlet.doPost(request, response);
-    
+
     verify(db, never()).addUser(anyString());
     verify(response, never()).getWriter();
     verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
   }
-  
+
   /** An authorized request was made to add a user to Firestore; the user should be added. */
   @Test
   public void postCreated() throws IOException, FirebaseAuthException {
     FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
     when(request.getParameter("token")).thenReturn("validTokenEncoded");
-    
+
     when(firebaseToken.getUid()).thenReturn("userID");
-    when(firebaseAuth.verifyIdToken(anyString(), eq(true)))
-        .thenReturn(firebaseToken);
+    when(firebaseAuth.verifyIdToken(anyString(), eq(true))).thenReturn(firebaseToken);
 
     userServlet.doPost(request, response);
 
@@ -73,9 +72,9 @@ public final class UserServletTest {
     verify(response, never()).getWriter();
     verify(response).setStatus(HttpServletResponse.SC_CREATED);
   }
- 
-  /** 
-   * An unauthorized request to edit a user in Firestore has been made. 
+
+  /**
+   * An unauthorized request to edit a user in Firestore has been made.
    * The user should not be changed.
    */
   @Test
@@ -85,49 +84,47 @@ public final class UserServletTest {
         .thenThrow(new IllegalArgumentException());
 
     userServlet.doPut(request, response);
-    
+
     verify(db, never()).makeUserPropertyTrue(anyString(), anyString(), anyString());
     verify(response, never()).getWriter();
     verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
   }
-  
-  /** 
+
+  /**
    * An authorized request was made for a user to save a recipe, but no recipe ID was given.
    * The recipe should not be saved.
    */
   @Test
   public void putSaveRequestRecipeIdNull() throws IOException, FirebaseAuthException {
-    FirebaseToken firebaseToken = mock(FirebaseToken.class); 
+    FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
     when(request.getParameter("recipeID")).thenReturn(null);
     when(request.getParameter("token")).thenReturn("validToken");
     when(request.getParameter("type")).thenReturn("SAVE");
 
     when(firebaseToken.getUid()).thenReturn("userID");
-    when(firebaseAuth.verifyIdToken(anyString(), eq(true)))
-        .thenReturn(firebaseToken);
+    when(firebaseAuth.verifyIdToken(anyString(), eq(true))).thenReturn(firebaseToken);
 
     userServlet.doPut(request, response);
 
     verify(db, never()).makeUserPropertyTrue(anyString(), anyString(), anyString());
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
   }
-  
-  /** 
+
+  /**
    * An authorized request was made for a user to save a recipe.
    * The recipe should be saved under the user.
    */
   @Test
   public void putSaveRequestSuccess() throws IOException, FirebaseAuthException {
-    FirebaseToken firebaseToken = mock(FirebaseToken.class); 
+    FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
     when(request.getParameter("recipeID")).thenReturn("recipeID");
     when(request.getParameter("token")).thenReturn("validToken");
     when(request.getParameter("type")).thenReturn("SAVE");
 
     when(firebaseToken.getUid()).thenReturn("userID");
-    when(firebaseAuth.verifyIdToken(anyString(), eq(true)))
-        .thenReturn(firebaseToken);
+    when(firebaseAuth.verifyIdToken(anyString(), eq(true))).thenReturn(firebaseToken);
 
     userServlet.doPut(request, response);
 

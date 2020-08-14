@@ -119,7 +119,7 @@ public class CommentServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return;
     }
-    
+
     // Call FirestoreDB editCommentContent() method.
     db.editCommentContent(commentID, recipeID, commentBody);
   }

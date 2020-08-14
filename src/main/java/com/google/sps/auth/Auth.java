@@ -20,8 +20,8 @@ public class Auth {
     firebaseAuth = FirebaseAuth.getInstance();
   }
 
-  /** 
-   * Checks the authentication of a given token and returns a unique UID. 
+  /**
+   * Checks the authentication of a given token and returns a unique UID.
    * If the token is not valid, returns null.
    */
   public static String getUid(String token, HttpServletResponse response) {
