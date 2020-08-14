@@ -143,7 +143,7 @@ public class FirestoreDB implements DBInterface {
 
   public List<RecipeMetadata> getRecipesMatchingCreator(
       String creatorId, SortingMethod sortingMethod) {
-    Query recipesQuery = DBUtils.recipes().whereEqualTo(Recipe.CREATOR_ID_KEY, creatorId);
+    Query recipesQuery = DBUtils.recipeMetadata().whereEqualTo(Recipe.CREATOR_ID_KEY, creatorId);
     return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
 
@@ -153,7 +153,7 @@ public class FirestoreDB implements DBInterface {
   }
 
   public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids, SortingMethod sortingMethod) {
-    Query recipesQuery = DBUtils.recipes().whereIn(Recipe.ID_KEY, Ids);
+    Query recipesQuery = DBUtils.recipeMetadata().whereIn(Recipe.ID_KEY, Ids);
     return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
 

@@ -142,6 +142,7 @@ public class RecipeServlet extends HttpServlet {
     }
 
     db.deleteComments(recipeId);
+    db.deleteUserProperty(uid, recipeId, User.CREATED_RECIPES_KEY);
     db.deleteRecipe(recipeId);
   }
 
