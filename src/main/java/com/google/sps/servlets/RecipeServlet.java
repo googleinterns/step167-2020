@@ -200,7 +200,7 @@ public class RecipeServlet extends HttpServlet {
     if (uid == null) {
       return null;
     }
-    
+
     Boolean userCreatedRecipe = db.getUserProperty(uid, recipeId, User.CREATED_RECIPES_KEY);
     if (userCreatedRecipe == null || !userCreatedRecipe) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
