@@ -22,6 +22,13 @@
         placeholder="e.g. Preheat the oven to 350 degrees."
       ></textarea>
       <br />
+      <p>Add tags to your recipe:</p>
+      <select id="tag-select">
+        <option>None</option>
+      </select>
+      <p>Currently selected tags:</p>
+      <div id="selected-tags"></div>
+      <br />
       <button type="button" id="submit" value="Submit">Submit</button>
     </div>
     <div id="recipe-preview">
@@ -41,6 +48,9 @@
     <script type="module">
       import { app } from "/scripts/init.js"
 
+      let tagSelect = document.getElementById("tag-select")
+      window.addTag = addTag
+
       /** On window load, initialize the page. */
       window.onload = function () {
         initPage()
@@ -52,6 +62,24 @@
         document.getElementById("submit").addEventListener("click", submitRecipe)
         document.querySelector("input").addEventListener("input", renderRecipe)
         document.querySelector("textarea").addEventListener("input", renderRecipe)
+        document.getElementById("tag-select").addEventListener("change", addTag)
+
+        // Initialize tag-select
+        loadTags()
+      }
+
+      // Fetch all recipe tags to populate our select form
+      function loadTags() {
+        fetch("/api/tag").then(async (response) => {
+          if (!response.ok) {
+            alert("Error " + response.status.toString())
+          } else {
+            let tags = await response.json()
+            tags.forEach((tag) => {
+              tagSelect.innerHTML += '<option value="' + tag.id + '">' + tag.name + "</option>"
+            })
+          }
+        })
       }
 
       /** Display the recipe being typed in markdown with formatting, in real-time. */
@@ -69,6 +97,7 @@
       function submitRecipe() {
         let titleInput = document.getElementById("recipe-title")
         let instructionsInput = document.getElementById("instructions")
+        let tags = getCurrentTags()
 
         // Make sure a user is signed in before posting.
         if (app.auth().currentUser) {
@@ -83,7 +112,10 @@
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  metadata: { title: titleInput.value },
+                  metadata: {
+                    title: titleInput.value,
+                    tagIds: tags,
+                  },
                   content: instructionsInput.value,
                 }),
               }).then((response) => {
@@ -100,6 +132,59 @@
         } else {
           alert("User must be signed in to submit a recipe.")
         }
+      }
+
+      // Returns the current set of tags as a Map<String, Boolean>
+      function getCurrentTags() {
+        let tagMap = {}
+        let tagList = Array.from(document.getElementById("selected-tags").childNodes)
+        tagList.forEach((tag) => {
+          tagMap[tag.id] = true
+        })
+        return tagMap
+      }
+
+      // Adds a tag to list of selected-tags
+      function addTag() {
+        const tagID = tagSelect.value
+        if (tagID == "None" || tagSelected(tagID)) {
+          return
+        }
+        let tagList = document.getElementById("selected-tags")
+
+        // Create 'tag' element with id matching tag ID and innertext matching tag name
+        const tag = document.createElement("DIV")
+        // Retrieve option with matching tagID then retrieve innertext (tag name)
+        tag.innerText = getOptionByValue(tagID).innerText
+        tag.id = tagID
+
+        tagList.appendChild(tag)
+        tag.addEventListener("click", function (e) {
+          // When we click a currently selected tag, remove it and retrieve recipes
+          tag.parentNode.removeChild(tag)
+        })
+      }
+
+      // Determines if the passed tagID is represented in the current selected tags
+      function tagSelected(tagID) {
+        var selectedTags = document.getElementById("selected-tags").childNodes
+        for (var x = 0; x < selectedTags.length; x++) {
+          if (selectedTags[x].id == tagID) return true
+        }
+        return false
+      }
+
+      // Returns the first option whose 'value' property (ie the id of the tag it represents)
+      // matches value
+      function getOptionByValue(value) {
+        var allOptions = document.getElementsByTagName("option")
+        var results = []
+        for (var x = 0; x < allOptions.length; x++) {
+          if (allOptions[x].value == value) {
+            results.push(allOptions[x])
+          }
+        }
+        return results[0]
       }
     </script>
   </body>

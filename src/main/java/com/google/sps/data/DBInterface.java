@@ -1,6 +1,7 @@
 package com.google.sps.meltingpot.data;
 
 import com.google.cloud.firestore.Query;
+import com.google.cloud.firestore.Transaction;
 import java.util.Iterator;
 import java.util.List;
 
@@ -52,9 +53,10 @@ public interface DBInterface {
    *
    * @param Id recipe's Firestore ID
    * @param voteDiff int value that should be added to the current votes on the recipe
+   * @param t The transaction that this operation wil take place in
    * @return recipe vote count after the update
    */
-  public Long voteRecipe(String Id, int voteDiff);
+  public long voteRecipe(String Id, int voteDiff, Transaction t);
 
   /**
    * Gets a sorted list of all recipe metadata.
@@ -101,6 +103,14 @@ public interface DBInterface {
   public boolean isDocument(String docId, String collection);
 
   /**
+   * Returns whether the user document exists
+   *
+   * @param userId the user's Firebase ID.
+   * @return boolean that tells you whether it exists or not
+   */
+  public boolean isUser(String userId);
+
+  /**
    * Returns a User object from userId.
    *
    * @param userId the user's Firebase ID.
@@ -124,8 +134,8 @@ public interface DBInterface {
   public void deleteUser(String userId);
 
   /**
-   * Sets a property's value to "true" for a certain user document. Can be used to let a user add a
-   * recipe to saved or created, or to let user follow a tag.
+   * Sets a property's value to val for a certain user document. Can be used to let a user add a
+   * recipe to saved or created, or to let user follow a tag. Not thread safe.
    *
    * @param userId the user's Firebase ID
    * @param objectId the ID of either a recipe if the intent is to save/create, or of a tag for tag
@@ -133,11 +143,26 @@ public interface DBInterface {
    * @param collection a KEY constant from User class indicating which mode -- save, create, or
    *     follow tag.
    */
-  public void makeUserPropertyTrue(String userId, String objectId, String collection);
+  public void setUserProperty(String userId, String objectId, String collection, boolean val);
+
+  /**
+   * Sets a property's value to val for a certain user document. Can be used to let a user add a
+   * recipe to saved or created, or to let user follow a tag.
+   * Done within a transaction.
+   *
+   * @param userId the user's Firebase ID
+   * @param objectId the ID of either a recipe if the intent is to save/create, or of a tag for tag
+   *     following.
+   * @param collection a KEY constant from User class indicating which mode -- save, create, or
+   *     follow tag.
+   * @param t The transaction this operation should take place in
+   */
+  public void setUserProperty(
+      String userId, String objectId, String collection, boolean val, Transaction t);
 
   /**
    * Deletes a property value for a certain user document. Can be used to let a user delete a recipe
-   * from saved or created, or to let user unfollow a tag.
+   * from saved or created, or to let user unfollow a tag. Not thread safe.
    *
    * @param userId the user's Firebase ID
    * @param objectId the ID of either a recipe if the intent is to unsave/create, or of a tag for
@@ -145,6 +170,51 @@ public interface DBInterface {
    * @param collection a KEY constant from User class indicating which mode -- save, create, or tag.
    */
   public void deleteUserProperty(String userId, String objectId, String collection);
+
+  /**
+   * Deletes a property value for a certain user document. Can be used to let a user delete a recipe
+   * from saved or created, or to let user unfollow a tag.
+   * Done within a transaction.
+   *
+   * @param userId the user's Firebase ID
+   * @param objectId the ID of either a recipe if the intent is to unsave/create, or of a tag for
+   *     tag unfollowing.
+   * @param collection a KEY constant from User class indicating which mode -- save, create, or tag.
+   * @param t The transaction this operation should take place in
+   */
+  public void deleteUserProperty(String userId, String objectId, String collection, Transaction t);
+
+  /**
+   * Checks if a specified user has a given recipe as true in a given map field. Not thread safe.
+   *
+   * @param userId the user's Firebase ID.
+   * @param recipeId the recipe's Firebase ID.
+   * @return true if it is in the map as true, false if in map as false, null if not in map or user
+   *     does not exist
+   */
+  public Boolean getUserProperty(String userId, String recipeId, String mapName);
+
+  /**
+   * getUserProperty, but for arrays
+   *
+   * @param userId the user's Firebase ID.
+   * @param recipeIds the recipes Firebase IDs.
+   * @return array of [true if it is in the map as true, false if in map as false, null if not in
+   *     map], or just null if the user does not exist.
+   */
+  public Boolean[] getUserProperty(String userId, String[] recipeIds, String mapName);
+
+  /**
+   * Checks if a specified user has a given recipe as true in a given map field.
+   * Done within a transaction.
+   *
+   * @param userId the user's Firebase ID.
+   * @param recipeId the recipe's Firebase ID.
+   * @param t The transaction this operation should take place in
+   * @return true if it is in the map as true, false if in map as false, null if not in map or user
+   *     does not exist
+   */
+  public Boolean getUserProperty(String userId, String recipeId, String mapName, Transaction t);
 
   /**
    * Returns a list of all recipe metadata with any of the tags in the tag IDs list.
@@ -243,22 +313,4 @@ public interface DBInterface {
    * @return true if created, false if not or if user doesn't exist.
    */
   public boolean isCreatedComment(String recipeId, String commentId, String userId);
-
-  /**
-   * Checks if a specified user created a specified recipe.
-   *
-   * @param userId the user's Firebase ID.
-   * @param recipeId the recipe's Firebase ID.
-   * @return true if created, false if not or if user doesn't exist.
-   */
-  public boolean createdRecipe(String userId, String recipeId);
-
-  /**
-   * Checks if a specified user saved a specified recipe.
-   *
-   * @param userId the user's Firebase ID.
-   * @param recipeId the recipe's Firebase ID.
-   * @return true if saved, false if not or if user doesn't exist.
-   */
-  public boolean isSavedRecipe(String userId, String recipeId);
 }

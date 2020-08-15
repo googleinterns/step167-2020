@@ -6,6 +6,7 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.FieldValue;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.Transaction;
 import com.google.cloud.firestore.WriteBatch;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,14 +49,11 @@ public class FirestoreDB implements DBInterface {
     DBUtils.blockOnFuture(batch.commit());
   }
 
-  public Long voteRecipe(String Id, int voteDiff) {
+  public long voteRecipe(String Id, int voteDiff, Transaction t) {
     DocumentReference metadataRef = DBUtils.recipeMetadata(Id);
-    ApiFuture<Long> voteTransaction = DBUtils.database.runTransaction(transaction -> {
-      long votes = DBUtils.blockOnFuture(metadataRef.get()).getLong(RecipeMetadata.VOTES_KEY);
-      metadataRef.update(RecipeMetadata.VOTES_KEY, votes + voteDiff);
-      return votes + voteDiff;
-    });
-    return DBUtils.blockOnFuture(voteTransaction);
+    long votes = DBUtils.blockOnFuture(t.get(metadataRef)).getLong(RecipeMetadata.VOTES_KEY);
+    t.update(metadataRef, RecipeMetadata.VOTES_KEY, FieldValue.increment(voteDiff));
+    return votes + voteDiff;
   }
 
   public List<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod) {
@@ -103,6 +101,12 @@ public class FirestoreDB implements DBInterface {
     return document.exists();
   }
 
+  public boolean isUser(String userId) {
+    DocumentReference userRef = DBUtils.user(userId);
+    DocumentSnapshot user = DBUtils.blockOnFuture(userRef.get());
+    return user.exists();
+  }
+
   public User getUser(String userId) {
     DocumentReference userRef = DBUtils.user(userId);
     DocumentSnapshot user = DBUtils.blockOnFuture(userRef.get());
@@ -120,12 +124,18 @@ public class FirestoreDB implements DBInterface {
     DBUtils.blockOnFuture(DBUtils.user(userId).delete());
   }
 
-  public void makeUserPropertyTrue(String userId, String objectId, String collection) {
+  public void setUserProperty(String userId, String objectId, String collection, boolean val) {
     DocumentReference userRef = DBUtils.user(userId);
     String nestedPropertyName = DBUtils.getNestedPropertyName(collection, objectId);
-    ApiFuture addUserPropertyFuture =
-        userRef.update(Collections.singletonMap(nestedPropertyName, true));
+    ApiFuture addUserPropertyFuture = userRef.update(nestedPropertyName, val);
     DBUtils.blockOnFuture(addUserPropertyFuture);
+  }
+
+  public void setUserProperty(
+      String userId, String objectId, String collection, boolean val, Transaction t) {
+    DocumentReference userRef = DBUtils.user(userId);
+    String nestedPropertyName = DBUtils.getNestedPropertyName(collection, objectId);
+    t.update(userRef, nestedPropertyName, val);
   }
 
   public void deleteUserProperty(String userId, String objectId, String collection) {
@@ -133,6 +143,46 @@ public class FirestoreDB implements DBInterface {
     String nestedPropertyName = DBUtils.getNestedPropertyName(collection, objectId);
     ApiFuture removeUserPropertyFuture = userRef.update(nestedPropertyName, FieldValue.delete());
     DBUtils.blockOnFuture(removeUserPropertyFuture);
+  }
+
+  public void deleteUserProperty(String userId, String objectId, String collection, Transaction t) {
+    DocumentReference userRef = DBUtils.user(userId);
+    String nestedPropertyName = DBUtils.getNestedPropertyName(collection, objectId);
+    t.update(userRef, nestedPropertyName, FieldValue.delete());
+  }
+
+  public Boolean getUserProperty(String userId, String recipeId, String mapName) {
+    DocumentSnapshot user = DBUtils.blockOnFuture(DBUtils.user(userId).get());
+
+    if (!user.exists()) {
+      return null;
+    }
+    Boolean inMap = user.getBoolean(DBUtils.getNestedPropertyName(mapName, recipeId));
+    return inMap;
+  }
+
+  public Boolean[] getUserProperty(String userId, String[] recipeIds, String mapName) {
+    DocumentSnapshot user = DBUtils.blockOnFuture(DBUtils.user(userId).get());
+
+    if (!user.exists()) {
+      return null;
+    }
+
+    Boolean[] inMap = new Boolean[recipeIds.length];
+    for (int i = 0; i < recipeIds.length; i++) {
+      inMap[i] = user.getBoolean(DBUtils.getNestedPropertyName(mapName, recipeIds[i]));
+    }
+    return inMap;
+  }
+
+  public Boolean getUserProperty(String userId, String recipeId, String mapName, Transaction t) {
+    DocumentSnapshot user = DBUtils.blockOnFuture(t.get(DBUtils.user(userId)));
+
+    if (!user.exists()) {
+      return null;
+    }
+    Boolean inMap = user.getBoolean(DBUtils.getNestedPropertyName(mapName, recipeId));
+    return inMap;
   }
 
   public List<RecipeMetadata> getRecipesMatchingTags(
@@ -154,12 +204,18 @@ public class FirestoreDB implements DBInterface {
 
   public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids, SortingMethod sortingMethod) {
     Query recipesQuery = DBUtils.recipeMetadata().whereIn(Recipe.ID_KEY, Ids);
+    if(Ids.size() == 0){
+      return new ArrayList<RecipeMetadata>();
+    }
     return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
 
   private List<RecipeMetadata> getRecipeMetadataQuery(
       Query recipesQuery, SortingMethod sortingMethod) {
-    /*switch (sortingMethod) {
+    
+    /*
+    switch (sortingMethod) { // Note: this does not currently work with tagID queries, requires
+                             // custom index
       case TOP:
         recipesQuery = recipesQuery.orderBy(Recipe.VOTES_KEY, Query.Direction.DESCENDING);
         break;
@@ -180,7 +236,6 @@ public class FirestoreDB implements DBInterface {
   public Query recipesMatchingTags(Iterable<String> tagIds, Iterator<String> iter) {
     if (iter.hasNext()) {
       String nextTag = iter.next();
-      System.out.println("Current tag: " + nextTag);
       return recipesMatchingTags(tagIds, iter).whereEqualTo("tagIds." + nextTag, true);
     }
     return DBUtils.recipeMetadata();
@@ -191,7 +246,11 @@ public class FirestoreDB implements DBInterface {
     DocumentSnapshot user = DBUtils.blockOnFuture(userRef.get());
     Map<String, Boolean> savedRecipeIdsMap =
         (Map<String, Boolean>) user.get(User.SAVED_RECIPES_KEY);
-    return new ArrayList<String>(savedRecipeIdsMap.keySet());
+    if(savedRecipeIdsMap != null) {
+      return new ArrayList<String>(savedRecipeIdsMap.keySet());
+    } else {
+      return new ArrayList<String>();
+    }
   }
 
   public String addComment(Comment newComment, String recipeId) {
@@ -221,31 +280,5 @@ public class FirestoreDB implements DBInterface {
 
     String commentCreatorId = comment.getString(Comment.CREATOR_ID_KEY);
     return commentCreatorId.equals(userId);
-  }
-
-  public boolean createdRecipe(String userId, String recipeId) {
-    DocumentReference userRef = DBUtils.user(userId);
-    ApiFuture<DocumentSnapshot> userFuture = userRef.get();
-    DocumentSnapshot user = DBUtils.blockOnFuture(userFuture);
-    if (!user.exists()) {
-      return false;
-    }
-    Boolean userCreatedRecipe =
-        user.getBoolean(DBUtils.getNestedPropertyName(User.CREATED_RECIPES_KEY, recipeId));
-    // note that userCreatedRecipe is a Boolean, not a boolean
-    return userCreatedRecipe != null && userCreatedRecipe;
-  }
-
-  public boolean isSavedRecipe(String userId, String recipeId) {
-    DocumentReference userRef = DBUtils.user(userId);
-    ApiFuture<DocumentSnapshot> userFuture = userRef.get();
-    DocumentSnapshot user = DBUtils.blockOnFuture(userFuture);
-
-    if (!user.exists()) {
-      return false;
-    }
-    Boolean userSavedRecipe =
-        user.getBoolean(DBUtils.getNestedPropertyName(User.SAVED_RECIPES_KEY, recipeId));
-    return userSavedRecipe != null && userSavedRecipe;
   }
 }

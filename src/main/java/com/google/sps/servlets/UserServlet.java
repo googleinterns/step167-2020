@@ -92,7 +92,7 @@ public class UserServlet extends HttpServlet {
         }
 
         // Call the FirestoreDB method.
-        db.makeUserPropertyTrue(uid, recipeID, User.SAVED_RECIPES_KEY);
+        db.setUserProperty(uid, recipeID, User.SAVED_RECIPES_KEY, true);
         response.setStatus(HttpServletResponse.SC_OK);
         break;
     }

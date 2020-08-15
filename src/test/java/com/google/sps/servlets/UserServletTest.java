@@ -85,7 +85,7 @@ public final class UserServletTest {
 
     userServlet.doPut(request, response);
 
-    verify(db, never()).makeUserPropertyTrue(anyString(), anyString(), anyString());
+    verify(db, never()).setUserProperty(anyString(), anyString(), anyString(), eq(true));
     verify(response, never()).getWriter();
     verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
   }
@@ -107,7 +107,7 @@ public final class UserServletTest {
 
     userServlet.doPut(request, response);
 
-    verify(db, never()).makeUserPropertyTrue(anyString(), anyString(), anyString());
+    verify(db, never()).setUserProperty(anyString(), anyString(), anyString(), eq(true));
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
   }
 
@@ -128,7 +128,7 @@ public final class UserServletTest {
 
     userServlet.doPut(request, response);
 
-    verify(db, times(1)).makeUserPropertyTrue("userID", "recipeID", User.SAVED_RECIPES_KEY);
+    verify(db, times(1)).setUserProperty("userID", "recipeID", User.SAVED_RECIPES_KEY, true);
     verify(response).setStatus(HttpServletResponse.SC_OK);
   }
 }

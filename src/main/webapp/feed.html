@@ -80,12 +80,8 @@
         let recipeList = document.getElementById("recipe-list")
         let queryString = "/api/post"
 
-        if (tagIDs.length > 0) {
-          queryString += "?tagIDs=" + tagIDs[0]
-          for (var x = 1; x < tagIDs.length; x++) {
-            queryString += "&tagIDs=" + tagIDs[x]
-          }
-        }
+        let tagsQuery = tagIDs.map((id) => "tagIDs=" + id)
+        queryString += "?" + tagsQuery.join("&")
 
         console.log(queryString)
 

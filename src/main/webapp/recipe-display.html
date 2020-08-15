@@ -20,6 +20,11 @@
     <div id="comments"></div>
     <button type="button" id="save-post">Save this recipe</button>
     <p id="saved"></p>
+    <div id="votes">
+      Votes:
+    </div>
+    <button type="button" id="upvote">Toggle Upvote</button>
+    <button type="button" id="downvote">Toggle Downvote</button>
 
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
@@ -42,6 +47,12 @@
       var editForm = document.createElement("input")
       var cancelEdit = document.createElement("button")
       var submitEdit = document.createElement("button")
+      var votesDiv = document.getElementById("votes")
+      var upvoteButton = document.getElementById("upvote")
+      var downvoteButton = document.getElementById("downvote")
+
+      var votes = 0
+      var voted = 0
 
       /** On window load, initialize the page. */
       window.onload = function () {
@@ -51,17 +62,20 @@
       /** Load page elements. */
       function initPage() {
         // Load the recipe and comments on the page.
-        getDetailedRecipe(getRecipeID())
+        getDetailedRecipe(getRecipeID(), app)
         getComments(getRecipeID())
 
         savePostButton.addEventListener("click", savePost)
         submitCommButton.addEventListener("click", submitComment)
+        upvoteButton.addEventListener("click", () => toggleVote(true))
+        downvoteButton.addEventListener("click", () => toggleVote(false))
 
         toggleElementVisibility(app.auth().currentUser)
 
         // Set Firebase auth state change listener.
         app.auth().onAuthStateChanged(function (user) {
           toggleElementVisibility(user)
+          getUserRecipeProperties(getRecipeID())
         })
       }
 
@@ -73,6 +87,27 @@
         var elements = [savePostButton, submitCommButton, commentLabel, commentContent]
         for (var el of elements) {
           el.hidden = !isVisible
+        }
+      }
+
+      function getUserRecipeProperties(ID) {
+        if (app.auth().currentUser) {
+          app
+            .auth()
+            .currentUser.getIdToken(/* forceRefresh */ true)
+            .then((idToken) =>
+              fetch("api/vote?recipeIds=" + ID + "&token=" + idToken)
+                .then((res) => res.json())
+                .then((data) => {
+                  if (data[0] === true) {
+                    voted = 1
+                  } else if (data[0] === null) {
+                    voted = 0
+                  } else if (data[0] === false) {
+                    voted = -1
+                  }
+                })
+            )
         }
       }
 
@@ -116,7 +151,6 @@
       function submitComment() {
         var commentContent = document.getElementById("comment-content")
         var recipeID = getRecipeID()
-
         if (app.auth().currentUser) {
           app
             .auth()
@@ -160,11 +194,13 @@
           })
       }
 
-      function getDetailedRecipe(ID) {
+      function getDetailedRecipe(ID, app) {
         fetch("/api/post?recipeID=" + ID)
           .then((response) => response.json())
           .then((recipe) => {
             const recipeEl = document.getElementById("recipe")
+            votes = recipe.metadata.votes
+            votesDiv.innerHTML = "Votes: " + recipe.metadata.votes
             removeAllChildNodes(recipeEl)
             recipeEl.appendChild(createRecipeElement(recipe))
           })
@@ -274,6 +310,50 @@
             })
         } else {
           alert("User must be signed in to submit a comment.")
+        }
+      }
+
+      function toggleVote(vote) {
+        var recipeID = getRecipeID()
+
+        if (app.auth().currentUser) {
+          if (voted === 1) {
+            if (vote) {
+              voted = 0
+              votes += -1
+            } else {
+              voted = -1
+              votes += -2
+            }
+          } else if (voted === 0) {
+            if (vote) {
+              voted = 1
+              votes += 1
+            } else {
+              voted = -1
+              votes += -1
+            }
+          } else if (voted == -1) {
+            if (vote) {
+              voted = 1
+              votes += 2
+            } else {
+              voted = 0
+              votes += 1
+            }
+          }
+          votesDiv.innerHTML = "Votes: " + votes
+          fetch("/api/vote?recipeId=" + recipeID + "&vote=" + vote + "&token=" + idToken, {
+            method: "PUT",
+          }).then((response) => {
+            if (response.ok) {
+              return response.json()
+            } else {
+              alert("Error " + response.status.toString())
+            }
+          })
+        } else {
+          alert("User must be signed in to vote.")
         }
       }
 

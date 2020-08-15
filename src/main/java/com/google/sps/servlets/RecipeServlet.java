@@ -99,7 +99,7 @@ public class RecipeServlet extends HttpServlet {
     newRecipe.metadata.creatorLdap = Auth.getUserEmail(uid);
     String recipeId = db.addRecipe(newRecipe);
 
-    db.makeUserPropertyTrue(uid, recipeId, User.CREATED_RECIPES_KEY);
+    db.setUserProperty(uid, recipeId, User.CREATED_RECIPES_KEY, true);
 
     response.setStatus(HttpServletResponse.SC_CREATED);
     response.setContentType("application/json");
@@ -152,8 +152,8 @@ public class RecipeServlet extends HttpServlet {
     String tagIDs[] = request.getParameterValues("tagIDs");
     boolean isSavedRequest = Boolean.parseBoolean(request.getParameter("saved"));
 
-    boolean isTagQuery = !(tagIDs == null || tagIDs.length == 0 || tagIDs[0].equals("None"));
-    boolean isCreatorQuery = !(creatorToken == null || creatorToken.equals("None"));
+    boolean isTagQuery = (tagIDs != null && tagIDs.length > 0 && !tagIDs[0].equals("None"));
+    boolean isCreatorQuery = (creatorToken != null && !creatorToken.equals("None"));
 
     if (isSavedRequest || (isCreatorQuery && !isTagQuery)) {
       // If frontend is requesting saved recipes or created recipes of a given user,
@@ -194,7 +194,8 @@ public class RecipeServlet extends HttpServlet {
       return null;
     }
 
-    if (!db.createdRecipe(uid, recipeId)) {
+    Boolean userCreatedRecipe = db.getUserProperty(uid, recipeId, User.CREATED_RECIPES_KEY);
+    if (userCreatedRecipe == null || !userCreatedRecipe) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return null;
     }
