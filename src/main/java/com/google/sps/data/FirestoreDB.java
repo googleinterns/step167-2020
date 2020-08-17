@@ -204,7 +204,7 @@ public class FirestoreDB implements DBInterface {
 
   public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids, SortingMethod sortingMethod) {
     Query recipesQuery = DBUtils.recipeMetadata().whereIn(Recipe.ID_KEY, Ids);
-    if(Ids.size() == 0){
+    if (Ids.size() == 0) {
       return new ArrayList<RecipeMetadata>();
     }
     return getRecipeMetadataQuery(recipesQuery, sortingMethod);
@@ -212,7 +212,6 @@ public class FirestoreDB implements DBInterface {
 
   private List<RecipeMetadata> getRecipeMetadataQuery(
       Query recipesQuery, SortingMethod sortingMethod) {
-    
     /*
     switch (sortingMethod) { // Note: this does not currently work with tagID queries, requires
                              // custom index
@@ -246,7 +245,7 @@ public class FirestoreDB implements DBInterface {
     DocumentSnapshot user = DBUtils.blockOnFuture(userRef.get());
     Map<String, Boolean> savedRecipeIdsMap =
         (Map<String, Boolean>) user.get(User.SAVED_RECIPES_KEY);
-    if(savedRecipeIdsMap != null) {
+    if (savedRecipeIdsMap != null) {
       return new ArrayList<String>(savedRecipeIdsMap.keySet());
     } else {
       return new ArrayList<String>();

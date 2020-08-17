@@ -343,19 +343,23 @@
             }
           }
           votesDiv.innerHTML = "Votes: " + votes
-          firebase.auth().currentUser.getIdToken(/* forceRefresh */ true).then(idToken => {
-            fetch("/api/vote?recipeId=" + recipeID + "&vote=" + vote + "&token=" + idToken, {
-              method: "PUT",
-            }).then((response) => {
-              if (response.ok) {
-                return response.json()
-              } else {
-                alert("Error " + response.status.toString())
-              }
+          firebase
+            .auth()
+            .currentUser.getIdToken(/* forceRefresh */ true)
+            .then((idToken) => {
+              fetch("/api/vote?recipeId=" + recipeID + "&vote=" + vote + "&token=" + idToken, {
+                method: "PUT",
+              }).then((response) => {
+                if (response.ok) {
+                  return response.json()
+                } else {
+                  alert("Error " + response.status.toString())
+                }
+              })
             })
-          }).catch(function(error) {
-            alert("Error! Could not retrieve user ID token.")
-          });
+            .catch(function (error) {
+              alert("Error! Could not retrieve user ID token.")
+            })
         } else {
           alert("User must be signed in to vote.")
         }
