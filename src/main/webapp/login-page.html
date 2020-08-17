@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <title>Melting Pot</title>
     <link rel="stylesheet" href="style.css" />
+    <script type="module" src="/scripts/init.js"></script>
   </head>
   <body>
     <!-- Login form -->
@@ -26,9 +27,6 @@
 
     <!-- Add Firebase products that you want to use -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-auth.js"></script>
-
-    <!-- Firebase should be initialized just once -->
-    <script type="module" src="/scripts/init.js"></script>
 
     <!-- Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -130,6 +128,21 @@
         firebase
           .auth()
           .createUserWithEmailAndPassword(email, password)
+          .then(function onSuccess() {
+            // Create new user document on the back end.
+            firebase
+              .auth()
+              .currentUser.getIdToken(/* forceRefresh */ true)
+              .then(function (idToken) {
+                // Send token to backend via HTTPS
+                fetch("/api/user?token=" + idToken, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                })
+              })
+          })
           .catch(function onFailure(error) {
             var errorCode = error.code
             var errorMessage = error.message

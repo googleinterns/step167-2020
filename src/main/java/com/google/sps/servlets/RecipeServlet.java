@@ -27,6 +27,7 @@ import com.google.sps.meltingpot.data.RecipeMetadata;
 import com.google.sps.meltingpot.data.SortingMethod;
 import com.google.sps.meltingpot.data.User;
 import java.io.IOException;
+import java.lang.Boolean;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -87,7 +88,7 @@ public class RecipeServlet extends HttpServlet {
     }
 
     String token = request.getParameter("token");
-    String uid = getUid(token, response);
+    String uid = Auth.getUid(token, response);
     if (uid == null) {
       return;
     }
@@ -109,7 +110,8 @@ public class RecipeServlet extends HttpServlet {
   public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
     Recipe newRecipe = gson.fromJson(data, Recipe.class);
-    if (newRecipe.metadata == null || newRecipe.content == null || newRecipe.metadata.title == null
+    if (newRecipe == null || newRecipe.metadata == null || newRecipe.content == null
+        || newRecipe.content.isEmpty() || newRecipe.metadata.title == null
         || newRecipe.metadata.id == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
@@ -140,6 +142,7 @@ public class RecipeServlet extends HttpServlet {
     }
 
     db.deleteComments(recipeId);
+    db.deleteUserProperty(uid, recipeId, User.CREATED_RECIPES_KEY);
     db.deleteRecipe(recipeId);
   }
 
@@ -155,7 +158,7 @@ public class RecipeServlet extends HttpServlet {
     if (isSavedRequest || (isCreatorQuery && !isTagQuery)) {
       // If frontend is requesting saved recipes or created recipes of a given user,
       // make sure they are authenticated
-      String uid = getUid(creatorToken, response);
+      String uid = Auth.getUid(creatorToken, response);
       if (uid == null) {
         return null;
       }
@@ -181,22 +184,12 @@ public class RecipeServlet extends HttpServlet {
     return gson.toJson(recipe);
   }
 
-  /** Checks the authentication of a given token. If the token is not valid, returns null */
-  protected String getUid(String token, HttpServletResponse response) {
-    FirebaseToken decodedToken = Auth.verifyIdToken(token);
-    if (decodedToken == null) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return null;
-    }
-    return decodedToken.getUid();
-  }
-
   /**
    * Checks if token valid, then if corresponding user created the given recipe. If either
    * fails, returns null and sets HttpServletResponse status accordingly
    */
   protected String matchUser(String token, String recipeId, HttpServletResponse response) {
-    String uid = getUid(token, response);
+    String uid = Auth.getUid(token, response);
     if (uid == null) {
       return null;
     }

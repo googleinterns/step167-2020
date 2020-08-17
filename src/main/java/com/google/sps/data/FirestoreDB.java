@@ -80,6 +80,7 @@ public class FirestoreDB implements DBInterface {
         commentsQuery = commentsQuery.orderBy(Comment.TIMESTAMP_KEY, Query.Direction.DESCENDING);
         break;
     }
+    // blockOnFuture() returns a QuerySnapshot
     return DBUtils.blockOnFuture(commentsQuery.get()).toObjects(Comment.class);
   }
 
@@ -192,7 +193,7 @@ public class FirestoreDB implements DBInterface {
 
   public List<RecipeMetadata> getRecipesMatchingCreator(
       String creatorId, SortingMethod sortingMethod) {
-    Query recipesQuery = DBUtils.recipes().whereEqualTo(Recipe.CREATOR_ID_KEY, creatorId);
+    Query recipesQuery = DBUtils.recipeMetadata().whereEqualTo(Recipe.CREATOR_ID_KEY, creatorId);
     return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
 
@@ -202,12 +203,16 @@ public class FirestoreDB implements DBInterface {
   }
 
   public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids, SortingMethod sortingMethod) {
-    Query recipesQuery = DBUtils.recipes().whereIn(Recipe.ID_KEY, Ids);
+    Query recipesQuery = DBUtils.recipeMetadata().whereIn(Recipe.ID_KEY, Ids);
+    if (Ids.size() == 0) {
+      return new ArrayList<RecipeMetadata>();
+    }
     return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
 
   private List<RecipeMetadata> getRecipeMetadataQuery(
       Query recipesQuery, SortingMethod sortingMethod) {
+    /*
     switch (sortingMethod) { // Note: this does not currently work with tagID queries, requires
                              // custom index
       case TOP:
@@ -216,7 +221,7 @@ public class FirestoreDB implements DBInterface {
       case NEW:
         recipesQuery = recipesQuery.orderBy(Recipe.TIMESTAMP_KEY, Query.Direction.DESCENDING);
         break;
-    }
+    }*/
 
     QuerySnapshot querySnapshot = DBUtils.blockOnFuture(recipesQuery.get());
 
@@ -240,11 +245,16 @@ public class FirestoreDB implements DBInterface {
     DocumentSnapshot user = DBUtils.blockOnFuture(userRef.get());
     Map<String, Boolean> savedRecipeIdsMap =
         (Map<String, Boolean>) user.get(User.SAVED_RECIPES_KEY);
-    return new ArrayList<String>(savedRecipeIdsMap.keySet());
+    if (savedRecipeIdsMap != null) {
+      return new ArrayList<String>(savedRecipeIdsMap.keySet());
+    } else {
+      return new ArrayList<String>();
+    }
   }
 
   public String addComment(Comment newComment, String recipeId) {
     DocumentReference newCommentRef = DBUtils.comments(recipeId).document();
+    newComment.id = newCommentRef.getId();
     DBUtils.blockOnFuture(newCommentRef.set(newComment));
     return newCommentRef.getId();
   }
@@ -262,5 +272,12 @@ public class FirestoreDB implements DBInterface {
   public void editCommentContent(String Id, String recipeId, String editedContent) {
     DBUtils.blockOnFuture(
         DBUtils.comments(recipeId).document(Id).update(Comment.CONTENT_KEY, editedContent));
+  }
+
+  public boolean isCreatedComment(String recipeId, String commentId, String userId) {
+    DocumentSnapshot comment = DBUtils.blockOnFuture(DBUtils.comment(recipeId, commentId).get());
+
+    String commentCreatorId = comment.getString(Comment.CREATOR_ID_KEY);
+    return commentCreatorId.equals(userId);
   }
 }

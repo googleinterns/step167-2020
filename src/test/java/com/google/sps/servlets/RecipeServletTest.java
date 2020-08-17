@@ -661,7 +661,7 @@ public final class RecipeServletTest {
         .thenThrow(new IllegalArgumentException());
 
     Auth.testModeWithParams(mockFirebaseAuth);
-    String actual = recipeServlet.getUid("MISSING_TOKEN", response);
+    String actual = Auth.getUid("MISSING_TOKEN", response);
 
     verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
@@ -677,7 +677,7 @@ public final class RecipeServletTest {
         .thenThrow(new FirebaseAuthException("Invalid token", "Invalid token"));
 
     Auth.testModeWithParams(mockFirebaseAuth);
-    String actual = recipeServlet.getUid("BAD_TOKEN", response);
+    String actual = Auth.getUid("BAD_TOKEN", response);
 
     verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
@@ -694,7 +694,7 @@ public final class RecipeServletTest {
     when(mockFirebaseAuth.verifyIdToken(anyString(), anyBoolean())).thenReturn(mockFirebaseToken);
 
     Auth.testModeWithParams(mockFirebaseAuth);
-    String actual = recipeServlet.getUid("GOOD_TOKEN", response);
+    String actual = Auth.getUid("GOOD_TOKEN", response);
 
     Assert.assertEquals("USER_ID", actual);
   }

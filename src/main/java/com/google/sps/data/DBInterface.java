@@ -303,4 +303,14 @@ public interface DBInterface {
    * @return a list of the Firestore IDs of the user's saved recipes in no particular order.
    */
   public List<String> savedRecipeIds(String userId);
+
+  /**
+   * Checks if a specified user created a specified comment.
+   *
+   * @param recipeId the recipe's Firebase ID.
+   * @param commentId the comment's Firebase ID.
+   * @param userId the user's Firebase ID.
+   * @return true if created, false if not or if user doesn't exist.
+   */
+  public boolean isCreatedComment(String recipeId, String commentId, String userId);
 }

@@ -22,9 +22,13 @@ import com.google.firebase.auth.FirebaseToken;
 import com.google.gson.Gson;
 import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.data.Comment;
+import com.google.sps.meltingpot.data.DBInterface;
 import com.google.sps.meltingpot.data.DBUtils;
+import com.google.sps.meltingpot.data.FirestoreDB;
+import com.google.sps.meltingpot.data.SortingMethod;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.stream.Collectors;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -35,7 +39,21 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/api/comment")
 public class CommentServlet extends HttpServlet {
   private Gson gson = new Gson();
+  private Date date = new Date();
+  private DBInterface db;
 
+  public CommentServlet(DBInterface mock) {
+    this.db = mock;
+  }
+
+  public CommentServlet() {}
+
+  @Override
+  public void init() {
+    db = new FirestoreDB();
+  }
+
+  /** As of 8.12.20, returns all comments flatly with NEW sorting method. */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String recipeID = request.getParameter("recipeID");
@@ -43,39 +61,19 @@ public class CommentServlet extends HttpServlet {
 
     if (recipeID == null) {
       System.err.println("No recipe ID was provided.");
-      response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     } else {
-      json = getComments(recipeID, response);
+      json = gson.toJson(db.getAllCommentsInRecipe(recipeID, SortingMethod.NEW));
     }
 
-    if (json == null) {
-      // Error message is printed by getComments().
+    if (json == null || json.equals(gson.toJson(null))) {
+      response.setStatus(HttpServletResponse.SC_NO_CONTENT);
       return;
     }
 
     response.setContentType("application/json");
-    response.getWriter().println(json);
-  }
-
-  /**
-   * Gets all the comments associated with a certain recipe, based on recipe ID. For now, returns
-   * all the comments flatly. (prototype)
-   */
-  private String getComments(String recipeID, HttpServletResponse response) {
-    Query query = DBUtils.comments(recipeID);
-    ApiFuture<QuerySnapshot> querySnapshotFuture = query.get();
-    ArrayList<Object> commentsList = new ArrayList<>();
-
-    QuerySnapshot querySnapshot = DBUtils.blockOnFuture(querySnapshotFuture);
-    if (querySnapshot == null) {
-      return null;
-    }
-
-    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
-      commentsList.add(document.getData());
-    }
-    return gson.toJson(commentsList);
+    response.getWriter().print(json);
   }
 
   @Override
@@ -85,27 +83,65 @@ public class CommentServlet extends HttpServlet {
     String recipeID = request.getParameter("recipeID"); // Parent recipe of comment.
 
     String token = request.getParameter("token");
-    FirebaseToken decodedToken = Auth.verifyIdToken(token);
-    if (decodedToken == null) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return;
-    }
 
     Comment newComment = gson.fromJson(commentData, Comment.class);
-    if (newComment.content == null) {
+    if (recipeID == null || newComment.content == null || newComment.content.isEmpty()) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
-    newComment.creatorId = decodedToken.getUid();
-    ApiFuture addCommentFuture = DBUtils.comments(recipeID).document().set(newComment);
-    DBUtils.blockOnFuture(addCommentFuture);
+    String uid = Auth.getUid(token, response);
+    if (uid == null) {
+      return;
+    }
+
+    newComment.creatorId = uid;
+    newComment.votes = 0;
+    newComment.timestamp = date.getTime();
+    newComment.ldap = Auth.getUserEmail(uid);
+    // Call FirestoreDB addComment method.
+    db.addComment(newComment, recipeID);
     response.setStatus(HttpServletResponse.SC_CREATED);
   }
 
   @Override
-  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String recipeID = request.getParameter("recipeID");
+    String commentID = request.getParameter("commentID");
+    String commentBody = request.getParameter("commentBody");
+
+    if (recipeID == null || commentID == null || commentBody == null || commentBody.isEmpty()) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    String token = request.getParameter("token");
+    String uid = Auth.getUid(token, response);
+    if (uid == null) {
+      return;
+    }
+
+    if (!db.isCreatedComment(recipeID, commentID, uid)) {
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      return;
+    }
+
+    // Call FirestoreDB editCommentContent() method.
+    db.editCommentContent(commentID, recipeID, commentBody);
+  }
 
   @Override
   public void doDelete(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {}
+      throws IOException {
+    String recipeID = request.getParameter("recipeID");
+    String commentID = request.getParameter("commentID");
+
+    if (recipeID == null || commentID == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+    // Product Alpha TODO: Check if comment has replies
+    //   If so replace with "[deleted]"
+    //   Else:
+    db.deleteComment(commentID, recipeID);
+  }
 }
