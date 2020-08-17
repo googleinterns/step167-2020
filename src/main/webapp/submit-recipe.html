@@ -21,6 +21,14 @@
         placeholder="e.g. Preheat the oven to 350 degrees."
       ></textarea>
       <br />
+      <div id="recipe-preview">
+        <h1 id="title-preview"></h1>
+        <div id="instructions-preview"></div>
+      </div>
+      <br />
+      <p>Where does this recipe come from?</p>
+      <div id="map"></div>
+      <br />
       <p>Add tags to your recipe:</p>
       <select id="tag-select">
         <option>None</option>
@@ -30,10 +38,13 @@
       <br />
       <button type="button" id="submit" value="Submit">Submit</button>
     </div>
-    <div id="recipe-preview">
-      <h1 id="title-preview"></h1>
-      <div id="instructions-preview"></div>
-    </div>
+
+    <style>
+      #map {
+        height: 300px;
+        width: 600px;
+      }
+    </style>
 
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
@@ -44,11 +55,15 @@
     <!-- Add Firebase products that you want to use -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-auth.js"></script>
 
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAe5HlFZFuhzMimXrKW1z3kglajbdHf_Rc"></script>
+
     <script type="module">
       import { app } from "/scripts/init.js"
 
+      let map
+      let infoWindow
+      let loc = {}
       let tagSelect = document.getElementById("tag-select")
-      window.addTag = addTag
 
       /** On window load, initialize the page. */
       window.onload = function () {
@@ -65,6 +80,8 @@
 
         // Initialize tag-select
         loadTags()
+
+        createMap()
       }
 
       // Fetch all recipe tags to populate our select form
@@ -78,6 +95,18 @@
               tagSelect.innerHTML += '<option value="' + tag.id + '">' + tag.name + "</option>"
             })
           }
+        })
+      }
+
+      function createMap() {
+        map = new google.maps.Map(document.getElementById("map"), { center: { lat: 20, lng: 0 }, zoom: 1 })
+        infoWindow = new google.maps.InfoWindow()
+
+        google.maps.event.addListener(map, "click", function (event) {
+          //postMarker(event.latLng)
+          loc["latitude"] = event.latLng.lat()
+          loc["longitude"] = event.latLng.lng()
+          console.log("Location: " + event.latLng)
         })
       }
 
@@ -114,6 +143,7 @@
                   metadata: {
                     title: titleInput.value,
                     tagIds: tags,
+                    location: loc,
                   },
                   content: instructionsInput.value,
                 }),
