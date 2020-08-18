@@ -58,7 +58,6 @@
       import { app } from "/scripts/init.js"
 
       let map
-      let infoWindow
       let markers = []
       let recipeList = document.getElementById("recipe-list")
       let tagSelect = document.getElementById("tag-select")
@@ -130,8 +129,11 @@
             recipes.forEach((recipe) => {
               recipeList.innerHTML +=
                 '<li><a href="recipe-display.html?recipeID=' + recipe.id + '">' + recipe.title + "</a></li>"
-              //markers.push(new google.maps.Marker({position: recipe.location, map: map}))
-              console.log(recipe.location)
+              let marker = createMarkerAt(recipe.location, recipe.title)
+              if (marker != null) {
+                attachInfo(recipe, marker)
+                markers.push(marker)
+              }
             })
           }
         })
@@ -139,7 +141,6 @@
 
       function createMap() {
         map = new google.maps.Map(document.getElementById("map"), { center: { lat: 20, lng: 0 }, zoom: 1 })
-        infoWindow = new google.maps.InfoWindow()
       }
 
       function getCurrentFilters() {
@@ -155,6 +156,49 @@
           }
         })
         markers = []
+      }
+
+      function createMarkerAt(location, title) {
+        let marker = null
+        if (location != null && location != undefined) {
+          marker = new google.maps.Marker({
+            position: new google.maps.LatLng(location.latitude, location.longitude),
+            map: map,
+            title: title,
+          })
+        }
+        return marker
+      }
+
+      function attachInfo(recipe, marker) {
+        let contentString =
+          '<div id="content">' +
+          '<div id="siteNotice">' +
+          "</div>" +
+          '<h1 id="firstHeading" class="firstHeading">' +
+          '<a href="recipe-display.html?recipeID=' +
+          recipe.id +
+          '">' +
+          recipe.title +
+          "</a>" +
+          "</h1>" +
+          '<div id="bodyContent">' +
+          "<p>Posted by: " +
+          recipe.creatorLdap +
+          "</p>" +
+          "<p>Votes: " +
+          recipe.votes +
+          "</p>" +
+          "</div>" +
+          "</div>"
+
+        let infowindow = new google.maps.InfoWindow({
+          content: contentString,
+        })
+
+        marker.addListener("click", function () {
+          infowindow.open(map, marker)
+        })
       }
 
       // Adds a filter to list of selected-filters
