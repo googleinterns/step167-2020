@@ -16,7 +16,7 @@
     <br />
 
     <p>Select filters:</p>
-    <select onchange="addFilter()" id="tag-select">
+    <select id="tag-select">
       <option>None</option>
     </select>
 
@@ -24,7 +24,20 @@
     <div id="selected-filters"></div>
     <br />
 
+    <div class="btn-group" id="display-type-select">
+      <div id="list-btn"><button type="button">List</button></div>
+      <div id="map-btn"><button type="button">Map</button></div>
+    </div>
+
     <ul id="recipe-list"></ul>
+    <div id="map"></div>
+
+    <style>
+      #map {
+        height: 300px;
+        width: 600px;
+      }
+    </style>
 
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
@@ -38,29 +51,51 @@
     <!-- Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAe5HlFZFuhzMimXrKW1z3kglajbdHf_Rc"></script>
+
     <!-- Page scripts -->
     <script type="module">
       import { app } from "/scripts/init.js"
 
+      let map
+      let infoWindow
+      let markers = []
       let recipeList = document.getElementById("recipe-list")
       let tagSelect = document.getElementById("tag-select")
 
       window.addFilter = addFilter
 
+      /** On window load, initialize the page. */
       window.onload = function () {
-        // Fetch all recipes to populate our list
-        fetch("/api/post").then(async (response) => {
-          if (!response.ok) {
-            alert("Error " + response.status.toString())
-          } else {
-            let recipes = await response.json()
-            recipes.forEach((recipe) => {
-              recipeList.innerHTML +=
-                '<li><a href="recipe-display.html?recipeID=' + recipe.id + '">' + recipe.title + "</a></li>"
-            })
-          }
-        })
+        initPage()
+      }
 
+      function showList() {
+        document.getElementById("recipe-list").style.display = "block"
+        document.getElementById("map").style.display = "none"
+      }
+
+      function showMap() {
+        document.getElementById("map").style.display = "block"
+        document.getElementById("recipe-list").style.display = "none"
+      }
+
+      /** Load page elements. */
+      function initPage() {
+        // Set event listeners.
+        document.getElementById("tag-select").addEventListener("change", addFilter)
+        document.getElementById("list-btn").addEventListener("click", showList)
+        document.getElementById("map-btn").addEventListener("click", showMap)
+
+        // Initialize tag-select
+        loadTags()
+
+        getRecipes()
+        createMap()
+        showList()
+      }
+
+      function loadTags() {
         // Fetch all recipe tags to populate our select form
         fetch("/api/tag").then(async (response) => {
           if (!response.ok) {
@@ -91,18 +126,35 @@
           } else {
             let recipes = await response.json()
             recipeList.innerHTML = ""
+            clearMarkers()
             recipes.forEach((recipe) => {
               recipeList.innerHTML +=
                 '<li><a href="recipe-display.html?recipeID=' + recipe.id + '">' + recipe.title + "</a></li>"
+              //markers.push(new google.maps.Marker({position: recipe.location, map: map}))
+              console.log(recipe.location)
             })
           }
         })
+      }
+
+      function createMap() {
+        map = new google.maps.Map(document.getElementById("map"), { center: { lat: 20, lng: 0 }, zoom: 1 })
+        infoWindow = new google.maps.InfoWindow()
       }
 
       function getCurrentFilters() {
         var filters = Array.from(document.getElementById("selected-filters").childNodes)
         filters = filters.map((filter) => filter.id)
         return filters
+      }
+
+      function clearMarkers() {
+        markers.forEach((marker) => {
+          if (marker != null) {
+            marker.setMap(null)
+          }
+        })
+        markers = []
       }
 
       // Adds a filter to list of selected-filters
