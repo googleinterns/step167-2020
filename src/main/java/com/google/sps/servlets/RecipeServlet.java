@@ -75,6 +75,7 @@ public class RecipeServlet extends HttpServlet {
 
     response.setContentType("application/json");
     response.getWriter().println(json);
+    Cors.setCors(response);
   }
 
   @Override
@@ -104,6 +105,7 @@ public class RecipeServlet extends HttpServlet {
     response.setStatus(HttpServletResponse.SC_CREATED);
     response.setContentType("application/json");
     response.getWriter().println(gson.toJson(new DBObject(recipeId)));
+    Cors.setCors(response);
   }
 
   @Override
@@ -124,6 +126,7 @@ public class RecipeServlet extends HttpServlet {
     }
 
     db.editRecipeTitleContent(newRecipe.metadata.id, newRecipe.metadata.title, newRecipe.content);
+    Cors.setCors(response);
   }
 
   @Override
@@ -144,6 +147,7 @@ public class RecipeServlet extends HttpServlet {
     db.deleteComments(recipeId);
     db.deleteUserProperty(uid, recipeId, User.CREATED_RECIPES_KEY);
     db.deleteRecipe(recipeId);
+    Cors.setCors(response);
   }
 
   protected String getRecipeList(HttpServletRequest request, HttpServletResponse response) {
