@@ -62,7 +62,7 @@
 
       let map
       let infoWindow
-      let loc = {}
+      let marker = null
       let tagSelect = document.getElementById("tag-select")
 
       /** On window load, initialize the page. */
@@ -103,10 +103,18 @@
         infoWindow = new google.maps.InfoWindow()
 
         google.maps.event.addListener(map, "click", function (event) {
-          //postMarker(event.latLng)
-          loc["latitude"] = event.latLng.lat()
-          loc["longitude"] = event.latLng.lng()
+          placeMarker(event.latLng)
           console.log("Location: " + event.latLng)
+        })
+      }
+
+      function placeMarker(location) {
+        if (marker != null) {
+          marker.setMap(null)
+        }
+        marker = new google.maps.Marker({ position: location, map: map })
+        marker.addListener("click", function (e) {
+          marker.setMap(null)
         })
       }
 
@@ -143,7 +151,7 @@
                   metadata: {
                     title: titleInput.value,
                     tagIds: tags,
-                    location: loc,
+                    location: { latitude: marker.getPosition.lat(), longitude: marker.getPosition.lng() },
                   },
                   content: instructionsInput.value,
                 }),
