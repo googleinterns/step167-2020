@@ -100,5 +100,17 @@ public class UserServlet extends HttpServlet {
 
   @Override
   public void doDelete(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {}
+      throws IOException {
+    String token = request.getParameter("token");
+
+    String uid = Auth.getUid(token, response);
+    if (uid == null) {
+      // Auth sets response status to unauthorized.
+      return;
+    }
+
+    // Call the FirestoreDB method.
+    db.deleteUser(uid);
+    response.setStatus(HttpServletResponse.SC_OK);
+  }
 }

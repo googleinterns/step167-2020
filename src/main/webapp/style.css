@@ -1,0 +1,25 @@
+/** Simple formatting for the delete user modal in profile.html. */
+
+/* The box */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  width: 50%;
+  height: 50%;
+  overflow: auto; /* Enable scroll if needed */
+  background-color: white; /* Fallback color */
+}
+
+/* Modal Content/*/
+.modal-content {
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+}
+
+/* The Close Button */
+.close {
+  color: black;
+  float: right;
+}

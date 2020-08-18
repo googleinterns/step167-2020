@@ -97,6 +97,9 @@
           firebase
             .auth()
             .signInWithEmailAndPassword(email, password)
+            .then(function () {
+              window.location.href = "/profile.html"
+            })
             .catch(function onFailure(error) {
               var errorCode = error.code
               var errorMessage = error.message
@@ -141,6 +144,9 @@
                     "Content-Type": "application/json",
                   },
                 })
+              })
+              .then(function () {
+                window.location.href = "/profile.html"
               })
           })
           .catch(function onFailure(error) {

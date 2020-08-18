@@ -10,8 +10,8 @@
     <!-- Page content -->
     <div>
       <button type="button" id="sign-out">Log out</button>
-      <button type="button" id="send-password-reset">Reset password</button>
-
+      <button type="button" id="send-password-reset">Reset my password</button>
+      <button type="button" id="delete-user">Delete my account</button>
       <p id="welcome-message">Unknown</p>
     </div>
 
@@ -21,6 +21,17 @@
       <ul id="saved-recipes"></ul>
       <h1>Your submissions</h1>
       <ul id="your-recipes"></ul>
+    </div>
+
+    <!-- Delete account modal -->
+    <div id="delete-account-modal" class="modal">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>Are you sure you want to delete your Melting Pot account? Enter your password to confirm.</p>
+        <input type="password" id="password" name="password" />
+        <button type="button" id="final-delete-user">Delete it!</button>
+      </div>
     </div>
 
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
@@ -41,8 +52,13 @@
 
       var signOutButton = document.getElementById("sign-out")
       var sendResetButton = document.getElementById("send-password-reset")
+      var deleteUserButton = document.getElementById("delete-user")
       var createdRecipeList = document.getElementById("your-recipes")
       var savedRecipeList = document.getElementById("saved-recipes")
+
+      // Modal elements
+      var closeModal = document.getElementsByClassName("close")[0] // the modal close trinket
+      var finalDeleteUserButton = document.getElementById("final-delete-user")
 
       window.onload = function () {
         initPage()
@@ -52,13 +68,7 @@
        * If no user is logged in, have the page redirect to the log-in page.
        * Otherwise, set the auth state change listener for this page and set user-specific page elements.
        */
-      // TODO: look into auth state change problem.
       function initPage() {
-        // If the Firebase app hasn't been initialized at all, redirect to login.
-        if (app == null) {
-          window.location.href = "/login-page.html"
-        }
-
         // Initialize some page elements for a signed-in user by setting an auth state change listener.
         app.auth().onAuthStateChanged(function (user) {
           if (user) {
@@ -74,6 +84,7 @@
         if (app.auth().currentUser) {
           signOutButton.addEventListener("click", signOut)
           sendResetButton.addEventListener("click", sendPasswordResetEmail)
+          deleteUserButton.addEventListener("click", setUpModal)
           document.getElementById("welcome-message").textContent = "Welcome, " + app.auth().currentUser.email
 
           // Get saved and created user recipes.
@@ -89,7 +100,6 @@
         }
       }
 
-      // TODO:
       /** Retrieves a user's saved posts. */
       function getUserSavedRecipes(idToken) {
         fetch("/api/post?token=" + idToken + "&saved=true").then(async (response) => {
@@ -151,6 +161,68 @@
             } else {
               alert(errorMessage)
             }
+          })
+      }
+
+      function setUpModal() {
+        var modal = document.getElementById("delete-account-modal")
+
+        // When the user clicks on the button, open the modal
+        modal.style.display = "block"
+
+        // When the user clicks on <span>(x), close the modal
+        closeModal.addEventListener("click", function () {
+          modal.style.display = "none"
+        })
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.addEventListener("click", function (event) {
+          if (event.target == modal) {
+            modal.style.display = "none"
+          }
+        })
+
+        // If the user submits a password, then attempt to delete the user.
+        finalDeleteUserButton.addEventListener("click", function () {
+          var password = document.getElementById("password").value
+          var credential = firebase.auth.EmailAuthProvider.credential(app.auth().currentUser.email, password)
+          deleteUser(credential)
+        })
+      }
+
+      /** Delete the user in Firebase Client-side as well as in server-side Firestore. */
+      function deleteUser(credential) {
+        var user = app.auth().currentUser
+
+        // Prompt the user to re-provide their sign-in credentials.
+        user
+          .reauthenticateWithCredential(credential)
+          .then(function () {
+            // Delete the user in Firebase on client side.
+            user
+              .delete()
+              .then(function () {
+                // Now send user token to back end.
+                user
+                  .getIdToken(/* forceRefresh */ true)
+                  .then(function (idToken) {
+                    fetch("/api/user?token=" + idToken, {
+                      method: "DELETE",
+                    })
+                  })
+                  .catch(function (error) {
+                    alert(error.message)
+                  })
+              })
+              .catch(function (error) {
+                alert(error.message)
+              })
+          })
+          .then(function () {
+            window.location.href = "/login-page.html"
+          })
+          .catch(function (error) {
+            alert(error.message)
           })
       }
     </script>
