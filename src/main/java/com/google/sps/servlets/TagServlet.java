@@ -56,7 +56,8 @@ public class TagServlet extends HttpServlet {
     List<Tag> tags;
 
     if (tagIds == null) {
-      if (!(token == null || token.isEmpty())) {   // In this case, we're getting user-related (followed) tags.
+      if (!(token == null 
+          || token.isEmpty())) {   // In this case, we're getting user-related (followed) tags.
         tags = getUserFollowedTags(token, response);
       } else {
         tags = db.getAllTags(getHidden != null && getHidden.equals("true"));
