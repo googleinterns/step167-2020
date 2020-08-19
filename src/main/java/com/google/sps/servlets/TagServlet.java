@@ -15,11 +15,13 @@
 package com.google.sps.meltingpot.servlets;
 
 import com.google.gson.Gson;
+import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.data.DBInterface;
 import com.google.sps.meltingpot.data.FirestoreDB;
 import com.google.sps.meltingpot.data.Tag;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -48,12 +50,33 @@ public class TagServlet extends HttpServlet {
     String[] tagIds = request.getParameterValues("tagIds");
     String getHidden = request.getParameter("getHidden");
 
+    // Only relevant in the case of returning a user's followed tags.
+    String token = request.getParameter("token");
+
     List<Tag> tags;
 
     if (tagIds == null) {
-      tags = db.getAllTags(getHidden != null && getHidden.equals("true"));
+      if (!(token == null || token.isEmpty())) {
+        String uid = Auth.getUid(token, response);
+        if (uid == null) {
+          return;
+        }
+        List<String> followedTags = db.followedTagIds(uid);
+        if (followedTags == null) {
+          response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+          return;
+        }
+        tags = db.getTagsMatchingIds(followedTags);
+      } else {
+        tags = db.getAllTags(getHidden != null && getHidden.equals("true"));
+      }
     } else {
       tags = db.getTagsMatchingIds(Arrays.asList(tagIds));
+    }
+
+    if (tags == null) {
+      response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+      return;
     }
 
     response.setContentType("application/json");

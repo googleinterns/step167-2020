@@ -15,12 +15,14 @@
       <p id="welcome-message">Unknown</p>
     </div>
 
-    <!-- Saved posts and created posts -->
+    <!-- Saved posts and created posts, followed tags -->
     <div>
       <h1>Your saved recipes</h1>
       <ul id="saved-recipes"></ul>
       <h1>Your submissions</h1>
       <ul id="your-recipes"></ul>
+      <h1>Tags you follow</h1>
+      <div id="your-tags"></div>
     </div>
 
     <!-- Delete account modal -->
@@ -55,6 +57,8 @@
       var deleteUserButton = document.getElementById("delete-user")
       var createdRecipeList = document.getElementById("your-recipes")
       var savedRecipeList = document.getElementById("saved-recipes")
+
+      var tagsFollowedList = document.getElementById("your-tags")
 
       // Modal elements
       var closeModal = document.getElementsByClassName("close")[0] // the modal close trinket
@@ -94,6 +98,7 @@
             .then(function (idToken) {
               getUserSavedRecipes(idToken)
               getUserCreatedRecipes(idToken)
+              getUserFollowedTags(idToken)
             })
         } else {
           window.location.href = "/login-page.html"
@@ -132,6 +137,71 @@
             })
           }
         })
+      }
+
+      /** Get the tags the user follows. */
+      function getUserFollowedTags(idToken) {
+        fetch("/api/tag?token=" + idToken).then(async (response) => {
+          if (!response.ok) {
+            alert("Error " + response.status.toString())
+            tagsFollowedList.innerHTML = ""
+          } else {
+            let followedTags = await response.json()
+            // Clear out the HTML
+            tagsFollowedList.innerHTML = ""
+            followedTags.forEach((tag) => {
+              tagsFollowedList.appendChild(tagElement(tag))
+            })
+          }
+        })
+      }
+
+      /** Constructs a tag element containing tag and an unfollow button. */
+      function tagElement(tag) {
+        const tagEl = document.createElement("div")
+        tagEl.id = tag.id
+        tagEl.appendChild(createBasicElement(tag.name, "p"))
+        const unfollowButton = document.createElement("button")
+        unfollowButton.type = "button"
+        tagEl.appendChild(unfollowButton)
+        unfollowButton.innerText = "Unfollow"
+        unfollowButton.addEventListener("click", function () {
+          unfollowTag(tag.id)
+        })
+
+        tagEl.appendChild(document.createElement("hr"))
+        return tagEl
+      }
+
+      function createBasicElement(text, type) {
+        const basicElement = document.createElement(type)
+        if (text != "") basicElement.innerHTML = marked(text)
+        return basicElement
+      }
+
+      /** Allow a user to unfollow a tag. */
+      function unfollowTag(tagID) {
+        if (app.auth().currentUser) {
+          app
+            .auth()
+            .currentUser.getIdToken(/* forceRefresh */ true)
+            .then(function (idToken) {
+              fetch("/api/user?tagID=" + tagID + "&token=" + idToken + "&type=UNFOLLOW_TAG", {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }).then((response) => {
+                if (!response.ok) {
+                  alert("Error " + response.status.toString())
+                }
+              })
+              window.location.href = "/profile.html" // refresh the page.
+            })
+            .catch(function (error) {
+              alert(error.message)
+            })
+        }
       }
 
       /** Sign the user out of Firebase. */

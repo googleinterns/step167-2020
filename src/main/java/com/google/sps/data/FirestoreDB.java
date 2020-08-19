@@ -91,8 +91,28 @@ public class FirestoreDB implements DBInterface {
   }
 
   public List<Tag> getTagsMatchingIds(List<String> Ids) {
+    if (Ids == null || Ids.isEmpty()) {
+      return null;
+    }
     Query tagsQuery = DBUtils.tags().whereIn(DBObject.ID_KEY, Ids);
-    return DBUtils.blockOnFuture(tagsQuery.get()).toObjects(Tag.class);
+    QuerySnapshot tags = DBUtils.blockOnFuture(tagsQuery.get());
+    // Must include this if-statement to avoid a null-pointer exception when no tags are followed.
+    if (tags == null) { 
+      return null;
+    }
+    return tags.toObjects(Tag.class);
+  }
+
+  public List<String> followedTagIds(String userId) {
+    DocumentReference userRef = DBUtils.user(userId);
+    DocumentSnapshot user = DBUtils.blockOnFuture(userRef.get());
+    Map<String, Boolean> followedTagIdsMap =
+        (Map<String, Boolean>) user.get(User.TAGS_FOLLOWED_KEY);
+    if (followedTagIdsMap != null) {
+      return new ArrayList<String>(followedTagIdsMap.keySet());
+    } else {
+      return new ArrayList<String>();
+    }
   }
 
   public boolean isDocument(String docId, String collection) {

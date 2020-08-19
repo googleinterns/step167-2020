@@ -43,13 +43,15 @@
       var submitCommButton = document.getElementById("submit-comment")
       var commentLabel = document.getElementById("comment-label")
       var commentContent = document.getElementById("comment-content")
-      var isSaved = document.getElementById("saved")
+      var isSavedText = document.getElementById("saved")
       var editForm = document.createElement("input")
       var cancelEdit = document.createElement("button")
       var submitEdit = document.createElement("button")
       var votesDiv = document.getElementById("votes")
       var upvoteButton = document.getElementById("upvote")
       var downvoteButton = document.getElementById("downvote")
+
+      var isSavedRecipe
 
       var votes = 0
       var voted = 0
@@ -65,28 +67,55 @@
         getDetailedRecipe(getRecipeID(), app)
         getComments(getRecipeID())
 
-        savePostButton.addEventListener("click", savePost)
+        //setUpSaveButton()
+
+        savePostButton.addEventListener("click", toggleSave)
         submitCommButton.addEventListener("click", submitComment)
         upvoteButton.addEventListener("click", () => toggleVote(true))
         downvoteButton.addEventListener("click", () => toggleVote(false))
-
-        toggleElementVisibility(app.auth().currentUser)
+        
+        //toggleElementVisibility(app.auth().currentUser)
 
         // Set Firebase auth state change listener.
         app.auth().onAuthStateChanged(function (user) {
           toggleElementVisibility(user)
+          setUpSaveButton(user)
           getUserRecipeProperties(getRecipeID())
         })
       }
 
       /** Toggle buttons' & other elements' visibility. */
       function toggleElementVisibility(isVisible) {
-        if (app == null) {
-          return
-        }
         var elements = [savePostButton, submitCommButton, commentLabel, commentContent]
         for (var el of elements) {
           el.hidden = !isVisible
+        }
+      }
+
+      /** Initial retrieval of boolean from back end inidicating whether the user has saved this recipe. */
+      function setUpSaveButton(currentUser) {
+
+        if (currentUser) {
+          currentUser
+            .getIdToken(/* forceRefresh */ true)
+            .then((idToken) => {
+              fetch("/api/user?token=" + idToken + "&recipeID=" + getRecipeID() + "&type=SAVE")
+                .then((response) => response.text())
+                .then(text => JSON.parse(text))
+                .then((isSaved) => {
+                  isSavedRecipe = isSaved
+                  if (isSaved) {
+                    isSavedText.textContent = "Saved!"
+                    savePostButton.textContent = "Unsave this recipe"
+                  } else {
+                    isSavedText.textContent = ""
+                    savePostButton.textContent = "Save this recipe"
+                  }
+                })
+            })
+            .catch(function (error) {
+              alert(error.message)
+            })
         }
       }
 
@@ -117,8 +146,8 @@
         return params.get("recipeID")
       }
 
-      /** Let a signed-in user save a recipe. */
-      function savePost() {
+      /** Let a signed-in user save or unsave a recipe. */
+      function toggleSave() {
         var recipeID = getRecipeID()
 
         if (app.auth().currentUser) {
@@ -126,18 +155,41 @@
             .auth()
             .currentUser.getIdToken(/* forceRefresh */ true)
             .then(function (idToken) {
-              fetch("/api/user?recipeID=" + recipeID + "&token=" + idToken + "&type=SAVE", {
+              // Toggle the is-saved value.
+              isSavedRecipe = !isSavedRecipe
+
+              var urlStringPart
+              var alertTextValue
+              var buttonTextValue
+              var saveTextValue
+
+              // If the NEW value indicates saved, then save the recipe.
+              if (isSavedRecipe) {
+                urlStringPart = "SAVE"
+                alertTextValue = " saved!"
+                buttonTextValue = "Unsave this recipe"
+                saveTextValue = "Saved"
+              } else {
+                urlStringPart = "UNSAVE"
+                alertTextValue = " unsaved!"
+                buttonTextValue = "Save this recipe"
+                saveTextValue = ""
+              }
+
+              fetch("/api/user?recipeID=" + recipeID + "&token=" + idToken + "&type=" + urlStringPart, {
                 method: "PUT",
                 headers: {
                   "Content-Type": "application/json",
                 },
               }).then((response) => {
                 if (response.ok) {
-                  alert("Recipe saved!")
+                  alert("Recipe" + alertTextValue)
                 } else {
                   alert("Error " + response.status.toString())
                 }
               })
+              isSavedText.textContent = saveTextValue
+              savePostButton.textContent = buttonTextValue
             })
             .catch(function (error) {
               alert("Error! Could not retrieve user ID token.")

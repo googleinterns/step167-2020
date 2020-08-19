@@ -13,6 +13,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.Assert;
@@ -38,6 +40,52 @@ public final class UserServletTest {
     firebaseAuth = mock(FirebaseAuth.class);
     // Inject the mock Firebase Auth object into Auth class.
     Auth.testModeWithParams(firebaseAuth);
+  }
+
+  /**
+   * An unauthorized request to get user info from Firestore has been made.
+   * Nothing should be returned.
+   */
+  @Test
+  public void getUnauthorized() throws IOException, FirebaseAuthException {
+    when(request.getParameter("token")).thenReturn("invalidToken");
+    when(request.getParameter("type")).thenReturn("SAVE");
+    when(firebaseAuth.verifyIdToken(anyString(), eq(true)))
+        .thenThrow(new IllegalArgumentException());
+
+    userServlet.doGet(request, response);
+
+    verify(db, never()).getUserProperty(anyString(), anyString(), anyString());
+    verify(response, never()).getWriter();
+    verify(response, never()).setContentType(anyString());
+    verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+  }
+
+  /**
+   * An authorized request to see if a user saves a recipe has been made.
+   * Should return a boolean.
+   */
+  @Test
+  public void getSavedBoolIsSuccessful() throws IOException, FirebaseAuthException {
+    FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+    when(request.getParameter("recipeID")).thenReturn("recipeID");
+    when(request.getParameter("token")).thenReturn("validToken");
+    when(request.getParameter("type")).thenReturn("SAVE");
+
+    when(firebaseToken.getUid()).thenReturn("userID");
+    when(firebaseAuth.verifyIdToken(anyString(), eq(true))).thenReturn(firebaseToken);
+
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    when(response.getWriter()).thenReturn(pw);
+
+    userServlet.doGet(request, response);
+
+    verify(db, times(1)).getUserProperty(eq("userID"), eq("recipeID"), anyString());
+    verify(response, times(1)).getWriter();
+    verify(response, times(1)).setContentType("text/plain");
+    verify(response, never()).setStatus(anyInt());
   }
 
   /**
@@ -129,6 +177,39 @@ public final class UserServletTest {
     userServlet.doPut(request, response);
 
     verify(db, times(1)).setUserProperty("userID", "recipeID", User.SAVED_RECIPES_KEY, true);
+    verify(response).setStatus(HttpServletResponse.SC_OK);
+  }
+
+  /**
+   * An unauthorized request to delete a user in Firestore has been made.
+   * The server should return an "unathorized" response.
+   */
+  @Test
+  public void deleteUnauthorized() throws IOException, FirebaseAuthException {
+    when(request.getParameter("token")).thenReturn("invalidToken");
+    when(firebaseAuth.verifyIdToken(anyString(), eq(true)))
+        .thenThrow(new IllegalArgumentException());
+
+    userServlet.doDelete(request, response);
+
+    verify(db, never()).deleteUser(anyString());
+    verify(response, never()).getWriter();
+    verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+  }
+
+  /** If the token is valid, a user delete request should delete the user from Firebase. */
+  @Test
+  public void deleteIsSuccessful() throws IOException, FirebaseAuthException {
+    FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+    when(request.getParameter("token")).thenReturn("validToken");
+
+    when(firebaseToken.getUid()).thenReturn("userID");
+    when(firebaseAuth.verifyIdToken(anyString(), eq(true))).thenReturn(firebaseToken);
+
+    userServlet.doDelete(request, response);
+
+    verify(db, times(1)).deleteUser("userID");
     verify(response).setStatus(HttpServletResponse.SC_OK);
   }
 }
