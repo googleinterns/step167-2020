@@ -73,7 +73,7 @@
         submitCommButton.addEventListener("click", submitComment)
         upvoteButton.addEventListener("click", () => toggleVote(true))
         downvoteButton.addEventListener("click", () => toggleVote(false))
-        
+
         //toggleElementVisibility(app.auth().currentUser)
 
         // Set Firebase auth state change listener.
@@ -94,14 +94,13 @@
 
       /** Initial retrieval of boolean from back end inidicating whether the user has saved this recipe. */
       function setUpSaveButton(currentUser) {
-
         if (currentUser) {
           currentUser
             .getIdToken(/* forceRefresh */ true)
             .then((idToken) => {
               fetch("/api/user?token=" + idToken + "&recipeID=" + getRecipeID() + "&type=SAVE")
                 .then((response) => response.text())
-                .then(text => JSON.parse(text))
+                .then((text) => JSON.parse(text))
                 .then((isSaved) => {
                   isSavedRecipe = isSaved
                   if (isSaved) {

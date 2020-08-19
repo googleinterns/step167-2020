@@ -97,7 +97,7 @@ public class FirestoreDB implements DBInterface {
     Query tagsQuery = DBUtils.tags().whereIn(DBObject.ID_KEY, Ids);
     QuerySnapshot tags = DBUtils.blockOnFuture(tagsQuery.get());
     // Must include this if-statement to avoid a null-pointer exception when no tags are followed.
-    if (tags == null) { 
+    if (tags == null) {
       return null;
     }
     return tags.toObjects(Tag.class);
