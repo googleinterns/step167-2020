@@ -58,6 +58,5 @@ public class TagServlet extends HttpServlet {
 
     response.setContentType("application/json");
     response.getWriter().print(gson.toJson(tags));
-    Cors.setCors(response);
   }
 }

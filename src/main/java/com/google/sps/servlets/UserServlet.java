@@ -70,7 +70,6 @@ public class UserServlet extends HttpServlet {
     db.addUser(uid);
 
     response.setStatus(HttpServletResponse.SC_CREATED);
-    Cors.setCors(response);
   }
 
   @Override
@@ -97,7 +96,6 @@ public class UserServlet extends HttpServlet {
         response.setStatus(HttpServletResponse.SC_OK);
         break;
     }
-    Cors.setCors(response);
   }
 
   @Override

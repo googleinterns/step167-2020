@@ -64,7 +64,6 @@ public class VoteServlet extends HttpServlet {
     response.setContentType("application/json");
     response.getWriter().println(
         gson.toJson(db.getUserProperty(authToken.getUid(), recipeIds, User.VOTED_RECIPES_KEY)));
-    Cors.setCors(response);
   }
 
   @Override
@@ -102,7 +101,6 @@ public class VoteServlet extends HttpServlet {
     True (upvote request)    | Neutal  | Upvote  | Upvote
     False (downvote request) | Downvote| Downvote| Neutral
     */
-    Cors.setCors(response);
     DBUtils.blockOnFuture(DBUtils.database.runTransaction(transaction -> {
       Boolean votedRecipe = db.getUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, transaction);
       if (votedRecipe != null) {

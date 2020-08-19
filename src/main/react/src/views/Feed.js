@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { CButton, CCol, CRow, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } from "@coreui/react";
 import RecipeCard from "../components/RecipeCard";
@@ -19,17 +19,20 @@ const Feed = props => {
 
   const [errMsg, setErrMsg] = useState("");
 
-  app.auth().onAuthStateChanged(async user => {
-    let recipeData = await getRecipes();
-    let tagIds = {};
-    recipeData.forEach(recipe => Object.assign(tagIds, recipe.tagIds));
-    setTags(await getTags(tagIds));
-    if (user) {
-      let voteData = await getRecipesVote(recipeData);
-      recipeData.forEach((recipe, i) => (recipe.voted = voteData[i]));
-    }
-    setRecipes(recipeData);
-  });
+  useEffect(() => {
+    // do on first render
+    app.auth().onAuthStateChanged(async user => {
+      let recipeData = await getRecipes();
+      let tagIds = {};
+      recipeData.forEach(recipe => Object.assign(tagIds, recipe.tagIds));
+      setTags(await getTags(tagIds));
+      if (user) {
+        let voteData = await getRecipesVote(recipeData);
+        recipeData.forEach((recipe, i) => (recipe.voted = voteData[i]));
+      }
+      setRecipes(recipeData);
+    });
+  }, []);
 
   return (
     <>

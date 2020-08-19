@@ -74,7 +74,6 @@ public class CommentServlet extends HttpServlet {
 
     response.setContentType("application/json");
     response.getWriter().print(json);
-    Cors.setCors(response);
   }
 
   @Override
@@ -102,7 +101,6 @@ public class CommentServlet extends HttpServlet {
     // Call FirestoreDB addComment method.
     db.addComment(newComment, recipeID);
     response.setStatus(HttpServletResponse.SC_CREATED);
-    Cors.setCors(response);
   }
 
   @Override
@@ -129,7 +127,6 @@ public class CommentServlet extends HttpServlet {
 
     // Call FirestoreDB editCommentContent() method.
     db.editCommentContent(commentID, recipeID, commentBody);
-    Cors.setCors(response);
   }
 
   @Override
@@ -146,6 +143,5 @@ public class CommentServlet extends HttpServlet {
     //   If so replace with "[deleted]"
     //   Else:
     db.deleteComment(commentID, recipeID);
-    Cors.setCors(response);
   }
 }
