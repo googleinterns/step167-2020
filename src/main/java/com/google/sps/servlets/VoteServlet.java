@@ -101,7 +101,7 @@ public class VoteServlet extends HttpServlet {
     --------------------------------------------------------------
     True (upvote request)    | Neutal  | Upvote  | Upvote
     False (downvote request) | Downvote| Downvote| Neutral
-    */ 
+    */
     Cors.setCors(response);
     DBUtils.blockOnFuture(DBUtils.database.runTransaction(transaction -> {
       Boolean votedRecipe = db.getUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, transaction);
