@@ -19,33 +19,20 @@ const Feed = (props) => {
     return data;
   };
 
-  let loaded = 0;
-  let recipeDataCopy = [];
-
   useEffect(() => {
-    loaded = 1;
-  }, []);
-
-  app.auth().onAuthStateChanged(async (user) => {
-    // called every render
-    if (loaded === 1) {
+    app.auth().onAuthStateChanged(async (user) => {
       let recipeData = await getRecipes();
       let tagIds = {};
       recipeData.forEach((recipe) => Object.assign(tagIds, recipe.tagIds));
-      recipeDataCopy = recipeData;
-      loaded = 2;
+      let recipeDataCopy = recipeData;
       setTags(await getTags(tagIds));
-    }
-    if (loaded === 2) {
       if (user) {
         let voteData = await getRecipesVote(recipeDataCopy);
         recipeDataCopy.forEach((recipe, i) => (recipe.voted = voteData[i]));
-        setRecipes(recipeDataCopy);
-      } else {
-        setRecipes(recipeDataCopy);
       }
-    }
-  });
+      setRecipes(recipeDataCopy);
+    });
+  }, []);
 
   return (
     <>

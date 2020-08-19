@@ -8,6 +8,18 @@ import Page404 from "./pages/page404/Page404";
 import app from "firebase/app";
 import "firebase/auth";
 
+const getRecipe = async (id) => {
+  let res = await fetch(requestRoute + "api/post?recipeID=" + id);
+  let data = await res.json();
+  return data;
+};
+
+const getComments = async (id) => {
+  let res = await fetch(requestRoute + "api/comment?recipeID=" + id);
+  let data = await res.json();
+  return data;
+};
+
 const Recipe = () => {
   const [recipe, setRecipe] = useState({
     content: "",
@@ -36,19 +48,8 @@ const Recipe = () => {
 
   const history = useHistory();
   var searchParams = new URLSearchParams(history.location.search);
-  const [id, setId] = useState(searchParams.get("id"));
-
-  const getRecipe = async () => {
-    let res = await fetch(requestRoute + "api/post?recipeID=" + id);
-    let data = await res.json();
-    return data;
-  };
-
-  const getComments = async () => {
-    let res = await fetch(requestRoute + "api/comment?recipeID=" + id);
-    let data = await res.json();
-    return data;
-  };
+  const id = searchParams.get("id");
+  const [notFound, setNotFound] = useState(false);
 
   const submitComment = async () => {
     let idToken = await app.auth().currentUser.getIdToken();
@@ -97,20 +98,22 @@ const Recipe = () => {
 
   useEffect(() => {
     if (id && id !== "") {
-      getRecipe().then((data) => {
+      getRecipe(id).then((data) => {
         if (JSON.stringify(data) !== "{}") {
           setRecipe(data);
           setVotes(data.metadata.votes);
           getTags(data.metadata.tagIds).then((tags) => setTags(tags));
-          getComments().then((commentData) => setComments(commentData));
+          getComments(id).then((commentData) => setComments(commentData));
         } else {
-          setId("");
+          setNotFound(true);
         }
       });
+    } else {
+      setNotFound(true);
     }
-  }, []);
+  }, [id]);
 
-  if (!id || id === "") {
+  if (notFound) {
     return <Page404 />;
   }
 
