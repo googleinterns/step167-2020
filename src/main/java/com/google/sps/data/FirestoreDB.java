@@ -92,13 +92,13 @@ public class FirestoreDB implements DBInterface {
 
   public List<Tag> getTagsMatchingIds(List<String> Ids) {
     if (Ids == null || Ids.isEmpty()) {
-      return null;
+      return new ArrayList<Tag>();
     }
     Query tagsQuery = DBUtils.tags().whereIn(DBObject.ID_KEY, Ids);
     QuerySnapshot tags = DBUtils.blockOnFuture(tagsQuery.get());
-    // Must include this if-statement to avoid a null-pointer exception when no tags are followed.
+    // Must include this if-statement to avoid a null-pointer exception when no tag IDs are given.
     if (tags == null) {
-      return null;
+      return new ArrayList<Tag>();
     }
     return tags.toObjects(Tag.class);
   }

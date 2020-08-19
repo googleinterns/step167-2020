@@ -82,6 +82,7 @@ public class UserServlet extends HttpServlet {
         // Call the FirestoreDB method.
         Boolean isSavedRecipe = db.getUserProperty(uid, recipeID, User.SAVED_RECIPES_KEY);
         response.setContentType("text/plain");
+        
         // If the property didn't exist at all, need to make sure to return false.
         if (isSavedRecipe == null) {
           response.getWriter().println("false");
