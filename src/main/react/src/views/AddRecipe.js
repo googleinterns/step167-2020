@@ -43,10 +43,10 @@ const AddRecipe = () => {
 
   const MAX_TAGS = 3;
 
-  app.auth().onAuthStateChanged((user) => (signedIn = user ? true : false));
+  app.auth().onAuthStateChanged(user => (signedIn = user ? true : false));
 
   useEffect(() => {
-    getTags().then((data) => setAllTags(data));
+    getTags().then(data => setAllTags(data));
   }, []);
 
   const postRecipe = () => {
@@ -54,7 +54,7 @@ const AddRecipe = () => {
       app
         .auth()
         .currentUser.getIdToken()
-        .then((idToken) => {
+        .then(idToken => {
           fetch(requestRoute + "api/post?token=" + idToken, {
             method: "POST",
             body: JSON.stringify({
@@ -64,12 +64,12 @@ const AddRecipe = () => {
               },
               content: content,
             }),
-          }).then((response) => {
+          }).then(response => {
             if (!response.ok) {
               setErrMsg("Error " + response.status.toString());
               return;
             }
-            response.json().then((data) => history.push("/recipe?id=" + data.id));
+            response.json().then(data => history.push("/recipe?id=" + data.id));
           });
         })
         .catch(() => {
@@ -93,7 +93,7 @@ const AddRecipe = () => {
                     <CLabel htmlFor="text-input">Title</CLabel>
                   </CCol>
                   <CCol xs="12" md="9">
-                    <CInput id="text-input" name="text-input" onChange={(event) => setTitle(event.target.value)} />
+                    <CInput id="text-input" name="text-input" onChange={event => setTitle(event.target.value)} />
                   </CCol>
                 </CFormGroup>
                 <CFormGroup row>
@@ -108,17 +108,17 @@ const AddRecipe = () => {
                       options={
                         Object.keys(tagIds).length >= MAX_TAGS
                           ? []
-                          : Object.keys(allTags).map((tagId) => {
+                          : Object.keys(allTags).map(tagId => {
                               return { label: allTags[tagId].name, value: tagId };
                             })
                       }
-                      onChange={(selected) => {
+                      onChange={selected => {
                         if (selected === null) {
                           setTagIds({});
                           return;
                         }
                         let newTagIds = {};
-                        selected.forEach((tag) => (newTagIds[tag.value] = true));
+                        selected.forEach(tag => (newTagIds[tag.value] = true));
                         setTagIds(newTagIds);
                       }}
                     />
@@ -133,7 +133,7 @@ const AddRecipe = () => {
                       name="textarea-input"
                       id="textarea-input"
                       rows="12"
-                      onChange={(event) => setContent(event.target.value)}
+                      onChange={event => setContent(event.target.value)}
                     />
                     <CFormText className="help-block">
                       We support{" "}

@@ -8,13 +8,13 @@ import Page404 from "./pages/page404/Page404";
 import app from "firebase/app";
 import "firebase/auth";
 
-const getRecipe = async (id) => {
+const getRecipe = async id => {
   let res = await fetch(requestRoute + "api/post?recipeID=" + id);
   let data = await res.json();
   return data;
 };
 
-const getComments = async (id) => {
+const getComments = async id => {
   let res = await fetch(requestRoute + "api/comment?recipeID=" + id);
   let data = await res.json();
   return data;
@@ -44,7 +44,7 @@ const Recipe = () => {
 
   const [signedIn, setSignedIn] = useState(false);
 
-  app.auth().onAuthStateChanged((user) => setSignedIn(user ? true : false));
+  app.auth().onAuthStateChanged(user => setSignedIn(user ? true : false));
 
   const history = useHistory();
   var searchParams = new URLSearchParams(history.location.search);
@@ -66,7 +66,7 @@ const Recipe = () => {
     setComments([newComment].concat(comments));
   };
 
-  const toggleVote = (vote) => {
+  const toggleVote = vote => {
     if (vote) {
       // upvote clicked
       if (!upvote && !downvote) {
@@ -98,12 +98,12 @@ const Recipe = () => {
 
   useEffect(() => {
     if (id && id !== "") {
-      getRecipe(id).then((data) => {
+      getRecipe(id).then(data => {
         if (JSON.stringify(data) !== "{}") {
           setRecipe(data);
           setVotes(data.metadata.votes);
-          getTags(data.metadata.tagIds).then((tags) => setTags(tags));
-          getComments(id).then((commentData) => setComments(commentData));
+          getTags(data.metadata.tagIds).then(tags => setTags(tags));
+          getComments(id).then(commentData => setComments(commentData));
         } else {
           setNotFound(true);
         }
@@ -159,7 +159,7 @@ const Recipe = () => {
               name="textarea-input"
               id="textarea-input"
               rows="2"
-              onChange={(event) => setCommentContent(event.target.value)}
+              onChange={event => setCommentContent(event.target.value)}
             />
           </CCardBody>
         </CCard>

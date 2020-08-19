@@ -12,17 +12,17 @@ const getRecipes = async () => {
   return data;
 };
 
-const Feed = (props) => {
+const Feed = props => {
   console.log(props.feedType);
   const [recipes, setRecipes] = useState([]);
   const [tags, setTags] = useState({});
 
   const [errMsg, setErrMsg] = useState("");
 
-  app.auth().onAuthStateChanged(async (user) => {
+  app.auth().onAuthStateChanged(async user => {
     let recipeData = await getRecipes();
     let tagIds = {};
-    recipeData.forEach((recipe) => Object.assign(tagIds, recipe.tagIds));
+    recipeData.forEach(recipe => Object.assign(tagIds, recipe.tagIds));
     setTags(await getTags(tagIds));
     if (user) {
       let voteData = await getRecipesVote(recipeData);

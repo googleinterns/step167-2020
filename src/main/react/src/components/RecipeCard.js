@@ -6,7 +6,7 @@ import requestRoute from "../requests";
 import app from "firebase/app";
 import "firebase/auth";
 
-const RecipeCard = (props) => {
+const RecipeCard = props => {
   const recipe = props.recipe;
 
   const [votes, setVotes] = useState(recipe.votes);
@@ -22,15 +22,15 @@ const RecipeCard = (props) => {
     }
   }, [recipe.voted]);
 
-  const toggleVote = (vote) => {
+  const toggleVote = vote => {
     if (app.auth().currentUser) {
       app
         .auth()
         .currentUser.getIdToken()
-        .then((idToken) => {
+        .then(idToken => {
           fetch(requestRoute + "api/vote?recipeId=" + recipe.id + "&vote=" + vote + "&token=" + idToken, {
             method: "PUT",
-          }).then((response) => {
+          }).then(response => {
             if (!response.ok) {
               props.setErrMsg("Error " + response.status.toString());
             }
