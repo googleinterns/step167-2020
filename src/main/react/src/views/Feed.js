@@ -1,10 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { CButton, CCol, CRow, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } from "@coreui/react";
 import RecipeCard from "../components/RecipeCard";
 import requestRoute, { getTags, getRecipesVote } from "../requests";
 import app from "firebase/app";
 import "firebase/auth";
+
+const getRecipes = async () => {
+  let res = await fetch(requestRoute + "api/post");
+  let data = await res.json();
+  return data;
+};
 
 const Feed = (props) => {
   console.log(props.feedType);
@@ -13,26 +19,17 @@ const Feed = (props) => {
 
   const [errMsg, setErrMsg] = useState("");
 
-  const getRecipes = async () => {
-    let res = await fetch(requestRoute + "api/post");
-    let data = await res.json();
-    return data;
-  };
-
-  useEffect(() => {
-    app.auth().onAuthStateChanged(async (user) => {
-      let recipeData = await getRecipes();
-      let tagIds = {};
-      recipeData.forEach((recipe) => Object.assign(tagIds, recipe.tagIds));
-      let recipeDataCopy = recipeData;
-      setTags(await getTags(tagIds));
-      if (user) {
-        let voteData = await getRecipesVote(recipeDataCopy);
-        recipeDataCopy.forEach((recipe, i) => (recipe.voted = voteData[i]));
-      }
-      setRecipes(recipeDataCopy);
-    });
-  }, []);
+  app.auth().onAuthStateChanged(async (user) => {
+    let recipeData = await getRecipes();
+    let tagIds = {};
+    recipeData.forEach((recipe) => Object.assign(tagIds, recipe.tagIds));
+    setTags(await getTags(tagIds));
+    if (user) {
+      let voteData = await getRecipesVote(recipeData);
+      recipeData.forEach((recipe, i) => (recipe.voted = voteData[i]));
+    }
+    setRecipes(recipeData);
+  });
 
   return (
     <>

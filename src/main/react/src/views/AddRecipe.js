@@ -54,8 +54,7 @@ const AddRecipe = () => {
       app
         .auth()
         .currentUser.getIdToken()
-        .then(function (idToken) {
-          // Send token to backend via HTTPS
+        .then((idToken) => {
           fetch(requestRoute + "api/post?token=" + idToken, {
             method: "POST",
             body: JSON.stringify({
