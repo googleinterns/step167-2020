@@ -72,11 +72,11 @@ const Feed = (props) => {
     <>
       <CRow>
         {
-          recipes.map((recipe, idx) => 
-              <CCol xs="12" sm="6" md="4" key={idx} >
-                <RecipeCard recipe={recipe} tags={tags} setErrMsg={setErrMsg} />
-              </CCol>
-            )
+          recipes.map((recipe, idx) =>
+            <CCol xs="12" sm="6" md="4" key={idx} >
+              <RecipeCard recipe={recipe} tags={tags} setErrMsg={setErrMsg} />
+            </CCol>
+          )
         }
       </CRow>
       <CModal
