@@ -41,7 +41,6 @@
     "firebase": "^7.18.0",
     "html-validate": "^3.0.0",
     "node-sass": "^4.14.1",
-    "prettier": "^2.0.5",
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-app-polyfill": "^1.0.6",
@@ -53,6 +52,8 @@
     "redux": "4.0.5"
   },
   "devDependencies": {
+    "eslint-plugin-react": "^7.20.6",
+    "prettier": "2.0.5",
     "react-scripts": "^3.4.3"
   },
   "scripts": {
@@ -65,9 +66,6 @@
   },
   "bugs": {
     "url": "https://github.com/coreui/coreui-free-react-admin-template/issues"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
   },
   "browserslist": [
     ">0.2%",
