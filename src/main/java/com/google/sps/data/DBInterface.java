@@ -92,6 +92,14 @@ public interface DBInterface {
   public List<Tag> getTagsMatchingIds(List<String> Ids);
 
   /**
+   * Returns the IDs of all the tags a user follows.
+   *
+   * @param userId the user's Firebase ID
+   * @return list of tag ids.
+   */
+  public List<String> followedTagIds(String userId);
+
+  /**
    * Determines if a document exists in a Firestore collection.
    *
    * @param docId the document's Firebase ID.

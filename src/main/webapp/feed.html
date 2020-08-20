@@ -20,6 +20,11 @@
       <option>None</option>
     </select>
 
+    <p>Follow a tag:</p>
+    <select onchange="followTag()" id="follow-tag">
+      <option>None</option>
+    </select>
+
     <p>Currently selected filters:</p>
     <div id="selected-filters"></div>
     <br />
@@ -44,8 +49,10 @@
 
       let recipeList = document.getElementById("recipe-list")
       let tagSelect = document.getElementById("tag-select")
+      let followTagDropdown = document.getElementById("follow-tag")
 
       window.addFilter = addFilter
+      window.followTag = followTag
 
       window.onload = function () {
         // Fetch all recipes to populate our list
@@ -69,6 +76,7 @@
             let tags = await response.json()
             tags.forEach((tag) => {
               tagSelect.innerHTML += '<option value="' + tag.id + '">' + tag.name + "</option>"
+              followTagDropdown.innerHTML += '<option value="' + tag.id + '">' + tag.name + "</option>"
             })
           }
         })
@@ -126,6 +134,37 @@
           getRecipes()
         })
         getRecipes()
+      }
+
+      /** Sends a put request to the user servlet--change the user to follow a tag. */
+      function followTag() {
+        const tagID = followTagDropdown.value
+        if (tagID == "None") {
+          return
+        }
+
+        if (app.auth().currentUser) {
+          app
+            .auth()
+            .currentUser.getIdToken(/* forceRefresh */ true)
+            .then(function (idToken) {
+              fetch("/api/user?tagID=" + tagID + "&token=" + idToken + "&type=FOLLOW_TAG", {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }).then((response) => {
+                if (!response.ok) {
+                  alert("Error " + response.status.toString())
+                } else {
+                  alert("Tag followed!")
+                }
+              })
+            })
+            .catch(function (error) {
+              alert(error.message)
+            })
+        }
       }
 
       // Determines if the passed tagID is represented in the current selected filters
