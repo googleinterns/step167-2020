@@ -171,25 +171,17 @@
       }
 
       function attachInfo(recipe, marker) {
+        // prettier-ignore
         let contentString =
-          '<div id="content">' +
-          '<div id="siteNotice">' +
-          "</div>" +
-          '<h1 id="firstHeading" class="firstHeading">' +
-          '<a href="recipe-display.html?recipeID=' +
-          recipe.id +
-          '">' +
-          recipe.title +
-          "</a>" +
-          "</h1>" +
-          '<div id="bodyContent">' +
-          "<p>Posted by: " +
-          recipe.creatorLdap +
-          "</p>" +
-          "<p>Votes: " +
-          recipe.votes +
-          "</p>" +
-          "</div>" +
+          '<div id="content">' + 
+            '<div id="siteNotice"></div>' +
+            '<h1 id="firstHeading" class="firstHeading">' +
+              '<a href="recipe-display.html?recipeID=' + recipe.id + '">' + recipe.title + "</a>" +
+            "</h1>" +
+            '<div id="bodyContent">' +
+              "<p>Posted by: " + recipe.creatorLdap + "</p>" +
+              "<p>Votes: " + recipe.votes + "</p>" +
+            "</div>" +
           "</div>"
 
         let infowindow = new google.maps.InfoWindow({
