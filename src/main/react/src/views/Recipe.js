@@ -20,6 +20,22 @@ const getComments = async id => {
   return data;
 };
 
+const Ldap = props => {
+  if (props.originalPoster && props.currentUser) {
+    return (
+      <b>
+        <i>{props.children}</i>
+      </b>
+    );
+  } else if (props.originalPoster) {
+    return <b>{props.children}</b>;
+  } else if (props.currentUser) {
+    return <i>{props.children}</i>;
+  } else {
+    return <>{props.children}</>;
+  }
+};
+
 const Recipe = () => {
   const [recipe, setRecipe] = useState({
     content: "",
@@ -166,7 +182,14 @@ const Recipe = () => {
       )}
       {comments.map((comment, i) => (
         <CCard key={i}>
-          <CCardHeader>{comment.ldap.split("@")[0]}</CCardHeader>
+          <CCardHeader>
+            <Ldap
+              currentUser={comment.ldap === app.auth().currentUser.email}
+              originalPoster={comment.ldap === recipe.metadata.creatorLdap}
+            >
+              {comment.ldap.split("@")[0]}
+            </Ldap>
+          </CCardHeader>
           <CCardBody>{comment.content}</CCardBody>
         </CCard>
       ))}
