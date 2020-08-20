@@ -131,7 +131,10 @@
           if (status === "OK") {
             if (results[0]) {
               results[0].address_components.forEach((component) => {
-                if (component.types.includes("country") || (component.types.includes("natural_feature") && region == "")) {
+                if (
+                  component.types.includes("country") ||
+                  (component.types.includes("natural_feature") && region == "")
+                ) {
                   region = component.long_name
                 }
               })
@@ -142,7 +145,7 @@
             window.alert("Geocoder failed due to: " + status)
           }
           document.getElementById("location-display").innerText = "Location selected: " + region
-        })        
+        })
       }
 
       /** Display the recipe being typed in markdown with formatting, in real-time. */
