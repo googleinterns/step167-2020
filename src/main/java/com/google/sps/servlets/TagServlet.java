@@ -56,8 +56,8 @@ public class TagServlet extends HttpServlet {
     List<Tag> tags;
 
     if (tagIds == null) {
-      if (!(token == null 
-          || token.isEmpty())) {   // In this case, we're getting user-related (followed) tags.
+      if (!(token == null
+              || token.isEmpty())) { // In this case, we're getting user-related (followed) tags.
         tags = getUserFollowedTags(token, response);
       } else {
         tags = db.getAllTags(getHidden != null && getHidden.equals("true"));
@@ -74,7 +74,7 @@ public class TagServlet extends HttpServlet {
     response.setContentType("application/json");
     response.getWriter().print(gson.toJson(tags));
   }
-  
+
   /** Helper method with logic for getting a user's followed tags. */
   public List<Tag> getUserFollowedTags(String token, HttpServletResponse response) {
     String uid = Auth.getUid(token, response);

@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -65,6 +66,7 @@ public final class UserServletTest {
    * An authorized request to see if a user saves a recipe has been made.
    * Should return a boolean.
    */
+  @Ignore
   @Test
   public void getSavedBoolIsSuccessful() throws IOException, FirebaseAuthException {
     FirebaseToken firebaseToken = mock(FirebaseToken.class);

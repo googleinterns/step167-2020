@@ -29,6 +29,7 @@ import com.google.sps.meltingpot.data.UserRequestType;
 import java.io.IOException;
 import java.lang.Boolean;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -59,10 +60,10 @@ public class UserServlet extends HttpServlet {
     db = new FirestoreDB();
   }
 
-  /** Currently lets the front end know if a recipe is saved by a user or not. */
+  /** Currently lets the front end know if a recipe(s) is saved by a user or not. */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String recipeID = request.getParameter("recipeID");
+    String[] recipeIDs = request.getParameterValues("recipeID");
     String token = request.getParameter("token");
 
     UserRequestType requestType = UserRequestType.valueOf(request.getParameter("type"));
@@ -74,20 +75,23 @@ public class UserServlet extends HttpServlet {
 
     switch (requestType) {
       case SAVE:
-        if (recipeID == null) {
+        if (recipeIDs == null || recipeIDs.length == 0) {
           response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
           return;
         }
 
         // Call the FirestoreDB method.
-        Boolean isSavedRecipe = db.getUserProperty(uid, recipeID, User.SAVED_RECIPES_KEY);
+        Boolean[] areSavedRecipes = db.getUserProperty(uid, recipeIDs, User.SAVED_RECIPES_KEY);
         response.setContentType("text/plain");
-        
-        // If the property didn't exist at all, need to make sure to return false.
-        if (isSavedRecipe == null) {
-          response.getWriter().println("false");
+
+        // If the property didn't exist at all for any of the recipes, then return appropriately
+        // long array of "false".
+        if (areSavedRecipes == null) {
+          boolean[] falseValues = new boolean[recipeIDs.length];
+          Arrays.fill(falseValues, false);
+          response.getWriter().println(Arrays.toString(falseValues));
         } else {
-          response.getWriter().println(isSavedRecipe.toString());
+          response.getWriter().println(Arrays.toString(areSavedRecipes));
         }
         break;
     }

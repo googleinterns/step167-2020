@@ -100,10 +100,10 @@
             .then((idToken) => {
               fetch("/api/user?token=" + idToken + "&recipeID=" + getRecipeID() + "&type=SAVE")
                 .then((response) => response.text())
-                .then((text) => JSON.parse(text))
+                .then((boolArray) => JSON.parse(boolArray))
                 .then((isSaved) => {
-                  isSavedRecipe = isSaved
-                  if (isSaved) {
+                  isSavedRecipe = isSaved[0]
+                  if (isSavedRecipe) {
                     isSavedText.textContent = "Saved!"
                     savePostButton.textContent = "Unsave this recipe"
                   } else {
