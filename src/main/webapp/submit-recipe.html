@@ -28,6 +28,7 @@
       <br />
       <p>Where does this recipe come from?</p>
       <div id="map"></div>
+      <p id="location-display">Location selected:</p>
       <br />
       <p>Add tags to your recipe:</p>
       <select id="tag-select">
@@ -41,8 +42,8 @@
 
     <style>
       #map {
-        height: 300px;
-        width: 600px;
+        height: 400px;
+        width: 800px;
       }
     </style>
 
@@ -61,7 +62,8 @@
       import { app } from "/scripts/init.js"
 
       let map
-      let infoWindow
+      let geocoder
+      let region
       let marker = null
       let tagSelect = document.getElementById("tag-select")
 
@@ -100,10 +102,11 @@
 
       function createMap() {
         map = new google.maps.Map(document.getElementById("map"), { center: { lat: 20, lng: 0 }, zoom: 1 })
-        infoWindow = new google.maps.InfoWindow()
+        geocoder = new google.maps.Geocoder()
 
         google.maps.event.addListener(map, "click", function (event) {
           placeMarker(event.latLng)
+          displayCountry(event.latLng)
           console.log("Location: " + event.latLng)
         })
       }
@@ -115,7 +118,31 @@
         marker = new google.maps.Marker({ position: location, map: map })
         marker.addListener("click", function (e) {
           marker.setMap(null)
+          document.getElementById("location-display").innerText = "Location selected:"
         })
+      }
+
+      function displayCountry(location) {
+        map.setZoom(4)
+        map.panTo(location)
+
+        region = ""
+        geocoder.geocode({ location: location }, function (results, status) {
+          if (status === "OK") {
+            if (results[0]) {
+              results[0].address_components.forEach((component) => {
+                if (component.types.includes("country") || (component.types.includes("natural_feature") && region == "")) {
+                  region = component.long_name
+                }
+              })
+            } else {
+              window.alert("No results found")
+            }
+          } else {
+            window.alert("Geocoder failed due to: " + status)
+          }
+          document.getElementById("location-display").innerText = "Location selected: " + region
+        })        
       }
 
       /** Display the recipe being typed in markdown with formatting, in real-time. */
@@ -151,6 +178,7 @@
                   metadata: {
                     title: titleInput.value,
                     tagIds: tags,
+                    region: region,
                     location: { latitude: marker.getPosition().lat(), longitude: marker.getPosition().lng() },
                   },
                   content: instructionsInput.value,
