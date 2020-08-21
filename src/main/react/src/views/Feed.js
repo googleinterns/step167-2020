@@ -39,9 +39,7 @@ const Feed = props => {
   return (
     <>
       <CRow>
-        <CCol xs="12" sm="6" md="4"></CCol>
-        <CCol xs="12" sm="6" md="4"></CCol>
-        <CCol xs="12" sm="6" md="4">
+        <CCol xs="36" sm="18" md="12">
           <div className="float-right">
             <CButton onClick={() => setMapMode(!mapMode)} className="mr-1" color="primary">
               Toggle Map View
