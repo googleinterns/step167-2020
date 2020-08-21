@@ -35,10 +35,10 @@ const Comment = props => {
           )}
           {editMode && (
             <>
-              <CButton size="sm" color="primary" className="float-right" onClick={() => console.log(editedContent)} >
+              <CButton size="sm" color="primary" className="float-right" onClick={() => console.log(editedContent)}>
                 Submit
               </CButton>
-              <CButton variant="ghost" size="sm" className="float-right" onClick={() => setEditMode(false)} >
+              <CButton variant="ghost" size="sm" className="float-right" onClick={() => setEditMode(false)}>
                 Cancel
               </CButton>
             </>
@@ -48,7 +48,11 @@ const Comment = props => {
       <CCardBody>
         {!editMode && props.comment.content}
         {editMode && (
-          <CTextarea onChange={event => setEditedContent(event.target.value)} rows="2" defaultValue={props.comment.content} />
+          <CTextarea
+            onChange={event => setEditedContent(event.target.value)}
+            rows="2"
+            defaultValue={props.comment.content}
+          />
         )}
       </CCardBody>
     </CCard>

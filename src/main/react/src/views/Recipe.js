@@ -15,7 +15,7 @@ import {
   CModalTitle,
 } from "@coreui/react";
 import CIcon from "@coreui/icons-react";
-import Comment from '../components/Comment';
+import Comment from "../components/Comment";
 import { MarkdownPreview } from "react-marked-markdown";
 import requestRoute, { getTags, getRecipesVote } from "../requests";
 import Page404 from "./pages/page404/Page404";
