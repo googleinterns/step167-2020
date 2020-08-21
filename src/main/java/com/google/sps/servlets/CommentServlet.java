@@ -22,6 +22,7 @@ import com.google.firebase.auth.FirebaseToken;
 import com.google.gson.Gson;
 import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.data.Comment;
+import com.google.sps.meltingpot.data.DBObject;
 import com.google.sps.meltingpot.data.DBInterface;
 import com.google.sps.meltingpot.data.DBUtils;
 import com.google.sps.meltingpot.data.FirestoreDB;
@@ -99,7 +100,8 @@ public class CommentServlet extends HttpServlet {
     newComment.timestamp = date.getTime();
     newComment.ldap = Auth.getUserEmail(uid);
     // Call FirestoreDB addComment method.
-    db.addComment(newComment, recipeID);
+    String commentId = db.addComment(newComment, recipeID);
+    response.getWriter().print(gson.toJson(new DBObject(commentId)));
     response.setStatus(HttpServletResponse.SC_CREATED);
   }
 
