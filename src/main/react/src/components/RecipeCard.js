@@ -114,7 +114,7 @@ const RecipeCard = props => {
 RecipeCard.propTypes = {
   recipe: PropTypes.object,
   setErrMsg: PropTypes.func,
-  tags: PropTypes.array,
+  tags: PropTypes.object,
 };
 
 export default RecipeCard;

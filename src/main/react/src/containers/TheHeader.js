@@ -1,12 +1,10 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { CHeader, CToggler, CHeaderBrand, CHeaderNav, CBreadcrumbRouter } from "@coreui/react";
+import { CHeader, CToggler, CHeaderBrand, CHeaderNav, CBreadcrumbRouter, CImg, CLink } from "@coreui/react";
 import CIcon from "@coreui/icons-react";
 
 // routes config
 import routes from "../routes";
-
-import { TheHeaderDropdown, TheHeaderDropdownMssg, TheHeaderDropdownNotif, TheHeaderDropdownTasks } from "./index";
 
 const TheHeader = () => {
   const dispatch = useDispatch();
@@ -35,10 +33,11 @@ const TheHeader = () => {
       </CHeaderNav>
 
       <CHeaderNav className="px-3">
-        <TheHeaderDropdownNotif />
-        <TheHeaderDropdownTasks />
-        <TheHeaderDropdownMssg />
-        <TheHeaderDropdown />
+        <div className="c-avatar">
+          <CLink href="/#/profile">
+            <CImg src={"avatars/6.jpg"} className="c-avatar-img" alt="admin@bootstrapmaster.com" />
+          </CLink>
+        </div>
       </CHeaderNav>
     </CHeader>
   );

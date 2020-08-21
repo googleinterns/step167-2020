@@ -1,9 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
-import { CButton, CBadge, CLink, CCard, CCardBody, CCardHeader, CTextarea } from "@coreui/react";
+import {
+  CButton,
+  CBadge,
+  CLink,
+  CCard,
+  CCardBody,
+  CCardHeader,
+  CTextarea,
+  CModal,
+  CModalBody,
+  CModalFooter,
+  CModalHeader,
+  CModalTitle,
+} from "@coreui/react";
 import CIcon from "@coreui/icons-react";
+import Comment from '../components/Comment';
 import { MarkdownPreview } from "react-marked-markdown";
-import requestRoute, { getTags } from "../requests";
+import requestRoute, { getTags, getRecipesVote } from "../requests";
 import Page404 from "./pages/page404/Page404";
 import app from "firebase/app";
 import "firebase/auth";
@@ -18,22 +32,6 @@ const getComments = async id => {
   let res = await fetch(requestRoute + "api/comment?recipeID=" + id);
   let data = await res.json();
   return data;
-};
-
-const Ldap = props => {
-  if (props.originalPoster && props.currentUser) {
-    return (
-      <b>
-        <i>{props.children}</i>
-      </b>
-    );
-  } else if (props.originalPoster) {
-    return <b>{props.children}</b>;
-  } else if (props.currentUser) {
-    return <i>{props.children}</i>;
-  } else {
-    return <>{props.children}</>;
-  }
 };
 
 const Recipe = () => {
@@ -57,6 +55,8 @@ const Recipe = () => {
   const [save, setSave] = useState(false);
 
   const [commentContent, setCommentContent] = useState("");
+
+  const [errMsg, setErrMsg] = useState("");
 
   const [signedIn, setSignedIn] = useState(false);
 
@@ -83,50 +83,77 @@ const Recipe = () => {
   };
 
   const toggleVote = vote => {
-    if (vote) {
-      // upvote clicked
-      if (!upvote && !downvote) {
-        setUpvote(true);
-        setVotes(votes + 1);
-      } else if (upvote && !downvote) {
-        setUpvote(false);
-        setVotes(votes - 1);
-      } else if (!upvote && downvote) {
-        setDownvote(false);
-        setUpvote(true);
-        setVotes(votes + 2);
+    if (app.auth().currentUser) {
+      app
+        .auth()
+        .currentUser.getIdToken()
+        .then(idToken => {
+          fetch(requestRoute + "api/vote?recipeId=" + id + "&vote=" + vote + "&token=" + idToken, {
+            method: "PUT",
+          }).then(response => {
+            if (!response.ok) {
+              setErrMsg("Error " + response.status.toString());
+            }
+          });
+        })
+        .catch(() => setErrMsg("Error! Could not retrieve user ID token."));
+      if (vote) {
+        // upvote clicked
+        if (!upvote && !downvote) {
+          setUpvote(true);
+          setVotes(votes + 1);
+        } else if (upvote && !downvote) {
+          setUpvote(false);
+          setVotes(votes - 1);
+        } else if (!upvote && downvote) {
+          setDownvote(false);
+          setUpvote(true);
+          setVotes(votes + 2);
+        }
+      } else {
+        // downvote clicked
+        if (!upvote && !downvote) {
+          setDownvote(true);
+          setVotes(votes - 1);
+        } else if (!upvote && downvote) {
+          setDownvote(false);
+          setVotes(votes + 1);
+        } else if (upvote && !downvote) {
+          setUpvote(false);
+          setDownvote(true);
+          setVotes(votes - 2);
+        }
       }
     } else {
-      // downvote clicked
-      if (!upvote && !downvote) {
-        setDownvote(true);
-        setVotes(votes - 1);
-      } else if (!upvote && downvote) {
-        setDownvote(false);
-        setVotes(votes + 1);
-      } else if (upvote && !downvote) {
-        setUpvote(false);
-        setDownvote(true);
-        setVotes(votes - 2);
-      }
+      setErrMsg("User must be signed in to vote.");
     }
   };
 
   useEffect(() => {
-    if (id && id !== "") {
-      getRecipe(id).then(data => {
-        if (JSON.stringify(data) !== "{}") {
-          setRecipe(data);
-          setVotes(data.metadata.votes);
-          getTags(data.metadata.tagIds).then(tags => setTags(tags));
-          getComments(id).then(commentData => setComments(commentData));
+    app.auth().onAuthStateChanged(async user => {
+      if (id && id !== "") {
+        let recipeData = await getRecipe(id);
+        if (JSON.stringify(recipeData) !== "{}") {
+          setTags(await getTags(recipeData.tagIds));
+          setVotes(recipeData.metadata.votes);
+          setComments(await getComments(id));
+          setRecipe(recipeData);
+          if (user) {
+            let voteData = (await getRecipesVote([recipeData.metadata]))[0];
+            if (voteData) {
+              setUpvote(true);
+            } else if (voteData === false) {
+              // needs to be explicitly false, not null
+              setDownvote(true);
+            }
+          }
         } else {
           setNotFound(true);
         }
-      });
-    } else {
-      setNotFound(true);
-    }
+      } else {
+        setNotFound(true);
+      }
+    });
   }, [id]);
 
   if (notFound) {
@@ -166,7 +193,7 @@ const Recipe = () => {
         <CCard>
           <CCardHeader>
             Add a comment
-            <CButton type="submit" size="sm" color="primary" className="float-right" onClick={submitComment}>
+            <CButton size="sm" color="primary" className="float-right" onClick={submitComment}>
               Submit
             </CButton>
           </CCardHeader>
@@ -181,18 +208,19 @@ const Recipe = () => {
         </CCard>
       )}
       {comments.map((comment, i) => (
-        <CCard key={i}>
-          <CCardHeader>
-            <Ldap
-              currentUser={comment.ldap === app.auth().currentUser.email}
-              originalPoster={comment.ldap === recipe.metadata.creatorLdap}
-            >
-              {comment.ldap.split("@")[0]}
-            </Ldap>
-          </CCardHeader>
-          <CCardBody>{comment.content}</CCardBody>
-        </CCard>
+        <Comment key={i} comment={comment} signedIn={signedIn} recipePosterLdap={recipe.metadata.creatorLdap} />
       ))}
+      <CModal show={errMsg !== ""} onClose={() => setErrMsg("")} color="danger" size="sm">
+        <CModalHeader closeButton>
+          <CModalTitle>ERROR!!</CModalTitle>
+        </CModalHeader>
+        <CModalBody>{errMsg}</CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setErrMsg("")}>
+            Ok
+          </CButton>
+        </CModalFooter>
+      </CModal>
     </>
   );
 };
