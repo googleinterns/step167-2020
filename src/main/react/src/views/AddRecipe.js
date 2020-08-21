@@ -27,6 +27,7 @@ import Select from "react-select";
 import app from "firebase/app";
 import "firebase/auth";
 import requestRoute, { getTags } from "../requests";
+import MapContainer from "../components/MapContainer";
 
 const AddRecipe = () => {
   const history = useHistory();
@@ -144,6 +145,7 @@ const AddRecipe = () => {
                   </CCol>
                 </CFormGroup>
               </CForm>
+              <MapContainer recipes={[]} />
             </CCardBody>
             <CCardFooter>
               <CButton type="submit" size="sm" color="primary" className="float-right" onClick={postRecipe}>
