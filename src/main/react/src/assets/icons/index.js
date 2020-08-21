@@ -12,6 +12,7 @@ import {
   cilChevronRight,
   cilPencil,
   cilPlus,
+  cilTrash,
   cilUser,
   cilSave,
 } from "@coreui/icons";
@@ -33,6 +34,7 @@ export const icons = Object.assign(
     cilChevronRight,
     cilPencil,
     cilPlus,
+    cilTrash,
     cilUser,
     cilSave,
   }

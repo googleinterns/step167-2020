@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useHistory } from "react-router-dom";
 import {
   CButton,
@@ -54,7 +54,7 @@ const Recipe = () => {
   const [upvote, setUpvote] = useState(false);
   const [save, setSave] = useState(false);
 
-  const [commentContent, setCommentContent] = useState("");
+  const newCommentInput = useRef("");
 
   const [errMsg, setErrMsg] = useState("");
 
@@ -64,22 +64,64 @@ const Recipe = () => {
 
   const history = useHistory();
   var searchParams = new URLSearchParams(history.location.search);
-  const id = searchParams.get("id");
+  const recipeId = searchParams.get("id");
   const [notFound, setNotFound] = useState(false);
 
   const submitComment = async () => {
+    if (newCommentInput.current.value === "") {
+      setErrMsg("Empty comments are not allowed");
+      return;
+    }
     let idToken = await app.auth().currentUser.getIdToken();
-    fetch(requestRoute + "api/comment?recipeID=" + id + "&token=" + idToken, {
+    let res = await fetch(requestRoute + "api/comment?recipeID=" + recipeId + "&token=" + idToken, {
       method: "POST",
       body: JSON.stringify({
-        content: commentContent,
+        content: newCommentInput.current.value,
       }),
     });
+    let commentData = await res.json();
     let newComment = {
-      content: commentContent,
+      content: newCommentInput.current.value,
       ldap: app.auth().currentUser.email,
+      id: commentData.id,
     };
     setComments([newComment].concat(comments));
+  };
+
+  const deleteComment = async commentId => {
+    let idToken = await app.auth().currentUser.getIdToken();
+    fetch(requestRoute + "api/comment?recipeID=" + recipeId + "&commentID=" + commentId + "&token=" + idToken, {
+      method: "DELETE",
+    });
+    setComments(comments.filter(comment => comment.id !== commentId));
+  };
+
+  const editComment = (commentId, idx, newContent) => {
+    app
+      .auth()
+      .currentUser.getIdToken()
+      .then(idToken => {
+        fetch(
+          requestRoute +
+            "api/comment?recipeID=" +
+            recipeId +
+            "&commentID=" +
+            commentId +
+            "&commentBody=" +
+            newContent +
+            "&token=" +
+            idToken,
+          {
+            method: "PUT",
+          }
+        );
+      });
+    let newComments = [...comments];
+    let editedComment = {};
+    Object.assign(editedComment, comments[idx]);
+    editedComment.content = newContent;
+    newComments[idx] = editedComment;
+    setComments(newComments);
   };
 
   const toggleVote = vote => {
@@ -88,7 +130,7 @@ const Recipe = () => {
         .auth()
         .currentUser.getIdToken()
         .then(idToken => {
-          fetch(requestRoute + "api/vote?recipeId=" + id + "&vote=" + vote + "&token=" + idToken, {
+          fetch(requestRoute + "api/vote?recipeId=" + recipeId + "&vote=" + vote + "&token=" + idToken, {
             method: "PUT",
           }).then(response => {
             if (!response.ok) {
@@ -131,12 +173,12 @@ const Recipe = () => {
 
   useEffect(() => {
     app.auth().onAuthStateChanged(async user => {
-      if (id && id !== "") {
-        let recipeData = await getRecipe(id);
+      if (recipeId && recipeId !== "") {
+        let recipeData = await getRecipe(recipeId);
         if (JSON.stringify(recipeData) !== "{}") {
           setTags(await getTags(recipeData.tagIds));
           setVotes(recipeData.metadata.votes);
-          setComments(await getComments(id));
+          setComments(await getComments(recipeId));
           setRecipe(recipeData);
           if (user) {
             let voteData = (await getRecipesVote([recipeData.metadata]))[0];
@@ -154,7 +196,9 @@ const Recipe = () => {
         setNotFound(true);
       }
     });
-  }, [id]);
+  }, [recipeId]);
+
+  console.log(comments);
 
   if (notFound) {
     return <Page404 />;
@@ -198,17 +242,21 @@ const Recipe = () => {
             </CButton>
           </CCardHeader>
           <CCardBody>
-            <CTextarea
-              name="textarea-input"
-              id="textarea-input"
-              rows="2"
-              onChange={event => setCommentContent(event.target.value)}
-            />
+            <CTextarea rows="2" innerRef={newCommentInput} />
           </CCardBody>
         </CCard>
       )}
       {comments.map((comment, i) => (
-        <Comment key={i} comment={comment} signedIn={signedIn} recipePosterLdap={recipe.metadata.creatorLdap} />
+        <Comment
+          key={i}
+          comment={comment}
+          signedIn={signedIn}
+          recipePosterLdap={recipe.metadata.creatorLdap}
+          recipeId={recipeId}
+          delete={() => deleteComment(comment.id)}
+          edit={newContent => editComment(comment.id, i, newContent)}
+          setErrMsg={setErrMsg}
+        />
       ))}
       <CModal show={errMsg !== ""} onClose={() => setErrMsg("")} color="danger" size="sm">
         <CModalHeader closeButton>
