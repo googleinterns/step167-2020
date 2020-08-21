@@ -9,8 +9,8 @@ import com.google.firebase.auth.UserRecord;
 import com.google.gson.Gson;
 import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.data.Comment;
-import com.google.sps.meltingpot.data.DBObject;
 import com.google.sps.meltingpot.data.DBInterface;
+import com.google.sps.meltingpot.data.DBObject;
 import com.google.sps.meltingpot.data.SortingMethod;
 import com.google.sps.meltingpot.data.User;
 import java.io.BufferedReader;
@@ -179,14 +179,14 @@ public final class CommentServletTest {
     when(request.getReader()).thenReturn(requestBodyReader);
     when(request.getParameter("recipeID")).thenReturn("recipeID");
     when(request.getParameter("token")).thenReturn("validTokenEncoded");
-    
+
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw);
     when(response.getWriter()).thenReturn(pw);
 
     when(firebaseAuth.getUser(anyString())).thenReturn(userRecord);
     when(userRecord.getEmail()).thenReturn("johnnyappleseed@null.com");
-    when(db.addComment(any(Comment.class),eq("recipeID"))).thenReturn("commentID");
+    when(db.addComment(any(Comment.class), eq("recipeID"))).thenReturn("commentID");
 
     commentServlet.doPost(request, response);
 
