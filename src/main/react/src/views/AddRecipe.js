@@ -27,7 +27,7 @@ import Select from "react-select";
 import app from "firebase/app";
 import "firebase/auth";
 import requestRoute, { getTags } from "../requests";
-import MapContainer from "../components/MapContainer";
+import RecipeUploadMap from "../components/RecipeUploadMap";
 
 const AddRecipe = () => {
   const history = useHistory();
@@ -35,6 +35,13 @@ const AddRecipe = () => {
   const [title, setTitle] = useState("Title");
   const [content, setContent] = useState("Content");
   const [tagIds, setTagIds] = useState({});
+  const [location, setLocation] = useState(null);
+
+  const [mapModal, setMapModal] = useState(false);
+
+  const toggle = () => {
+    setMapModal(!mapModal);
+  };
 
   const [errMsg, setErrMsg] = useState("");
 
@@ -62,6 +69,7 @@ const AddRecipe = () => {
               metadata: {
                 title: title,
                 tagIds: tagIds,
+                location: location,
               },
               content: content,
             }),
@@ -144,8 +152,28 @@ const AddRecipe = () => {
                     </CFormText>
                   </CCol>
                 </CFormGroup>
+                <CFormGroup row>
+                  <CCol md="3"></CCol>
+                  <CCol xs="12" md="9">
+                    <CButton onClick={toggle} className="mr-1" color="secondary">
+                      Select Location
+                    </CButton>
+                    <CModal show={mapModal} onClose={toggle} size="xl">
+                      <CModalHeader closeButton>Source of Recipe</CModalHeader>
+                      <CModalBody>
+                        <div class="min-vh-100">
+                          <RecipeUploadMap location={location} setLocation={setLocation} />
+                        </div>
+                      </CModalBody>
+                      <CModalFooter>
+                        <CButton color="primary" onClick={toggle}>
+                          Done
+                        </CButton>
+                      </CModalFooter>
+                    </CModal>
+                  </CCol>
+                </CFormGroup>
               </CForm>
-              <MapContainer recipes={[]} />
             </CCardBody>
             <CCardFooter>
               <CButton type="submit" size="sm" color="primary" className="float-right" onClick={postRecipe}>
