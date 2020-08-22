@@ -15,10 +15,12 @@
 package com.google.sps.meltingpot.servlets;
 
 import com.google.gson.Gson;
+import com.google.sps.meltingpot.auth.Auth;
 import com.google.sps.meltingpot.data.DBInterface;
 import com.google.sps.meltingpot.data.FirestoreDB;
 import com.google.sps.meltingpot.data.Tag;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.servlet.annotation.WebServlet;
@@ -48,15 +50,43 @@ public class TagServlet extends HttpServlet {
     String[] tagIds = request.getParameterValues("tagIds");
     String getHidden = request.getParameter("getHidden");
 
+    // Only relevant in the case of returning a user's followed tags.
+    String token = request.getParameter("token");
+
     List<Tag> tags;
 
     if (tagIds == null) {
-      tags = db.getAllTags(getHidden != null && getHidden.equals("true"));
+      if (!(token == null
+              || token.isEmpty())) { // In this case, we're getting user-related (followed) tags.
+        tags = getUserFollowedTags(token, response);
+      } else {
+        tags = db.getAllTags(getHidden != null && getHidden.equals("true"));
+      }
     } else {
       tags = db.getTagsMatchingIds(Arrays.asList(tagIds));
     }
 
+    if (tags == null) {
+      response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+      return;
+    }
+
     response.setContentType("application/json");
     response.getWriter().print(gson.toJson(tags));
+  }
+
+  /** Helper method with logic for getting a user's followed tags. */
+  public List<Tag> getUserFollowedTags(String token, HttpServletResponse response) {
+    String uid = Auth.getUid(token, response);
+    if (uid == null) {
+      return new ArrayList<Tag>();
+    }
+
+    List<String> followedTags = db.followedTagIds(uid);
+    if (followedTags == null || followedTags.isEmpty()) {
+      response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+      return new ArrayList<Tag>();
+    }
+    return db.getTagsMatchingIds(followedTags);
   }
 }
