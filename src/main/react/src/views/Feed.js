@@ -5,6 +5,7 @@ import RecipeCard from "../components/RecipeCard";
 import requestRoute, { getTags, getRecipesVote } from "../requests";
 import app from "firebase/app";
 import "firebase/auth";
+import FeedMap from "../components/FeedMap";
 
 const getRecipes = async () => {
   let res = await fetch(requestRoute + "api/post");
@@ -16,6 +17,7 @@ const Feed = props => {
   console.log(props.feedType);
   const [recipes, setRecipes] = useState([]);
   const [tags, setTags] = useState({});
+  const [mapMode, setMapMode] = useState(false);
 
   const [errMsg, setErrMsg] = useState("");
 
@@ -37,11 +39,31 @@ const Feed = props => {
   return (
     <>
       <CRow>
-        {recipes.map((recipe, idx) => (
-          <CCol xs="12" sm="6" md="4" key={idx}>
-            <RecipeCard recipe={recipe} tags={tags} setErrMsg={setErrMsg} />
+        <CCol xs="12" sm="6" md="4"></CCol>
+        <CCol xs="12" sm="6" md="4"></CCol>
+        <CCol xs="12" sm="6" md="4">
+          <div className="float-right">
+            <CButton onClick={() => setMapMode(!mapMode)} className="mr-1" color="primary">
+              Toggle Map View
+            </CButton>
+          </div>
+          <br></br><br></br>
+        </CCol>
+      </CRow>
+      <CRow>
+        {!mapMode &&
+          recipes.map((recipe, idx) => (
+            <CCol xs="12" sm="6" md="4" key={idx}>
+              <RecipeCard recipe={recipe} tags={tags} setErrMsg={setErrMsg} />
+            </CCol>
+          ))}
+        {mapMode && (
+          <CCol xs="36" sm="18" md="12">
+            <div className="min-vh-100">
+              <FeedMap recipes={recipes} />
+            </div>
           </CCol>
-        ))}
+        )}
       </CRow>
       <CModal show={errMsg !== ""} onClose={() => setErrMsg("")} color="danger" size="sm">
         <CModalHeader closeButton>
