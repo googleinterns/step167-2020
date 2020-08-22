@@ -17,20 +17,4 @@ export default [
     to: "/addrecipe",
     icon: "cil-plus",
   },
-  {
-    _tag: "CSidebarNavTitle",
-    _children: ["Account"],
-  },
-  {
-    _tag: "CSidebarNavItem",
-    name: "Log In",
-    to: "/login",
-    icon: "cil-chevron-right",
-  },
-  {
-    _tag: "CSidebarNavItem",
-    name: "Sign Up",
-    to: "/register",
-    icon: "cil-chevron-double-right",
-  },
 ];
