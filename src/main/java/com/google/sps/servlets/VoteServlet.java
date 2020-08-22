@@ -101,7 +101,6 @@ public class VoteServlet extends HttpServlet {
     True (upvote request)    | Neutal  | Upvote  | Upvote
     False (downvote request) | Downvote| Downvote| Neutral
     */
-
     DBUtils.blockOnFuture(DBUtils.database.runTransaction(transaction -> {
       Boolean votedRecipe = db.getUserProperty(uid, recipeId, User.VOTED_RECIPES_KEY, transaction);
       if (votedRecipe != null) {
