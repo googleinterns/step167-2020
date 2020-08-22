@@ -159,7 +159,7 @@ const AddRecipe = () => {
                       Select Location
                     </CButton>
                     <CModal show={mapModal} onClose={toggle} size="xl">
-                      <CModalHeader closeButton>Source of Recipe</CModalHeader>
+                      <CModalHeader>Where does this recipe come from?</CModalHeader>
                       <CModalBody>
                         <div className="min-vh-100">
                           <RecipeUploadMap location={location} setLocation={setLocation} />

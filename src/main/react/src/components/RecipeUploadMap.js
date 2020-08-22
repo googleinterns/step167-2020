@@ -1,31 +1,8 @@
-import React /*, { useState, useEffect }*/ from "react";
+import React from "react";
 import { Map, GoogleApiWrapper, Marker } from "google-maps-react";
 import PropTypes from "prop-types";
-//import { CBadge, CCard, CCardBody, CCardFooter, CCardHeader, CLink } from "@coreui/react";
-//import CIcon from "@coreui/icons-react";
-//import requestRoute from "../requests";
-// import app from "firebase/app";
-//import "firebase/auth";
 
 const RecipeUploadMap = props => {
-  //const recipes = props.recipes;
-  /*
-  const displayMarkers = () => {
-    return props.recipes.map((recipe, i) => {
-      return (
-        <Marker
-          key={i}
-          id={i}
-          position={{
-            lat: recipe.location.latitude,
-            lng: recipe.location.longitude,
-          }}
-          onClick={() => console.log("You clicked me!")}
-        />
-      );
-    });
-  }; */
-
   const displayMarker = () => {
     if (props.location) {
       return (
