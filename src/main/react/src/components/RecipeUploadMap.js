@@ -1,6 +1,6 @@
 import React /*, { useState, useEffect }*/ from "react";
 import { Map, GoogleApiWrapper, Marker } from "google-maps-react";
-//import PropTypes from "prop-types";
+import PropTypes from "prop-types";
 //import { CBadge, CCard, CCardBody, CCardFooter, CCardHeader, CLink } from "@coreui/react";
 //import CIcon from "@coreui/icons-react";
 //import requestRoute from "../requests";
@@ -62,6 +62,12 @@ const RecipeUploadMap = props => {
       {displayMarker()}
     </Map>
   );
+};
+
+RecipeUploadMap.propTypes = {
+  location: PropTypes.object,
+  setLocation: PropTypes.func,
+  google: PropTypes.object,
 };
 
 const mapStyles = {

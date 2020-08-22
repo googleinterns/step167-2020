@@ -161,7 +161,7 @@ const AddRecipe = () => {
                     <CModal show={mapModal} onClose={toggle} size="xl">
                       <CModalHeader closeButton>Source of Recipe</CModalHeader>
                       <CModalBody>
-                        <div class="min-vh-100">
+                        <div className="min-vh-100">
                           <RecipeUploadMap location={location} setLocation={setLocation} />
                         </div>
                       </CModalBody>
