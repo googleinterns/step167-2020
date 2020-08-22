@@ -31,8 +31,15 @@ const getRecipesVote = async (recipes) => {
   }
 }
 
+const createUser = async (idToken) => {
+  await fetch(requestRoute + "api/user?token=" + idToken, {
+    method: "POST"
+  })
+}
+
 export {
   getTags,
-  getRecipesVote
+  getRecipesVote,
+  createUser
 };
 export default requestRoute;

@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
+import { useHistory } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { CHeader, CToggler, CHeaderBrand, CHeaderNav, CBreadcrumbRouter, CImg, CLink } from "@coreui/react";
+import { CHeader, CToggler, CHeaderBrand, CHeaderNav, CBreadcrumbRouter, CImg, CLink, CButton } from "@coreui/react";
 import CIcon from "@coreui/icons-react";
+import app from "firebase/app";
+import "firebase/auth";
 
 // routes config
 import routes from "../routes";
@@ -9,6 +12,8 @@ import routes from "../routes";
 const TheHeader = () => {
   const dispatch = useDispatch();
   const sidebarShow = useSelector(state => state.sidebarShow);
+
+  const [profilePic, setProfilePic] = useState(null);
 
   const toggleSidebar = () => {
     const val = [true, "responsive"].includes(sidebarShow) ? false : "responsive";
@@ -19,6 +24,17 @@ const TheHeader = () => {
     const val = [false, "responsive"].includes(sidebarShow) ? true : "responsive";
     dispatch({ type: "set", sidebarShow: val });
   };
+
+  const history = useHistory();
+
+  let listener = app.auth().onAuthStateChanged(user => {
+    if (!user) {
+      listener(); // unsubscribe from this listener when required to login
+      history.push("/login");
+    } else {
+      setProfilePic(user.providerData[0].photoURL);
+    }
+  });
 
   return (
     <CHeader withSubheader>
@@ -33,11 +49,16 @@ const TheHeader = () => {
       </CHeaderNav>
 
       <CHeaderNav className="px-3">
-        <div className="c-avatar">
-          <CLink href="/#/profile">
-            <CImg src={"avatars/6.jpg"} className="c-avatar-img" alt="admin@bootstrapmaster.com" />
-          </CLink>
-        </div>
+        {profilePic && (
+          <>
+            <CButton onClick={() => app.auth().signOut()}>Sign Out</CButton>
+            <div className="c-avatar">
+              <CLink href="/#/profile">
+                <CImg src={profilePic} className="c-avatar-img" alt={app.auth().currentUser.email} />
+              </CLink>
+            </div>
+          </>
+        )}
       </CHeaderNav>
     </CHeader>
   );
