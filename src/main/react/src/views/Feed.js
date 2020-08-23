@@ -47,7 +47,8 @@ const Feed = props => {
               Toggle Map View
             </CButton>
           </div>
-          <br></br><br></br>
+          <br></br>
+          <br></br>
         </CCol>
       </CRow>
       <CRow>

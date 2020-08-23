@@ -1,26 +1,84 @@
-import React /*, { useState, useEffect }*/ from "react";
-import { Map, GoogleApiWrapper, Marker } from "google-maps-react";
+import React, { useState } from "react";
+import { Map, GoogleApiWrapper, Marker, InfoWindow } from "google-maps-react";
 import PropTypes from "prop-types";
-//import { CBadge, CCard, CCardBody, CCardFooter, CCardHeader, CLink } from "@coreui/react";
-//import CIcon from "@coreui/icons-react";
-//import requestRoute from "../requests";
-// import app from "firebase/app";
-//import "firebase/auth";
 
 const FeedMap = props => {
-  const displayMarkers = () => {
-    return props.recipes.map((recipe, i) => {
+  const initialWindows = () => {
+    let initial = [];
+    props.recipes.forEach(recipe => {
       if (recipe.location && recipe.location.latitude && recipe.location.longitude) {
+        initial.push({
+          id: recipe.id,
+          visible: false,
+        });
+      }
+    });
+    return initial;
+  };
+
+  const [windows, setWindows] = useState(initialWindows());
+
+  const getVisibility = recipeId => {
+    if (!windows) return false;
+    else {
+      let window = windows.find(window => window.id === recipeId);
+      if (window === undefined) return false;
+      else return window.visible;
+    }
+  };
+
+  const displayMarkers = () => {
+    return props.recipes.map(recipe => {
+      if (recipe.location && recipe.location.latitude && recipe.location.longitude) {
+        /* eslint-disable */
         return (
           <Marker
-            key={i}
-            id={i}
+            title={recipe.title}
+            id={recipe.id}
+            key={recipe.id}
             position={{
               lat: recipe.location.latitude,
               lng: recipe.location.longitude,
             }}
-            onClick={() => console.log("You clicked me!")}
-          />
+            onClick={() => {
+              let showWindow = {
+                visible: true,
+              };
+              let hideWindow = {
+                visible: false,
+              };
+              setWindows(
+                windows.map(
+                  window =>
+                    window.id === recipe.id ? { ...window, ...showWindow } : { ...window, ...hideWindow }
+                )
+              );
+            }}
+          ></Marker>
+        );
+        /* eslint-enable */
+      } else {
+        return null;
+      }
+    });
+  };
+
+  const displayWindows = () => {
+    return props.recipes.map(recipe => {
+      if (recipe.location && recipe.location.latitude && recipe.location.longitude) {
+        return (
+          <InfoWindow
+            key={recipe.title}
+            visible={getVisibility(recipe.id)}
+            position={{
+              lat: recipe.location.latitude,
+              lng: recipe.location.longitude,
+            }}
+          >
+            <div>
+              <h1>{recipe.title}</h1>
+            </div>
+          </InfoWindow>
         );
       } else {
         return null;
@@ -39,13 +97,13 @@ const FeedMap = props => {
   return (
     <Map google={props.google} zoom={2} style={mapStyles} initialCenter={{ lat: 0, lng: 0 }} onClick={mapClicked}>
       {displayMarkers()}
+      {displayWindows()}
     </Map>
   );
 };
 
 FeedMap.propTypes = {
-  location: PropTypes.object,
-  setLocation: PropTypes.func,
+  recipes: PropTypes.object,
   google: PropTypes.object,
 };
 
