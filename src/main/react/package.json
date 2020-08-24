@@ -39,6 +39,7 @@
     "eslint": "^6.6.0",
     "eslint-config-google": "^0.14.0",
     "firebase": "^7.18.0",
+    "google-maps-react": "^2.0.6",
     "html-validate": "^3.0.0",
     "node-sass": "^4.14.1",
     "prop-types": "^15.7.2",
