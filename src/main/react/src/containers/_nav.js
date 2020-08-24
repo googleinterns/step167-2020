@@ -13,6 +13,12 @@ export default [
   },
   {
     _tag: "CSidebarNavItem",
+    name: "Map",
+    to: "/map",
+    icon: "cil-location-pin",
+  },
+  {
+    _tag: "CSidebarNavItem",
     name: "Add Recipe",
     to: "/addrecipe",
     icon: "cil-plus",

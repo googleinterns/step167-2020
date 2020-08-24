@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Map, GoogleApiWrapper, Marker, InfoWindow } from "google-maps-react";
 import PropTypes from "prop-types";
+import RecipeCard from "./RecipeCard";
 
 const FeedMap = props => {
   const initialWindows = () => {
@@ -67,7 +68,7 @@ const FeedMap = props => {
             }}
           >
             <div>
-              <h1>{recipe.title}</h1>
+              <RecipeCard recipe={recipe} tags={props.tags} setErrMsg={props.setErrMsg} />
             </div>
           </InfoWindow>
         );
@@ -96,11 +97,13 @@ const FeedMap = props => {
 FeedMap.propTypes = {
   recipes: PropTypes.array,
   google: PropTypes.object,
+  tags: PropTypes.object,
+  setErrMsg: PropTypes.func,
 };
 
 const mapStyles = {
-  width: "97%",
-  height: "100%",
+  width: "95%",
+  height: "95%",
 };
 
 export default GoogleApiWrapper({

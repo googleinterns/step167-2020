@@ -49,7 +49,7 @@ RecipeUploadMap.propTypes = {
 
 const mapStyles = {
   width: "95%",
-  height: "100%",
+  height: "95%",
 };
 
 export default GoogleApiWrapper({
