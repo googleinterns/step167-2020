@@ -30,7 +30,6 @@ const FeedMap = props => {
   const displayMarkers = () => {
     return props.recipes.map(recipe => {
       if (recipe.location && recipe.location.latitude && recipe.location.longitude) {
-        /* eslint-disable */
         return (
           <Marker
             title={recipe.title}
@@ -41,22 +40,14 @@ const FeedMap = props => {
               lng: recipe.location.longitude,
             }}
             onClick={() => {
-              let showWindow = {
-                visible: true,
-              };
-              let hideWindow = {
-                visible: false,
-              };
               setWindows(
-                windows.map(
-                  window =>
-                    window.id === recipe.id ? { ...window, ...showWindow } : { ...window, ...hideWindow }
+                windows.map(window =>
+                  window.id === recipe.id ? { id: window.id, visible: true, } : { id: window.id, visible: false, }
                 )
               );
             }}
           ></Marker>
         );
-        /* eslint-enable */
       } else {
         return null;
       }
@@ -103,7 +94,7 @@ const FeedMap = props => {
 };
 
 FeedMap.propTypes = {
-  recipes: PropTypes.object,
+  recipes: PropTypes.array,
   google: PropTypes.object,
 };
 
