@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { CButton, CCard, CCardBody, CCol, CRow, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } from "@coreui/react";
+import {
+  CButton,
+  CCard,
+  CCardBody,
+  CCol,
+  CRow,
+  CModal,
+  CModalBody,
+  CModalFooter,
+  CModalHeader,
+  CModalTitle,
+} from "@coreui/react";
 import RecipeCard from "../components/RecipeCard";
 import requestRoute, { getTags, getRecipesVote } from "../requests";
 import app from "firebase/app";
@@ -18,7 +29,7 @@ const Feed = props => {
   const [recipes, setRecipes] = useState([]);
   const [tags, setTags] = useState({});
   const [ready, setReady] = useState(false);
-  
+
   const [errMsg, setErrMsg] = useState("");
 
   useEffect(() => {
@@ -34,14 +45,15 @@ const Feed = props => {
       }
       setRecipes(recipeData);
       setReady(true); // Forces Map component to re-render once recipe loading finished.
-                      // Necessary for InfoWindows to be populated
+      // Necessary for InfoWindows to be populated
     });
   }, []);
 
   return (
     <>
       <CRow>
-        {!props.mapMode && ready &&
+        {!props.mapMode &&
+          ready &&
           recipes.map((recipe, idx) => (
             <CCol xs="12" sm="6" md="4" key={idx}>
               <RecipeCard recipe={recipe} tags={tags} setErrMsg={setErrMsg} />
