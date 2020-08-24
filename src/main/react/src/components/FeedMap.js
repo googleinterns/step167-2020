@@ -42,7 +42,7 @@ const FeedMap = props => {
             onClick={() => {
               setWindows(
                 windows.map(window =>
-                  window.id === recipe.id ? { id: window.id, visible: true, } : { id: window.id, visible: false, }
+                  window.id === recipe.id ? { id: window.id, visible: true } : { id: window.id, visible: false }
                 )
               );
             }}
