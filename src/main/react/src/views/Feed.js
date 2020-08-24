@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { CButton, CCol, CRow, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } from "@coreui/react";
+import {
+  CButton,
+  CCard,
+  CCardBody,
+  CCol,
+  CRow,
+  CModal,
+  CModalBody,
+  CModalFooter,
+  CModalHeader,
+  CModalTitle,
+} from "@coreui/react";
 import RecipeCard from "../components/RecipeCard";
 import requestRoute, { getTags, getRecipesVote } from "../requests";
 import app from "firebase/app";
@@ -17,7 +28,7 @@ const Feed = props => {
   console.log(props.feedType);
   const [recipes, setRecipes] = useState([]);
   const [tags, setTags] = useState({});
-  const [mapMode, setMapMode] = useState(false);
+  const [ready, setReady] = useState(false);
 
   const [errMsg, setErrMsg] = useState("");
 
@@ -33,34 +44,30 @@ const Feed = props => {
         recipeData.forEach((recipe, i) => (recipe.voted = voteData[i]));
       }
       setRecipes(recipeData);
+      setReady(true); // Forces Map component to re-render once recipe loading finished.
+      // Necessary for InfoWindows to be populated
     });
   }, []);
 
   return (
     <>
       <CRow>
-        <CCol xs="36" sm="18" md="12">
-          <div className="float-right">
-            <CButton onClick={() => setMapMode(!mapMode)} className="mr-1" color="primary">
-              Toggle Map View
-            </CButton>
-          </div>
-          <br></br>
-          <br></br>
-        </CCol>
-      </CRow>
-      <CRow>
-        {!mapMode &&
+        {!props.mapMode &&
+          ready &&
           recipes.map((recipe, idx) => (
             <CCol xs="12" sm="6" md="4" key={idx}>
               <RecipeCard recipe={recipe} tags={tags} setErrMsg={setErrMsg} />
             </CCol>
           ))}
-        {mapMode && (
+        {props.mapMode && ready && (
           <CCol xs="36" sm="18" md="12">
-            <div className="min-vh-100">
-              <FeedMap recipes={recipes} />
-            </div>
+            <CCard>
+              <CCardBody>
+                <div className="min-vh-100">
+                  <FeedMap recipes={recipes} tags={tags} setErrMsg={setErrMsg} />
+                </div>
+              </CCardBody>
+            </CCard>
           </CCol>
         )}
       </CRow>
@@ -81,6 +88,7 @@ const Feed = props => {
 
 Feed.propTypes = {
   feedType: PropTypes.string,
+  mapMode: PropTypes.bool,
 };
 
 export default Feed;
