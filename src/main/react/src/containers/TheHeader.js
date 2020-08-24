@@ -13,6 +13,7 @@ const TheHeader = () => {
   const dispatch = useDispatch();
   const sidebarShow = useSelector(state => state.sidebarShow);
 
+  const [signedIn, setSignedIn] = useState(false);
   const [profilePic, setProfilePic] = useState(null);
 
   const toggleSidebar = () => {
@@ -32,6 +33,7 @@ const TheHeader = () => {
       listener(); // unsubscribe from this listener when required to login
       history.push("/login");
     } else {
+      setSignedIn(true);
       setProfilePic(user.providerData[0].photoURL);
     }
   });
@@ -49,14 +51,16 @@ const TheHeader = () => {
       </CHeaderNav>
 
       <CHeaderNav className="px-3">
-        {profilePic && (
+        {signedIn && (
           <>
             <CButton onClick={() => app.auth().signOut()}>Sign Out</CButton>
-            <div className="c-avatar">
-              <CLink href="/#/profile">
-                <CImg src={profilePic} className="c-avatar-img" alt={app.auth().currentUser.email} />
-              </CLink>
-            </div>
+            {profilePic && (
+              <div className="c-avatar">
+                <CLink href="/#/profile">
+                  <CImg src={profilePic} className="c-avatar-img" alt={app.auth().currentUser.email} />
+                </CLink>
+              </div>
+            )}
           </>
         )}
       </CHeaderNav>
