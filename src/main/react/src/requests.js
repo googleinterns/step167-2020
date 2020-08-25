@@ -34,6 +34,21 @@ const getRecipesVote = async (recipes) => {
   }
 }
 
+const getRecipesSaved = async (recipes) => {
+  if(JSON.stringify(recipes) === "[]") {
+    return [];
+  }
+  if (app.auth().currentUser) {
+    let idToken = await app.auth().currentUser.getIdToken();
+    let qs = requestRoute + "api/user?token=" + idToken + "&type=SAVE&";
+    let recipeIds = recipes.map(recipe => "recipeID=" + recipe.id);
+    qs += recipeIds.join("&");
+    let res = await fetch(qs);
+    let data = await res.json();
+    return data;
+  }
+}
+
 const createUser = async (idToken) => {
   await fetch(requestRoute + "api/user?token=" + idToken, {
     method: "POST"
@@ -43,6 +58,7 @@ const createUser = async (idToken) => {
 export {
   getTags,
   getRecipesVote,
+  getRecipesSaved,
   createUser
 };
 export default requestRoute;

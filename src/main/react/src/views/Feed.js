@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { CButton, CCol, CRow, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } from "@coreui/react";
 import RecipeCard from "../components/RecipeCard";
-import requestRoute, { getTags, getRecipesVote } from "../requests";
+import requestRoute, { getTags, getRecipesVote, getRecipesSaved } from "../requests";
 import app from "firebase/app";
 import "firebase/auth";
 
@@ -39,6 +39,8 @@ const Feed = props => {
         console.log(recipeData);
         let voteData = await getRecipesVote(recipeData);
         recipeData.forEach((recipe, i) => (recipe.voted = voteData[i]));
+        let savedData = await getRecipesSaved(recipeData);
+        recipeData.forEach((recipe, i) => (recipe.saved = savedData[i]));
       }
       setRecipes(recipeData);
     });
