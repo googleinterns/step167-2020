@@ -80,11 +80,17 @@ const Feed = props => {
     <>
       <CRow>
         {!props.mapMode &&
+          recipes.length > 0 &&
           recipes.map((recipe, idx) => (
             <CCol xs="12" sm="6" md="4" key={idx}>
               <RecipeCard recipe={recipe} tags={tags} setErrMsg={setErrMsg} />
             </CCol>
           ))}
+        {!props.mapMode && recipes.length === 0 && (
+          <CCard>
+            <CCardBody>There seem to be no recipes here.</CCardBody>
+          </CCard>
+        )}
         {props.mapMode && (
           <CCol xs="36" sm="18" md="12">
             <CCard>

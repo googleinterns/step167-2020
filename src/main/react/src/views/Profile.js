@@ -100,7 +100,9 @@ const Profile = () => {
                         })}
                         onChange={selected => setSelectedTagId(selected.value)}
                       />
-                      <CFormText className="help-block">The tags you follow affect your feed</CFormText>
+                      <CFormText className="help-block">
+                        The tags you follow affect your feed. Unfollow a tag by clicking on it.
+                      </CFormText>
                     </CCol>
                   </CRow>
                   <CRow>
@@ -118,7 +120,6 @@ const Profile = () => {
                             </CBadge>
                           )
                       )}
-                      <CFormText className="help-block">Unfollow a tag by clicking on it</CFormText>
                     </CCol>
                   </CRow>
                 </CCol>
