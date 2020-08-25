@@ -4,6 +4,7 @@ import {
   CCardBody,
   CRow,
   CCol,
+  CFormText,
   CImg,
   CCardHeader,
   CNav,
@@ -99,6 +100,7 @@ const Profile = () => {
                         })}
                         onChange={selected => setSelectedTagId(selected.value)}
                       />
+                      <CFormText className="help-block">The tags you follow affect your feed</CFormText>
                     </CCol>
                   </CRow>
                   <CRow>
@@ -106,24 +108,23 @@ const Profile = () => {
                       {followedTagIds.map(
                         (tagId, idx) =>
                           allTags[tagId] && (
-                            <CBadge color="success" key={idx} style={{ marginLeft: 3 }}>
+                            <CBadge
+                              color="success"
+                              key={idx}
+                              style={{ marginLeft: 3 }}
+                              onClick={() => unfollowTag(app.auth().currentUser, tagId)}
+                            >
                               {allTags[tagId].name}
                             </CBadge>
                           )
                       )}
+                      <CFormText className="help-block">Unfollow a tag by clicking on it</CFormText>
                     </CCol>
                   </CRow>
                 </CCol>
                 <CCol sm={2}>
                   <CButton color="primary" onClick={() => followTag(app.auth().currentUser, selectedTagId)}>
                     Follow
-                  </CButton>
-                  <CButton
-                    color="danger"
-                    style={{ marginLeft: 5 }}
-                    onClick={() => unfollowTag(app.auth().currentUser, selectedTagId)}
-                  >
-                    Unfollow
                   </CButton>
                 </CCol>
               </CRow>
