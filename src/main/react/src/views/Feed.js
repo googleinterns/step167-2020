@@ -56,7 +56,7 @@ const Feed = props => {
 
   if (!loaded) {
     return (
-      <CRow className="justify-content-center" >
+      <CRow className="justify-content-center">
         <CCol sm={2}>
           <img src={loading} alt="loading..." />
         </CCol>

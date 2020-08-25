@@ -22,5 +22,5 @@ export default [
     name: "Profile",
     to: "/profile",
     icon: "cil-user",
-  }
+  },
 ];
