@@ -1,11 +1,23 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { CButton, CCol, CRow, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } from "@coreui/react";
+import {
+  CButton,
+  CCard,
+  CCardBody,
+  CCol,
+  CRow,
+  CModal,
+  CModalBody,
+  CModalFooter,
+  CModalHeader,
+  CModalTitle,
+} from "@coreui/react";
 import RecipeCard from "../components/RecipeCard";
 import loading from "../assets/loading.gif";
 import requestRoute, { getTags, getRecipesVote, getRecipesSaved } from "../requests";
 import app from "firebase/app";
 import "firebase/auth";
+import FeedMap from "../components/FeedMap";
 
 const getRecipes = async feedType => {
   let qs = requestRoute + "api/post";
@@ -43,7 +55,7 @@ const Feed = props => {
         recipeData.forEach((recipe, i) => (recipe.saved = savedData[i]));
       }
       setRecipes(recipeData);
-      setLoaded(true);
+      setLoaded(true); // Forces component to re-render once recipe loading finished.
     });
     return () => {
       // return the cleanup function
@@ -67,11 +79,23 @@ const Feed = props => {
   return (
     <>
       <CRow>
-        {recipes.map((recipe, idx) => (
-          <CCol xs="12" sm="6" md="4" key={idx}>
-            <RecipeCard recipe={recipe} tags={tags} setErrMsg={setErrMsg} />
+        {!props.mapMode &&
+          recipes.map((recipe, idx) => (
+            <CCol xs="12" sm="6" md="4" key={idx}>
+              <RecipeCard recipe={recipe} tags={tags} setErrMsg={setErrMsg} />
+            </CCol>
+          ))}
+        {props.mapMode && (
+          <CCol xs="36" sm="18" md="12">
+            <CCard>
+              <CCardBody>
+                <div className="min-vh-100">
+                  <FeedMap recipes={recipes} tags={tags} setErrMsg={setErrMsg} />
+                </div>
+              </CCardBody>
+            </CCard>
           </CCol>
-        ))}
+        )}
       </CRow>
       <CModal show={errMsg !== ""} onClose={() => setErrMsg("")} color="danger" size="sm">
         <CModalHeader closeButton>
@@ -90,6 +114,7 @@ const Feed = props => {
 
 Feed.propTypes = {
   feedType: PropTypes.string,
+  mapMode: PropTypes.bool,
 };
 
 export default Feed;
