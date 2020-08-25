@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { CButton, CCol, CRow, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } from "@coreui/react";
 import RecipeCard from "../components/RecipeCard";
+import loading from "../assets/loading.gif";
 import requestRoute, { getTags, getRecipesVote, getRecipesSaved } from "../requests";
 import app from "firebase/app";
 import "firebase/auth";
@@ -28,6 +29,8 @@ const Feed = props => {
 
   const [errMsg, setErrMsg] = useState("");
 
+  const [loaded, setLoaded] = useState(false);
+
   useEffect(() => {
     // do on feedtype change and initial render
     let listener = app.auth().onAuthStateChanged(async user => {
@@ -43,14 +46,26 @@ const Feed = props => {
         recipeData.forEach((recipe, i) => (recipe.saved = savedData[i]));
       }
       setRecipes(recipeData);
+      setLoaded(true);
     });
     return () => {
       // return the cleanup function
       listener();
       setRecipes([]);
       setTags({});
+      setLoaded(false);
     };
   }, [props.feedType]);
+
+  if (!loaded) {
+    return (
+      <CRow className="justify-content-center align-items-center" >
+        <CCol sm={2}>
+          <img src={loading} />
+        </CCol>
+      </CRow>
+    );
+  }
 
   return (
     <>
