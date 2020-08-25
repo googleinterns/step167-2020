@@ -44,6 +44,7 @@ const Feed = props => {
   useEffect(() => {
     // do on feedtype change and initial render
     let listener = app.auth().onAuthStateChanged(async user => {
+      listener();
       let recipeData = await getRecipes(props.feedType);
       let tagIds = {};
       recipeData.forEach(recipe => Object.assign(tagIds, recipe.tagIds));
@@ -59,7 +60,6 @@ const Feed = props => {
     });
     return () => {
       // return the cleanup function
-      listener();
       setRecipes([]);
       setTags({});
       setLoaded(false);
