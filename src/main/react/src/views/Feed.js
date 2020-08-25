@@ -22,8 +22,6 @@ const getRecipes = async feedType => {
 };
 
 const Feed = props => {
-  console.log(props.feedType);
-
   const [recipes, setRecipes] = useState([]);
   const [tags, setTags] = useState({});
 
@@ -39,7 +37,6 @@ const Feed = props => {
       recipeData.forEach(recipe => Object.assign(tagIds, recipe.tagIds));
       setTags(await getTags(tagIds));
       if (user) {
-        console.log(recipeData);
         let voteData = await getRecipesVote(recipeData);
         recipeData.forEach((recipe, i) => (recipe.voted = voteData[i]));
         let savedData = await getRecipesSaved(recipeData);
@@ -59,9 +56,9 @@ const Feed = props => {
 
   if (!loaded) {
     return (
-      <CRow className="justify-content-center align-items-center" >
+      <CRow className="justify-content-center" >
         <CCol sm={2}>
-          <img src={loading} />
+          <img src={loading} alt="loading..." />
         </CCol>
       </CRow>
     );

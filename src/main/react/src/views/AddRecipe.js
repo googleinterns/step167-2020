@@ -122,6 +122,9 @@ const AddRecipe = () => {
                         setTagIds(newTagIds);
                       }}
                     />
+                    <CFormText className="help-block">
+                      Max {MAX_TAGS} tags
+                    </CFormText>
                   </CCol>
                 </CFormGroup>
                 <CFormGroup row>

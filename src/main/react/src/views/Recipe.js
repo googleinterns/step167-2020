@@ -198,8 +198,6 @@ const Recipe = () => {
     });
   }, [recipeId]);
 
-  console.log(comments);
-
   if (notFound) {
     return <Page404 />;
   }
