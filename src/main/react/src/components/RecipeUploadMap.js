@@ -1,6 +1,8 @@
 import React from "react";
 import { Map, GoogleApiWrapper, Marker } from "google-maps-react";
 import PropTypes from "prop-types";
+import Geocode from "react-geocode";
+import { mapsApiKey } from "../requests";
 
 const RecipeUploadMap = props => {
   const displayMarker = () => {
@@ -13,25 +15,45 @@ const RecipeUploadMap = props => {
           }}
           onClick={() => {
             props.setLocation(null);
-            console.log("Marker clicked.");
+            props.setDecodedRegion("");
           }}
         />
       );
     }
   };
 
+  const updateRegion = latLng => {
+    Geocode.setApiKey(mapsApiKey);
+    Geocode.fromLatLng(latLng.lat(), latLng.lng()).then(
+      response => {
+        let temp = "";
+        if (response.results[0]) {
+          // If there are results, traverse the array of address components
+          // looking for a country, or, if none is found, a natural feature
+          response.results[0].address_components.forEach(component => {
+            if (component.types.includes("country") || (component.types.includes("natural_feature") && temp === "")) {
+              temp = component.long_name;
+            }
+          });
+        }
+        props.setDecodedRegion(temp);
+      },
+      error => {
+        props.setDecodedRegion("Invalid location");
+        console.log(error);
+      }
+    );
+  };
+
   const mapClicked = (mapProps, map, clickEvent) => {
-    const newCenter = {
-      lat: clickEvent.latLng.lat(),
-      lng: clickEvent.latLng.lng(),
-    };
     const newLocation = {
-      latitude: newCenter.lat,
-      longitude: newCenter.lng,
+      latitude: clickEvent.latLng.lat(),
+      longitude: clickEvent.latLng.lng(),
     };
     props.setLocation(newLocation);
+    updateRegion(clickEvent.latLng);
     map.setZoom(5);
-    map.panTo(newCenter);
+    map.panTo(clickEvent.latLng);
   };
 
   return (
@@ -44,6 +66,8 @@ const RecipeUploadMap = props => {
 RecipeUploadMap.propTypes = {
   location: PropTypes.object,
   setLocation: PropTypes.func,
+  decodedRegion: PropTypes.string,
+  setDecodedRegion: PropTypes.func,
   google: PropTypes.object,
 };
 
@@ -53,5 +77,5 @@ const mapStyles = {
 };
 
 export default GoogleApiWrapper({
-  apiKey: "AIzaSyAe5HlFZFuhzMimXrKW1z3kglajbdHf_Rc",
+  apiKey: mapsApiKey,
 })(RecipeUploadMap);

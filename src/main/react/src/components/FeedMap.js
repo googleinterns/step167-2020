@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Map, GoogleApiWrapper, Marker, InfoWindow } from "google-maps-react";
 import PropTypes from "prop-types";
 import RecipeCard from "./RecipeCard";
+import { mapsApiKey } from "../requests";
 
 const FeedMap = props => {
   const initialWindows = () => {
@@ -104,5 +105,5 @@ const mapStyles = {
 };
 
 export default GoogleApiWrapper({
-  apiKey: "AIzaSyAe5HlFZFuhzMimXrKW1z3kglajbdHf_Rc",
+  apiKey: mapsApiKey,
 })(FeedMap);
