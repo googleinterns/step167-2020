@@ -20,6 +20,9 @@ const getTags = async (tagIds) => {
 }
 
 const getRecipesVote = async (recipes) => {
+  if(JSON.stringify(recipes) === "[]") {
+    return [];
+  }
   if (app.auth().currentUser) {
     let idToken = await app.auth().currentUser.getIdToken();
     let qs = requestRoute + "api/vote?token=" + idToken + "&";

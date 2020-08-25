@@ -6,33 +6,49 @@ import requestRoute, { getTags, getRecipesVote } from "../requests";
 import app from "firebase/app";
 import "firebase/auth";
 
-const getRecipes = async () => {
-  let res = await fetch(requestRoute + "api/post");
+const getRecipes = async feedType => {
+  let qs = requestRoute + "api/post";
+  if (feedType === "saved") {
+    let token = await app.auth().currentUser.getIdToken();
+    qs += "?saved=true&token=" + token;
+  } else if (feedType === "created") {
+    let token = await app.auth().currentUser.getIdToken();
+    qs += "?token=" + token;
+  }
+  let res = await fetch(qs);
   let data = await res.json();
   return data;
 };
 
 const Feed = props => {
   console.log(props.feedType);
+
   const [recipes, setRecipes] = useState([]);
   const [tags, setTags] = useState({});
 
   const [errMsg, setErrMsg] = useState("");
 
   useEffect(() => {
-    // do on first render
-    app.auth().onAuthStateChanged(async user => {
-      let recipeData = await getRecipes();
+    // do on feedtype change and initial render
+    let listener = app.auth().onAuthStateChanged(async user => {
+      let recipeData = await getRecipes(props.feedType);
       let tagIds = {};
       recipeData.forEach(recipe => Object.assign(tagIds, recipe.tagIds));
       setTags(await getTags(tagIds));
       if (user) {
+        console.log(recipeData);
         let voteData = await getRecipesVote(recipeData);
         recipeData.forEach((recipe, i) => (recipe.voted = voteData[i]));
       }
       setRecipes(recipeData);
     });
-  }, []);
+    return () => {
+      // return the cleanup function
+      listener();
+      setRecipes([]);
+      setTags({});
+    };
+  }, [props.feedType]);
 
   return (
     <>
