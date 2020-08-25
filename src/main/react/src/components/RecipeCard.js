@@ -12,7 +12,7 @@ const RecipeCard = props => {
   const [votes, setVotes] = useState(recipe.votes);
   const [downvote, setDownvote] = useState(false);
   const [upvote, setUpvote] = useState(false);
-  const [save, setSave] = useState(false);
+  const [save, setSave] = useState(props.recipe.saved);
 
   useEffect(() => {
     if (recipe.voted === true) {
@@ -21,6 +21,19 @@ const RecipeCard = props => {
       setDownvote(true);
     }
   }, [recipe.voted]);
+
+  const toggleSave = () => {
+    app
+      .auth()
+      .currentUser.getIdToken()
+      .then(idToken =>
+        fetch(
+          requestRoute + "api/user?recipeID=" + recipe.id + "&token=" + idToken + "&type=" + (save ? "UNSAVE" : "SAVE"),
+          { method: "PUT" }
+        )
+      );
+    setSave(!save);
+  };
 
   const toggleVote = vote => {
     if (app.auth().currentUser) {
@@ -80,7 +93,7 @@ const RecipeCard = props => {
           <CLink className="card-header-action" onClick={() => toggleVote(false)}>
             <CIcon name="cil-arrow-circle-bottom" className={downvote ? "text-info" : ""} />
           </CLink>
-          <CLink className="card-header-action" onClick={() => setSave(!save)} style={{ marginRight: 5 }}>
+          <CLink className="card-header-action" onClick={toggleSave} style={{ marginRight: 5 }}>
             <CIcon name="cil-save" className={save ? "text-success" : ""} />
           </CLink>
           <CBadge shape="pill" color="primary">
@@ -100,11 +113,14 @@ const RecipeCard = props => {
       <CCardFooter>
         {recipe.creatorLdap.split("@")[0]}
         <div className="card-header-actions">
-          {Object.keys(recipe.tagIds).map((tagId, idx) => (
-            <CBadge color="success" key={idx} style={{ marginLeft: 3 }}>
-              {props.tags[tagId].name}
-            </CBadge>
-          ))}
+          {Object.keys(recipe.tagIds).map(
+            (tagId, idx) =>
+              props.tags[tagId] && (
+                <CBadge color="success" key={idx} style={{ marginLeft: 3 }}>
+                  {props.tags[tagId].name}
+                </CBadge>
+              )
+          )}
         </div>
       </CCardFooter>
     </CCard>
@@ -115,6 +131,7 @@ RecipeCard.propTypes = {
   recipe: PropTypes.object,
   setErrMsg: PropTypes.func,
   tags: PropTypes.object,
+  saved: PropTypes.bool,
 };
 
 export default RecipeCard;
