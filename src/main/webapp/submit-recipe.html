@@ -7,17 +7,18 @@
     <script type="module" src="/scripts/init.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   </head>
-  <body>
+  <body onload="fetchBlobstoreUploadURL();">
     <!-- Recipe form -->
-    <div>
+    <div id="recipe-form">
+      <!--  action="/api/post" method="POST" enctype="multipart/form-data" -->
       <label for="recipe-title">Recipe Title</label><br />
-      <input type="text" id="recipe-title" name="recipe-title" placeholder="e.g. Grandma's Zucchini Florentine" />
+      <input type="text" id="recipe-title" name="title" placeholder="e.g. Grandma's Zucchini Florentine" />
       <br />
       <label for="instructions">Recipe Instructions</label><br />
       <textarea
         rows="10"
         cols="70"
-        name="instructions"
+        name="content"
         id="instructions"
         placeholder="e.g. Preheat the oven to 350 degrees."
       ></textarea>
@@ -27,15 +28,17 @@
         <option>None</option>
       </select>
       <p>Currently selected tags:</p>
-      <div id="selected-tags"></div>
+      <div id="selected-tags" name="tagIds" value="getCurrentTagsAsList()"></div>
       <br />
+      <p>Upload an image with your recipe:</p>
+      <br />
+      <input type="file" name="image" id="image" /> <br />
       <button type="button" id="submit" value="Submit">Submit</button>
     </div>
     <div id="recipe-preview">
       <h1 id="title-preview"></h1>
       <div id="instructions-preview"></div>
     </div>
-
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
 
@@ -48,8 +51,10 @@
     <script type="module">
       import { app } from "/scripts/init.js"
 
-      let tagSelect = document.getElementById("tag-select")
-      window.addTag = addTag
+      var tagSelect = document.getElementById("tag-select")
+      var imageInput = document.getElementById("image")
+
+      window.fetchBlobstoreUploadURL = fetchBlobstoreUploadURL
 
       /** On window load, initialize the page. */
       window.onload = function () {
@@ -62,7 +67,8 @@
         document.getElementById("submit").addEventListener("click", submitRecipe)
         document.querySelector("input").addEventListener("input", renderRecipe)
         document.querySelector("textarea").addEventListener("input", renderRecipe)
-        document.getElementById("tag-select").addEventListener("change", addTag)
+        tagSelect.addEventListener("change", addTag)
+        imageInput.addEventListener("change", validateImage)
 
         // Initialize tag-select
         loadTags()
@@ -82,6 +88,61 @@
         })
       }
 
+      /** Resets file input on change if file was not an image. */
+      function validateImage() {
+        var fileInput = imageInput.files[0]
+        var isImage
+        // Acceptable image extensions.
+        var imgFileExtensions = [".jpg", ".jpeg", ".gif", ".png", ".bmp", ".svg", ".tiff", ".webp"]
+
+        if (imageInput.type == "file") {
+          var fileName = fileInput.name
+          var fNameLength = fileName.length
+          if (fNameLength > 0) {
+            isImage = false
+            var fileNameLower = fileName.toLowerCase()
+            // Loop thru extensions and change boolean to true if the file name equals any of them.
+            for (var i = 0; i < imgFileExtensions.length; i++) {
+              if (fileNameLower.endsWith(imgFileExtensions[i])) {
+                isImage = true
+                break
+              }
+            }
+          }
+        }
+        if (!isImage) {
+          alert("Invalid file type. Please submit an image.")
+          imageInput.value = ""
+        }
+        return isImage
+      }
+
+      /** Fetches Blobstore upload URL from the appropriate servlet. */
+      function fetchBlobstoreUploadURL() {
+        app
+          .auth()
+          .currentUser.getIdToken(/* forceRefresh */ true)
+          .then(function (idToken) {
+            // Fetch the URL and apply to the "action" aspect of the comment form.
+            fetch("/blobstore-upload?token=" + idToken)
+              .then((promise) => {
+                if (!promise.ok) {
+                  alert("You are not authorized to submit a recipe.")
+                  window.location.href = "/login-page.html"
+                } else {
+                  return promise.text()
+                }
+              })
+              .then((imageUploadURL) => {
+                const recipeForm = document.getElementById("recipe-form")
+                recipeForm.action = imageUploadURL
+              })
+          })
+          .catch(function (error) {
+            alert("Error! Could not retrieve user ID token.")
+          })
+      }
+
       /** Display the recipe being typed in markdown with formatting, in real-time. */
       function renderRecipe() {
         let titleInput = document.getElementById("recipe-title")
@@ -97,7 +158,8 @@
       function submitRecipe() {
         let titleInput = document.getElementById("recipe-title")
         let instructionsInput = document.getElementById("instructions")
-        let tags = getCurrentTags()
+        let tags = getCurrentTagsAsList()
+        var userToken
 
         // Make sure a user is signed in before posting.
         if (app.auth().currentUser) {
@@ -105,26 +167,50 @@
             .auth()
             .currentUser.getIdToken(/* forceRefresh */ true)
             .then(function (idToken) {
-              // Send token to backend via HTTPS
-              fetch("/api/post?token=" + idToken, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  metadata: {
+                userToken = idToken
+              fetch("/blobstore-upload?token=" + idToken)
+                .then((promise) => {
+                  if (!promise.ok) {
+                    alert("Unauthorized.")
+                    return
+                  } else {
+                    return promise.text()
+                  }
+                })
+                .then((blobstoreUploadURL) => {
+                  console.log(blobstoreUploadURL)
+
+                  const form = document.createElement("form")
+                  form.method = "POST"
+                  form.action = blobstoreUploadURL
+                  form.enctype = "multipart/form-data"
+                  const params = {
                     title: titleInput.value,
-                    tagIds: tags,
-                  },
-                  content: instructionsInput.value,
-                }),
-              }).then((response) => {
-                if (!response.ok) {
-                  alert("Error " + response.status.toString())
-                  return
-                }
-                response.json().then((data) => (window.location.href = "/recipe-display.html?recipeID=" + data.id))
-              })
+                    content: instructionsInput.value,
+                    tagIds: tags.toString(),
+                    image: imageInput.files[0],
+                    token: userToken 
+                  }
+
+                  for (const key in params) {
+                    const recipeField = document.createElement("input")
+                    recipeField.type = "hidden"
+                    recipeField.name = key
+                    recipeField.value = params[key]
+
+                    form.appendChild(recipeField)
+                  }
+
+                  document.body.appendChild(form)
+                  form.submit()
+                  .then((response) => {
+                    if (!response.ok) {
+                      alert("Error " + response.status.toString())
+                      return
+                    }
+                    response.json().then((data) => (window.location.href = "/recipe-display.html?recipeID=" + data.id))
+                  })
+                })
             })
             .catch(function (error) {
               alert("Error! Could not retrieve user ID token.")
@@ -133,15 +219,18 @@
           alert("User must be signed in to submit a recipe.")
         }
       }
+      /*.then((response) => {
+                    if (!response.ok) {
+                      alert("Error " + response.status.toString())
+                      return
+                    }
+                    response.json().then((data) => (window.location.href = "/recipe-display.html?recipeID=" + data.id))
+                  })
+                })*/
 
-      // Returns the current set of tags as a Map<String, Boolean>
-      function getCurrentTags() {
-        let tagMap = {}
-        let tagList = Array.from(document.getElementById("selected-tags").childNodes)
-        tagList.forEach((tag) => {
-          tagMap[tag.id] = true
-        })
-        return tagMap
+      // Returns the current set of tags as a List
+      function getCurrentTagsAsList() {
+        return Array.from(document.getElementById("selected-tags").childNodes)
       }
 
       // Adds a tag to list of selected-tags

@@ -11,6 +11,7 @@ public class Recipe {
 
   public RecipeMetadata metadata;
   public String content;
+  public String blobKey;
 
   public Recipe() {}
 

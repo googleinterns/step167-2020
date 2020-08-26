@@ -14,6 +14,11 @@
 
 package com.google.sps.meltingpot.servlets;
 
+import com.google.appengine.api.blobstore.BlobInfo;
+import com.google.appengine.api.blobstore.BlobInfoFactory;
+import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.blobstore.BlobstoreService;
+import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.cloud.firestore.Firestore;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.gson.Gson;
@@ -26,13 +31,17 @@ import com.google.sps.meltingpot.data.Recipe;
 import com.google.sps.meltingpot.data.RecipeMetadata;
 import com.google.sps.meltingpot.data.SortingMethod;
 import com.google.sps.meltingpot.data.User;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.Boolean;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.*;
 import java.util.stream.Collectors;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -45,6 +54,8 @@ public class RecipeServlet extends HttpServlet {
   private Gson gson = new Gson();
   private Date date = new Date();
   private DBInterface db;
+
+  private final Logger logger = Logger.getLogger(RecipeServlet.class.getName());
 
   public RecipeServlet() {}
 
@@ -79,8 +90,27 @@ public class RecipeServlet extends HttpServlet {
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-    Recipe newRecipe = gson.fromJson(data, Recipe.class);
+    String title = request.getParameter("title");
+    String content = request.getParameter("content");
+    String[] tags =
+        request.getParameter("tagIds").replaceAll("\\[", "").replaceAll("\\]", "").split(",");
+
+    BlobKey imageKey = getImageKey(request, "image");
+    String imKey = "";
+    if (imageKey != null) {
+      // Create string from key to store.
+      imKey = imageKey.getKeyString();
+    }
+
+    RecipeMetadata newMetadata = new RecipeMetadata();
+    newMetadata.title = title;
+    newMetadata.tagIds = new HashMap<String, Boolean>();
+    newMetadata.blobKey = imKey;
+    for (String tag : tags) {
+      newMetadata.tagIds.put(tag, true);
+    }
+    Recipe newRecipe = new Recipe(content, newMetadata);
+
     if (newRecipe.content == null || newRecipe.metadata == null
         || newRecipe.metadata.title == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -201,5 +231,65 @@ public class RecipeServlet extends HttpServlet {
     }
 
     return uid;
+  }
+
+  /** Return the key of the uploaded image (null if no upload or if not image). */
+  private BlobKey getImageKey(HttpServletRequest request, String formElementID) {
+    BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
+    // Blobstore maps form element ID to a list of keys of the blobs uploaded by the form.
+    Map<String, List<BlobKey>> blobs = blobstoreService.getUploads(request);
+    List<BlobKey> blobKeys = blobs.get(formElementID);
+
+    // User submitted form without file selected, so no blobKey.
+    if (blobKeys == null || blobKeys.isEmpty()) {
+      return null;
+    }
+
+    // Form only allowed for one Blob input, so get first blobkey.
+    BlobKey blobKey = blobKeys.get(0);
+
+    // User submitted form with no file, but an empty key was created--delete it.
+    BlobInfo blobInfo = new BlobInfoFactory().loadBlobInfo(blobKey);
+    if (blobInfo.getSize() == 0) {
+      blobstoreService.delete(blobKey);
+      return null;
+    }
+
+    // Check to make sure the file uploaded was an image.
+    // If the first five letters of the type are not "image," then return null and delete Blob from
+    // storage.
+    String fileType = blobInfo.getContentType();
+    // System.out.println(fileType);
+    if (!fileType.substring(0, 5).equals("image")) {
+      blobstoreService.delete(blobKey);
+      System.err.println("File uploaded was not an image");
+      return null;
+    }
+
+    // In previous versions, ImagesServices was used to get a URL pointing to the uploaded img.
+    // Here, we simpy return the Blob's key so that it can later be served directly.
+    return blobKey;
+  }
+
+  /**
+   * Blobstore stores files as binary data; this func retrieves the data stored at imageKey.
+   */
+  private byte[] getBlobBytes(BlobKey imageKey) throws IOException {
+    BlobstoreService bs = BlobstoreServiceFactory.getBlobstoreService();
+    ByteArrayOutputStream outputBytes = new ByteArrayOutputStream();
+
+    int fetchSize = BlobstoreService.MAX_BLOB_FETCH_SIZE;
+    long currByteIndex = 0;
+    int bytesLength = 0;
+    do {
+      // Fetch a portion of the image bytes from Blobstore.
+      byte[] temp = bs.fetchData(imageKey, currByteIndex, currByteIndex + fetchSize - 1);
+      bytesLength = temp.length;
+      outputBytes.write(temp);
+
+      currByteIndex += fetchSize;
+    } while (bytesLength
+        >= fetchSize); // If fewer bytes than requested are read, then the end was reached.
+    return outputBytes.toByteArray();
   }
 }

@@ -444,6 +444,7 @@
 
       function createRecipeElement(recipe) {
         const recipeElement = document.createElement("div")
+
         recipeElement.appendChild(createBasicElement(recipe.metadata.title, "h2"))
         recipeElement.appendChild(createBasicElement(recipe.content, "p"))
         if (app.auth().currentUser && recipe.metadata.creatorId == app.auth().currentUser.uid) {
@@ -453,6 +454,19 @@
           deleteBtn.innerText = "Delete Recipe"
           deleteBtn.addEventListener("click", deletePost)
         }
+
+        if (!(recipe.metadata.blobKey == null || recipe.metadata.blobKey == "")) {
+          console.log("Got to serving blob")
+          recipeImg = document.createElement("img")
+
+          // Fetch blob from GetBlobServlet.
+          blobUrlString = "/get-blob?blob-key=" + blobKey
+          fetch(blobUrlString).then((image) => {
+            recipeImg.src = image.url
+            recipeElement.appendChild(recipeImg)
+          })
+        }
+
         return recipeElement
       }
 
