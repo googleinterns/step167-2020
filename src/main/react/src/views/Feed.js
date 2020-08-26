@@ -62,39 +62,52 @@ const Feed = props => {
     [props.feedType]
   );
 
-  useEffect(() => {
-    // do on feedtype change and initial render
-    let listener = app.auth().onAuthStateChanged(async user => {
-      listener();
+  const [signedIn, setSignedIn] = useState(false);
+
+  let listener = app.auth().onAuthStateChanged(user => {
+    listener();
+    setSignedIn(user ? true : false);
+  });
+
+  const initRender = useCallback(async () => {
+    if (signedIn) {
+      // do on feedtype change and initial render
       setTags(await getTags());
       if (!props.mapMode) {
-        let recipeDataPage0 = await loadRecipes(user, 0);
+        let recipeDataPage0 = await loadRecipes(app.auth().currentUser, 0);
         setRecipes([recipeDataPage0]);
         setLoaded(true); // Forces component to re-render once recipe loading finished.
-        loadRecipes(user, 1).then(recipeDataPage1 => setRecipes([recipeDataPage0, recipeDataPage1]));
       } else {
-        setRecipes(await loadRecipes(user));
+        setRecipes(await loadRecipes(app.auth().currentUser));
         setLoaded(true);
       }
-    });
+    }
+  }, [signedIn, props.mapMode, loadRecipes]);
+
+  useEffect(() => {
+    initRender();
     return () => {
       // return the cleanup function
       setRecipes([]);
       setTags({});
       setLoaded(false);
     };
-  }, [loadRecipes]);
+  }, [loadRecipes, initRender, signedIn]);
 
   useEffect(() => {
-    if (!recipes[page + 1]) {
-      loadRecipes(app.auth().currentUser, page + 1).then(nextPageRecipes => setRecipes([...recipes, nextPageRecipes]));
+    if (signedIn && loaded) {
+      if (!recipes[page + 1]) {
+        loadRecipes(app.auth().currentUser, page + 1).then(nextPageRecipes =>
+          setRecipes([...recipes, nextPageRecipes])
+        );
+      }
     }
     // we do not include recipes
     // in the dependency array
     // because that would cause
     // an infinite rerender loop
     // eslint-disable-next-line
-  }, [page, loadRecipes]);
+  }, [page, loadRecipes, signedIn, loaded]);
 
   if (!loaded) {
     return (
