@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.Map;
 
 public class FirestoreDB implements DBInterface {
+
+  private static final int RECIPES_PER_PAGE = 12;
+
   public String getRecipeContent(String Id) {
     return DBUtils.blockOnFuture(DBUtils.recipe(Id).get()).getString(Recipe.CONTENT_KEY);
   }
@@ -56,18 +59,9 @@ public class FirestoreDB implements DBInterface {
     return votes + voteDiff;
   }
 
-  public List<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod) {
+  public List<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod, int page) {
     Query recipesQuery = DBUtils.recipeMetadata();
-    switch (sortingMethod) {
-      case TOP:
-        recipesQuery = recipesQuery.orderBy(RecipeMetadata.VOTES_KEY, Query.Direction.DESCENDING);
-        break;
-      case NEW:
-        recipesQuery =
-            recipesQuery.orderBy(RecipeMetadata.TIMESTAMP_KEY, Query.Direction.DESCENDING);
-        break;
-    }
-    return DBUtils.blockOnFuture(recipesQuery.get()).toObjects(RecipeMetadata.class);
+    return getRecipeMetadataQuery(recipesQuery, sortingMethod, page);
   }
 
   public List<Comment> getAllCommentsInRecipe(String recipeId, SortingMethod sortingMethod) {
@@ -206,32 +200,32 @@ public class FirestoreDB implements DBInterface {
   }
 
   public List<RecipeMetadata> getRecipesMatchingTags(
-      List<String> tagIds, SortingMethod sortingMethod) {
+      List<String> tagIds, SortingMethod sortingMethod, int page) {
     Query recipesQuery = recipesMatchingTags(tagIds, tagIds.iterator());
-    return getRecipeMetadataQuery(recipesQuery, sortingMethod);
+    return getRecipeMetadataQuery(recipesQuery, sortingMethod, page);
   }
 
   public List<RecipeMetadata> getRecipesMatchingCreator(
-      String creatorId, SortingMethod sortingMethod) {
+      String creatorId, SortingMethod sortingMethod, int page) {
     Query recipesQuery = DBUtils.recipeMetadata().whereEqualTo(Recipe.CREATOR_ID_KEY, creatorId);
-    return getRecipeMetadataQuery(recipesQuery, sortingMethod);
+    return getRecipeMetadataQuery(recipesQuery, sortingMethod, page);
   }
 
-  public List<RecipeMetadata> getRecipesSavedBy(String userId, SortingMethod sortingMethod) {
+  public List<RecipeMetadata> getRecipesSavedBy(String userId, SortingMethod sortingMethod, int page) {
     List<String> saved_Ids = savedRecipeIds(userId);
-    return getRecipesMatchingIDs(saved_Ids, sortingMethod);
+    return getRecipesMatchingIDs(saved_Ids, sortingMethod, page);
   }
 
-  public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids, SortingMethod sortingMethod) {
+  public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids, SortingMethod sortingMethod, int page) {
     Query recipesQuery = DBUtils.recipeMetadata().whereIn(Recipe.ID_KEY, Ids);
     if (Ids.size() == 0) {
       return new ArrayList<RecipeMetadata>();
     }
-    return getRecipeMetadataQuery(recipesQuery, sortingMethod);
+    return getRecipeMetadataQuery(recipesQuery, sortingMethod, page);
   }
 
   private List<RecipeMetadata> getRecipeMetadataQuery(
-      Query recipesQuery, SortingMethod sortingMethod) {
+      Query recipesQuery, SortingMethod sortingMethod, int page) {
     switch (sortingMethod) { // Note: this does not currently work with tagID queries, requires
                              // custom index
       case TOP:
@@ -241,6 +235,8 @@ public class FirestoreDB implements DBInterface {
         recipesQuery = recipesQuery.orderBy(Recipe.TIMESTAMP_KEY, Query.Direction.DESCENDING);
         break;
     }
+
+    recipesQuery = recipesQuery.offset(page * RECIPES_PER_PAGE).limit(RECIPES_PER_PAGE);
 
     QuerySnapshot querySnapshot = DBUtils.blockOnFuture(recipesQuery.get());
 

@@ -156,6 +156,13 @@ public class RecipeServlet extends HttpServlet {
       sortingMethod = SortingMethod.valueOf(request.getParameter("sort"));
     }
 
+    int page;
+    if(request.getParameter("page") == null) {
+      page = 0;
+    } else {
+      page = Integer.parseInt(request.getParameter("page"));
+    }
+
     String tagIDs[] = request.getParameterValues("tagIDs");
     boolean isSavedRequest = Boolean.parseBoolean(request.getParameter("saved"));
 
@@ -172,17 +179,17 @@ public class RecipeServlet extends HttpServlet {
 
       // Then perform the corresponding query
       if (isSavedRequest) {
-        return gson.toJson(db.getRecipesSavedBy(uid, sortingMethod));
+        return gson.toJson(db.getRecipesSavedBy(uid, sortingMethod, page));
       } else {
-        return gson.toJson(db.getRecipesMatchingCreator(uid, sortingMethod));
+        return gson.toJson(db.getRecipesMatchingCreator(uid, sortingMethod, page));
       }
     } else if (isTagQuery && !isCreatorQuery) {
       // If the frontend is requesting recipes satisfying a certain set of tags,
       // then perform the query
-      return gson.toJson(db.getRecipesMatchingTags(Arrays.asList(tagIDs), sortingMethod));
+      return gson.toJson(db.getRecipesMatchingTags(Arrays.asList(tagIDs), sortingMethod, page));
     } else { // Currently addresses cases where frontend is requesting both a tag query and
              // a creator query, or none of the above query types
-      return gson.toJson(db.getAllRecipes(sortingMethod));
+      return gson.toJson(db.getAllRecipes(sortingMethod, page));
     }
   }
 

@@ -64,13 +64,14 @@ public interface DBInterface {
    * @param sortingMethod from SortingMethod.java
    * @return ordered list of recipe metadata
    */
-  public List<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod);
+  public List<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod, int page);
 
   /**
    * Gets a sorted list of all comments associated with a recipe.
    *
    * @param recipeId recipe Firestore ID
    * @param sortingMethod from SortingMethod.java
+   * @param page pagination for recipe query
    * @return ordered list of recipe comments
    */
   public List<Comment> getAllCommentsInRecipe(String recipeId, SortingMethod sortingMethod);
@@ -232,7 +233,7 @@ public interface DBInterface {
    * @return list of recipe metadata matching one or more of the tags in tagIds param
    */
   public List<RecipeMetadata> getRecipesMatchingTags(
-      List<String> tagIds, SortingMethod sortingMethod);
+      List<String> tagIds, SortingMethod sortingMethod, int page);
 
   /**
    * Returns a list of the recipe metadata with a certain creator.
@@ -242,25 +243,27 @@ public interface DBInterface {
    * @return user's created recipe metadata, sorted
    */
   public List<RecipeMetadata> getRecipesMatchingCreator(
-      String creatorId, SortingMethod sortingMethod);
+      String creatorId, SortingMethod sortingMethod, int page);
 
   /**
    * Returns a list of the recipe metadata associated with the IDs of recipes saved by a user.
    *
    * @param userId user's Firestore ID
    * @param sortingMethod such as TOP or NEW
+   * @param page pagination for recipe query
    * @return user's saved recipe metadata, sorted
    */
-  public List<RecipeMetadata> getRecipesSavedBy(String userId, SortingMethod sortingMethod);
+  public List<RecipeMetadata> getRecipesSavedBy(String userId, SortingMethod sortingMethod, int page);
 
   /**
    * Returns a list of the recipe metadata whose IDs match any one ID in a given list of IDs.
    *
    * @param Ids list of recipe Firestore IDs to be queried
    * @param sortingMethod such as TOP or NEW
+   * @param page pagination for recipe query
    * @return list of RecipeMetadata whose IDs are in Ids param
    */
-  public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids, SortingMethod sortingMethod);
+  public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids, SortingMethod sortingMethod, int page);
 
   /**
    * Recursively constructs a query on recipes matching any of the tags passed in eg.
@@ -268,6 +271,7 @@ public interface DBInterface {
    *
    * @param tagIds an iterable object holding tag Ids
    * @param iter iterator object
+   * @param page pagination for recipe query
    * @return a query that includes all of the recipes which match a tag passed in
    */
   public Query recipesMatchingTags(Iterable<String> tagIds, Iterator<String> iter);

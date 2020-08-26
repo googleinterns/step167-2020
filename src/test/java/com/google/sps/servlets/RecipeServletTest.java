@@ -163,7 +163,7 @@ public final class RecipeServletTest {
     RecipeMetadata testMetadata = new RecipeMetadata("RECIPE_ID");
     ArrayList<RecipeMetadata> recipeList = new ArrayList<>();
     recipeList.add(testMetadata);
-    when(mockDbInterface.getAllRecipes(anyObject())).thenReturn(recipeList);
+    when(mockDbInterface.getAllRecipes(anyObject(), anyInt())).thenReturn(recipeList);
     String expected = gson.toJson(recipeList);
 
     recipeServlet.doGet(request, response);
@@ -208,7 +208,7 @@ public final class RecipeServletTest {
     HttpServletResponse response = mock(HttpServletResponse.class);
 
     when(request.getParameter("recipeID")).thenReturn(null);
-    when(mockDbInterface.getAllRecipes(anyObject())).thenReturn(null);
+    when(mockDbInterface.getAllRecipes(anyObject(), anyInt())).thenReturn(null);
 
     recipeServlet.doGet(request, response);
 
@@ -565,12 +565,12 @@ public final class RecipeServletTest {
     RecipeMetadata testMetadata = new RecipeMetadata("RECIPE_ID");
     ArrayList<RecipeMetadata> recipeList = new ArrayList<>();
     recipeList.add(testMetadata);
-    when(mockDbInterface.getRecipesSavedBy(anyString(), anyObject())).thenReturn(recipeList);
+    when(mockDbInterface.getRecipesSavedBy(anyString(), anyObject(), anyInt())).thenReturn(recipeList);
 
     Auth.testModeWithParams(mockFirebaseAuth);
     String actual = recipeServlet.getRecipeList(request, response);
 
-    verify(mockDbInterface).getRecipesSavedBy(anyString(), anyObject());
+    verify(mockDbInterface).getRecipesSavedBy(anyString(), anyObject(), anyInt());
 
     Assert.assertEquals(actual, gson.toJson(recipeList));
   }
@@ -593,13 +593,13 @@ public final class RecipeServletTest {
     RecipeMetadata testMetadata = new RecipeMetadata("RECIPE_ID");
     ArrayList<RecipeMetadata> recipeList = new ArrayList<>();
     recipeList.add(testMetadata);
-    when(mockDbInterface.getRecipesMatchingCreator(anyString(), anyObject()))
+    when(mockDbInterface.getRecipesMatchingCreator(anyString(), anyObject(), anyInt()))
         .thenReturn(recipeList);
 
     Auth.testModeWithParams(mockFirebaseAuth);
     String actual = recipeServlet.getRecipeList(request, response);
 
-    verify(mockDbInterface).getRecipesMatchingCreator(anyString(), anyObject());
+    verify(mockDbInterface).getRecipesMatchingCreator(anyString(), anyObject(), anyInt());
 
     Assert.assertEquals(actual, gson.toJson(recipeList));
   }
@@ -617,11 +617,11 @@ public final class RecipeServletTest {
     RecipeMetadata testMetadata = new RecipeMetadata("RECIPE_ID");
     ArrayList<RecipeMetadata> recipeList = new ArrayList<>();
     recipeList.add(testMetadata);
-    when(mockDbInterface.getRecipesMatchingTags(anyObject(), anyObject())).thenReturn(recipeList);
+    when(mockDbInterface.getRecipesMatchingTags(anyObject(), anyObject(), anyInt())).thenReturn(recipeList);
 
     String actual = recipeServlet.getRecipeList(request, response);
 
-    verify(mockDbInterface).getRecipesMatchingTags(anyObject(), anyObject());
+    verify(mockDbInterface).getRecipesMatchingTags(anyObject(), anyObject(), anyInt());
 
     Assert.assertEquals(actual, gson.toJson(recipeList));
   }
@@ -639,11 +639,11 @@ public final class RecipeServletTest {
     RecipeMetadata testMetadata = new RecipeMetadata("RECIPE_ID");
     ArrayList<RecipeMetadata> recipeList = new ArrayList<>();
     recipeList.add(testMetadata);
-    when(mockDbInterface.getAllRecipes(anyObject())).thenReturn(recipeList);
+    when(mockDbInterface.getAllRecipes(anyObject(), anyInt())).thenReturn(recipeList);
 
     String actual = recipeServlet.getRecipeList(request, response);
 
-    verify(mockDbInterface).getAllRecipes(anyObject());
+    verify(mockDbInterface).getAllRecipes(anyObject(), anyInt());
 
     Assert.assertEquals(actual, gson.toJson(recipeList));
   }
