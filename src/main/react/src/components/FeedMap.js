@@ -140,7 +140,7 @@ FeedMap.propTypes = {
 
 const mapStyles = {
   width: "95%",
-  height: "95%",
+  height: "85%",
 };
 
 export default GoogleApiWrapper({

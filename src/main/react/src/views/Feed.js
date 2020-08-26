@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import {
-  CButton,
-  CCol,
-  CModal,
-  CModalBody,
-  CModalFooter,
-  CModalHeader,
-  CModalTitle,
-  CRow,
-} from "@coreui/react";
+import { CButton, CCol, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow } from "@coreui/react";
 import RecipeCard from "../components/RecipeCard";
 import requestRoute, { getTags, getRecipesVote } from "../requests";
 import app from "firebase/app";
