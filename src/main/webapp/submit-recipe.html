@@ -7,7 +7,7 @@
     <script type="module" src="/scripts/init.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   </head>
-  <body onload="fetchBlobstoreUploadURL();">
+  <body>
     <!-- Recipe form -->
     <div id="recipe-form">
       <!--  action="/api/post" method="POST" enctype="multipart/form-data" -->
@@ -53,8 +53,6 @@
 
       var tagSelect = document.getElementById("tag-select")
       var imageInput = document.getElementById("image")
-
-      window.fetchBlobstoreUploadURL = fetchBlobstoreUploadURL
 
       /** On window load, initialize the page. */
       window.onload = function () {
@@ -115,32 +113,6 @@
           imageInput.value = ""
         }
         return isImage
-      }
-
-      /** Fetches Blobstore upload URL from the appropriate servlet. */
-      function fetchBlobstoreUploadURL() {
-        app
-          .auth()
-          .currentUser.getIdToken(/* forceRefresh */ true)
-          .then(function (idToken) {
-            // Fetch the URL and apply to the "action" aspect of the comment form.
-            fetch("/blobstore-upload?token=" + idToken)
-              .then((promise) => {
-                if (!promise.ok) {
-                  alert("You are not authorized to submit a recipe.")
-                  window.location.href = "/login-page.html"
-                } else {
-                  return promise.text()
-                }
-              })
-              .then((imageUploadURL) => {
-                const recipeForm = document.getElementById("recipe-form")
-                recipeForm.action = imageUploadURL
-              })
-          })
-          .catch(function (error) {
-            alert("Error! Could not retrieve user ID token.")
-          })
       }
 
       /** Display the recipe being typed in markdown with formatting, in real-time. */
