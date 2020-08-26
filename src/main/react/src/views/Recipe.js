@@ -7,6 +7,7 @@ import {
   CCard,
   CCardBody,
   CCardHeader,
+  CCardFooter,
   CTextarea,
   CModal,
   CModalBody,
@@ -230,6 +231,12 @@ const Recipe = () => {
         <CCardBody>
           <MarkdownPreview value={recipe.content} />
         </CCardBody>
+        <CCardFooter>
+          <div className="card-header-actions">
+            <CIcon name="cil-aperture" className="text-primary" style={{ marginRight: 4 }} />
+            {recipe.metadata.creatorLdap.split("@")[0]}
+          </div>
+        </CCardFooter>
       </CCard>
       {signedIn && (
         <CCard>
