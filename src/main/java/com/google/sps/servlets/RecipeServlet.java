@@ -148,7 +148,7 @@ public class RecipeServlet extends HttpServlet {
 
   protected String getRecipeList(HttpServletRequest request, HttpServletResponse response) {
     String creatorToken = request.getParameter("token");
-    
+
     SortingMethod sortingMethod;
     if (request.getParameter("sort") == null) {
       sortingMethod = SortingMethod.TOP;
@@ -157,7 +157,7 @@ public class RecipeServlet extends HttpServlet {
     }
 
     int page;
-    if(request.getParameter("page") == null) {
+    if (request.getParameter("page") == null) {
       page = 0;
     } else {
       page = Integer.parseInt(request.getParameter("page"));
@@ -189,7 +189,7 @@ public class RecipeServlet extends HttpServlet {
       return gson.toJson(db.getRecipesMatchingTags(Arrays.asList(tagIDs), sortingMethod, page));
     } else { // Currently addresses cases where frontend is requesting both a tag query and
              // a creator query, or none of the above query types
-      return gson.toJson(db.getAllRecipes(sortingMethod, page));
+      return gson.toJson(db.getAllRecipes(sortingMethod));
     }
   }
 

@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Map;
 
 public class FirestoreDB implements DBInterface {
-
   private static final int RECIPES_PER_PAGE = 12;
+  private static final int MAX_RECIPES_PER_REQUEST = 150;
 
   public String getRecipeContent(String Id) {
     return DBUtils.blockOnFuture(DBUtils.recipe(Id).get()).getString(Recipe.CONTENT_KEY);
@@ -59,9 +59,9 @@ public class FirestoreDB implements DBInterface {
     return votes + voteDiff;
   }
 
-  public List<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod, int page) {
+  public List<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod) {
     Query recipesQuery = DBUtils.recipeMetadata();
-    return getRecipeMetadataQuery(recipesQuery, sortingMethod, page);
+    return getRecipeMetadataQuery(recipesQuery, sortingMethod, -1);
   }
 
   public List<Comment> getAllCommentsInRecipe(String recipeId, SortingMethod sortingMethod) {
@@ -211,12 +211,14 @@ public class FirestoreDB implements DBInterface {
     return getRecipeMetadataQuery(recipesQuery, sortingMethod, page);
   }
 
-  public List<RecipeMetadata> getRecipesSavedBy(String userId, SortingMethod sortingMethod, int page) {
+  public List<RecipeMetadata> getRecipesSavedBy(
+      String userId, SortingMethod sortingMethod, int page) {
     List<String> saved_Ids = savedRecipeIds(userId);
     return getRecipesMatchingIDs(saved_Ids, sortingMethod, page);
   }
 
-  public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids, SortingMethod sortingMethod, int page) {
+  public List<RecipeMetadata> getRecipesMatchingIDs(
+      List<String> Ids, SortingMethod sortingMethod, int page) {
     Query recipesQuery = DBUtils.recipeMetadata().whereIn(Recipe.ID_KEY, Ids);
     if (Ids.size() == 0) {
       return new ArrayList<RecipeMetadata>();
@@ -236,7 +238,11 @@ public class FirestoreDB implements DBInterface {
         break;
     }
 
-    recipesQuery = recipesQuery.offset(page * RECIPES_PER_PAGE).limit(RECIPES_PER_PAGE);
+    if (page >= 0) {
+      recipesQuery = recipesQuery.offset(page * RECIPES_PER_PAGE).limit(RECIPES_PER_PAGE);
+    } else {
+      recipesQuery = recipesQuery.limit(MAX_RECIPES_PER_REQUEST);
+    }
 
     QuerySnapshot querySnapshot = DBUtils.blockOnFuture(recipesQuery.get());
 
