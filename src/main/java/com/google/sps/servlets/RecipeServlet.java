@@ -158,7 +158,7 @@ public class RecipeServlet extends HttpServlet {
 
     int page;
     if (request.getParameter("page") == null) {
-      page = 0;
+      page = -1;
     } else {
       page = Integer.parseInt(request.getParameter("page"));
     }
@@ -189,7 +189,11 @@ public class RecipeServlet extends HttpServlet {
       return gson.toJson(db.getRecipesMatchingTags(Arrays.asList(tagIDs), sortingMethod, page));
     } else { // Currently addresses cases where frontend is requesting both a tag query and
              // a creator query, or none of the above query types
-      return gson.toJson(db.getAllRecipes(sortingMethod));
+      if (page == -1) {
+        return gson.toJson(db.getAllRecipes(sortingMethod));
+      } else {
+        return gson.toJson(db.getRecipePage(sortingMethod, page));
+      }
     }
   }
 

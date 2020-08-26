@@ -67,6 +67,15 @@ public interface DBInterface {
   public List<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod);
 
   /**
+   * Gets a sorted list of all recipe metadata.
+   *
+   * @param sortingMethod from SortingMethod.java
+   * @param page pagination for recipe query
+   * @return ordered list of recipe metadata
+   */
+  public List<RecipeMetadata> getRecipePage(SortingMethod sortingMethod, int page);
+
+  /**
    * Gets a sorted list of all comments associated with a recipe.
    *
    * @param recipeId recipe Firestore ID

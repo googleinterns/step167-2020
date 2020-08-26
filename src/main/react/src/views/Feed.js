@@ -20,7 +20,7 @@ import "firebase/auth";
 import FeedMap from "../components/FeedMap";
 
 const getRecipes = async (feedType, page) => {
-  let qs = requestRoute + "api/post?page=" + page;
+  let qs = requestRoute + "api/post?dummyParam=0" + (page !== undefined ? "&page=" + page : "");
   if (feedType === "saved") {
     let token = await app.auth().currentUser.getIdToken();
     qs += "&saved=true&sort=NEW&token=" + token;
@@ -67,10 +67,15 @@ const Feed = props => {
     let listener = app.auth().onAuthStateChanged(async user => {
       listener();
       setTags(await getTags());
-      let recipeDataPage0 = await loadRecipes(user, 0);
-      setRecipes([recipeDataPage0]);
-      setLoaded(true); // Forces component to re-render once recipe loading finished.
-      loadRecipes(user, 1).then(recipeDataPage1 => setRecipes([recipeDataPage0, recipeDataPage1]));
+      if (!props.mapMode) {
+        let recipeDataPage0 = await loadRecipes(user, 0);
+        setRecipes([recipeDataPage0]);
+        setLoaded(true); // Forces component to re-render once recipe loading finished.
+        loadRecipes(user, 1).then(recipeDataPage1 => setRecipes([recipeDataPage0, recipeDataPage1]));
+      } else {
+        setRecipes(await loadRecipes(user));
+        setLoaded(true);
+      }
     });
     return () => {
       // return the cleanup function

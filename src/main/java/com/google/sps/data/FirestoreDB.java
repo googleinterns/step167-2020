@@ -64,6 +64,11 @@ public class FirestoreDB implements DBInterface {
     return getRecipeMetadataQuery(recipesQuery, sortingMethod, -1);
   }
 
+  public List<RecipeMetadata> getRecipePage(SortingMethod sortingMethod, int page) {
+    Query recipesQuery = DBUtils.recipeMetadata();
+    return getRecipeMetadataQuery(recipesQuery, sortingMethod, page);
+  }
+
   public List<Comment> getAllCommentsInRecipe(String recipeId, SortingMethod sortingMethod) {
     Query commentsQuery = DBUtils.comments(recipeId);
     switch (sortingMethod) {
