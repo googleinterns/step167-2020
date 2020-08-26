@@ -232,7 +232,6 @@ public class FirestoreDB implements DBInterface {
 
   private List<RecipeMetadata> getRecipeMetadataQuery(
       Query recipesQuery, SortingMethod sortingMethod) {
-    /*
     switch (sortingMethod) { // Note: this does not currently work with tagID queries, requires
                              // custom index
       case TOP:
@@ -241,7 +240,7 @@ public class FirestoreDB implements DBInterface {
       case NEW:
         recipesQuery = recipesQuery.orderBy(Recipe.TIMESTAMP_KEY, Query.Direction.DESCENDING);
         break;
-    }*/
+    }
 
     QuerySnapshot querySnapshot = DBUtils.blockOnFuture(recipesQuery.get());
 

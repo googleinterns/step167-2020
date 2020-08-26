@@ -23,10 +23,14 @@ const getRecipes = async feedType => {
   let qs = requestRoute + "api/post";
   if (feedType === "saved") {
     let token = await app.auth().currentUser.getIdToken();
-    qs += "?saved=true&token=" + token;
+    qs += "?saved=true&sort=NEW&token=" + token;
   } else if (feedType === "created") {
     let token = await app.auth().currentUser.getIdToken();
-    qs += "?token=" + token;
+    qs += "?sort=NEW&token=" + token;
+  } else if (feedType === "popular") {
+    qs += "?sort=TOP";
+  } else if(feedType === "new") {
+    qs += "?sort=NEW";
   }
   let res = await fetch(qs);
   let data = await res.json();
