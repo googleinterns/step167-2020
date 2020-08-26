@@ -4,6 +4,7 @@ import {
   CButton,
   CCard,
   CCardBody,
+  CCardHeader,
   CCol,
   CRow,
   CModal,
@@ -29,6 +30,7 @@ const Feed = props => {
   const [recipes, setRecipes] = useState([]);
   const [tags, setTags] = useState({});
   const [ready, setReady] = useState(false);
+  const [mapCenter, setMapCenter] = useState("");
 
   const [errMsg, setErrMsg] = useState("");
 
@@ -56,15 +58,18 @@ const Feed = props => {
           ready &&
           recipes.map((recipe, idx) => (
             <CCol xs="12" sm="6" md="4" key={idx}>
-              <RecipeCard recipe={recipe} tags={tags} setErrMsg={setErrMsg} />
+              <RecipeCard recipe={recipe} tags={tags} setErrMsg={setErrMsg} center={mapCenter} />
             </CCol>
           ))}
         {props.mapMode && ready && (
           <CCol xs="36" sm="18" md="12">
             <CCard>
+              <CCardHeader>
+                <input onInput={event => setMapCenter(event.target.value)}></input>
+              </CCardHeader>
               <CCardBody>
                 <div className="min-vh-100">
-                  <FeedMap recipes={recipes} tags={tags} setErrMsg={setErrMsg} />
+                  <FeedMap recipes={recipes} tags={tags} setErrMsg={setErrMsg} mapCenter={mapCenter} />
                 </div>
               </CCardBody>
             </CCard>
