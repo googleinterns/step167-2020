@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { CHeader, CToggler, CHeaderBrand, CHeaderNav, CBreadcrumbRouter, CImg, CLink, CButton } from "@coreui/react";
-import CIcon from "@coreui/icons-react";
 import app from "firebase/app";
 import "firebase/auth";
 
@@ -42,9 +41,7 @@ const TheHeader = () => {
     <CHeader withSubheader>
       <CToggler inHeader className="ml-md-3 d-lg-none" onClick={toggleSidebarMobile} />
       <CToggler inHeader className="ml-3 d-md-down-none" onClick={toggleSidebar} />
-      <CHeaderBrand className="mx-auto d-lg-none" to="/">
-        <CIcon name="logo" height="48" alt="Logo" />
-      </CHeaderBrand>
+      <CHeaderBrand className="mx-auto d-lg-none"></CHeaderBrand>
 
       <CHeaderNav className="d-md-down-none mr-auto">
         <CBreadcrumbRouter className="border-0 c-subheader-nav m-0 px-0 px-md-3" routes={routes} />
