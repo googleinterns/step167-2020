@@ -176,7 +176,7 @@ const Recipe = () => {
       if (recipeId && recipeId !== "") {
         let recipeData = await getRecipe(recipeId);
         if (JSON.stringify(recipeData) !== "{}") {
-          setTags(await getTags(recipeData.tagIds));
+          setTags(await getTags(recipeData.metadata.tagIds));
           setVotes(recipeData.metadata.votes);
           setComments(await getComments(recipeId));
           setRecipe(recipeData);
@@ -197,8 +197,6 @@ const Recipe = () => {
       }
     });
   }, [recipeId]);
-
-  console.log(comments);
 
   if (notFound) {
     return <Page404 />;

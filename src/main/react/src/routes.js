@@ -4,6 +4,7 @@ const Feed = React.lazy(() => import('./views/Feed'));
 const Recipe = React.lazy(() => import('./views/Recipe'));
 const AddRecipe = React.lazy(() => import('./views/AddRecipe'));
 const MapPage = React.lazy(() => import('./views/MapPage'));
+const Profile = React.lazy(() => import('./views/Profile'));
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
@@ -12,6 +13,8 @@ const routes = [
   { path: '/recipe', name: 'Recipe', component: Recipe },
   { path: '/addrecipe', name: 'Add Recipe', component: AddRecipe },
   { path: '/map', name: 'Recipe Map', component: MapPage, props: { feedType: 'popular' } },
+  { path: '/addrecipe', name: 'Add Recipe', component: AddRecipe },
+  { path: '/profile', name: 'Profile', component: Profile },
 ];
 
 export default routes;

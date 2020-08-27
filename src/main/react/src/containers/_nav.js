@@ -23,4 +23,10 @@ export default [
     to: "/addrecipe",
     icon: "cil-plus",
   },
+  {
+    _tag: "CSidebarNavItem",
+    name: "Profile",
+    to: "/profile",
+    icon: "cil-user",
+  },
 ];
