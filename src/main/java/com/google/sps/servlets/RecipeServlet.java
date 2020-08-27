@@ -150,10 +150,10 @@ public class RecipeServlet extends HttpServlet {
     String creatorToken = request.getParameter("token");
 
     SortingMethod sortingMethod;
-    if (request.getParameter("sort") == null) {
-      sortingMethod = SortingMethod.TOP;
-    } else {
+    try {
       sortingMethod = SortingMethod.valueOf(request.getParameter("sort"));
+    } catch (IllegalArgumentException | NullPointerException e) {
+      sortingMethod = SortingMethod.TOP;
     }
 
     int page;
