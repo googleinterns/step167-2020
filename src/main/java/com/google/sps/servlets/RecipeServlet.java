@@ -109,6 +109,7 @@ public class RecipeServlet extends HttpServlet {
     for (String tag : tags) {
       newMetadata.tagIds.put(tag, true);
     }
+
     Recipe newRecipe = new Recipe(content, newMetadata);
 
     if (newRecipe.content == null || newRecipe.metadata == null
@@ -259,7 +260,6 @@ public class RecipeServlet extends HttpServlet {
     // If the first five letters of the type are not "image," then return null and delete Blob from
     // storage.
     String fileType = blobInfo.getContentType();
-    // System.out.println(fileType);
     if (!fileType.substring(0, 5).equals("image")) {
       blobstoreService.delete(blobKey);
       System.err.println("File uploaded was not an image");

@@ -14,7 +14,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.Gson;
+
 public class FirestoreDB implements DBInterface {
+  private Gson gson = new Gson();
   public String getRecipeContent(String Id) {
     return DBUtils.blockOnFuture(DBUtils.recipe(Id).get()).getString(Recipe.CONTENT_KEY);
   }
@@ -26,14 +29,18 @@ public class FirestoreDB implements DBInterface {
   public String addRecipe(Recipe newRecipe) {
     DocumentReference newContentRef = DBUtils.recipes().document();
     newRecipe.metadata.id = newContentRef.getId();
-    DocumentReference newRecipeMetadataRef = DBUtils.recipeMetadata(newRecipe.metadata.id);
+    DocumentReference newRecipeMetadataRef = DBUtils.recipeMetadata().document(newRecipe.metadata.id);
     DBUtils.blockOnFuture(
         newContentRef.set(Collections.singletonMap(Recipe.CONTENT_KEY, newRecipe.content)));
-    DBUtils.blockOnFuture(newRecipeMetadataRef.set(newRecipe.metadata));
+    //RecipeMetadata newRecipeMetadata = newRecipe.metadata;
+    
+    RecipeMetadata fake = new RecipeMetadata();
+    DBUtils.blockOnFuture(newRecipeMetadataRef.set(gson.fromJson(gson.toJson(fake), RecipeMetadata.class)));
     // Adding Blob
     String blobKey = newRecipe.metadata.blobKey;
     if (blobKey != null && blobKey != "") {
       DBUtils.blockOnFuture(newRecipeMetadataRef.set(Collections.singletonMap(RecipeMetadata.IM_KEY, blobKey)));
+      DBUtils.blockOnFuture(newContentRef.set(Collections.singletonMap(Recipe.IM_KEY, blobKey)));
     }
 
     return newRecipe.metadata.id;

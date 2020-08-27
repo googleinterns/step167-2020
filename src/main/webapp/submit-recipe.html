@@ -140,7 +140,7 @@
             .currentUser.getIdToken(/* forceRefresh */ true)
             .then(function (idToken) {
                 userToken = idToken
-              fetch("/blobstore-upload?token=" + idToken)
+                fetch("/blobstore-upload?token=" + idToken)
                 .then((promise) => {
                   if (!promise.ok) {
                     alert("Unauthorized.")
@@ -154,34 +154,42 @@
 
                   const form = document.createElement("form")
                   form.method = "POST"
-                  form.action = blobstoreUploadURL
                   form.enctype = "multipart/form-data"
+                  form.action = blobstoreUploadURL
                   const params = {
                     title: titleInput.value,
                     content: instructionsInput.value,
                     tagIds: tags.toString(),
-                    image: imageInput.files[0],
-                    token: userToken 
+                    token: userToken,
                   }
 
                   for (const key in params) {
                     const recipeField = document.createElement("input")
-                    recipeField.type = "hidden"
-                    recipeField.name = key
-                    recipeField.value = params[key]
+                    recipeField.setAttribute("hidden", true)
+                    recipeField.setAttribute("name", key)
+                    recipeField.setAttribute("id", key)
+                    recipeField.setAttribute("value", params[key])
 
                     form.appendChild(recipeField)
                   }
 
+                  const imField = document.createElement("input")
+                  imField.setAttribute("type", "file")
+                  imField.setAttribute("name", "image")
+                  imField.setAttribute("id", "image")
+                  imField.setAttribute("value", imageInput.files[0])
+
+                  form.appendChild(imField)
+
                   document.body.appendChild(form)
                   form.submit()
-                  .then((response) => {
-                    if (!response.ok) {
-                      alert("Error " + response.status.toString())
+                })
+                .then((response) => {
+                  if (!response.ok) {
+                    alert("Error " + response.status.toString())
                       return
-                    }
-                    response.json().then((data) => (window.location.href = "/recipe-display.html?recipeID=" + data.id))
-                  })
+                  }
+                  //response.json().then((data) => (window.location.href = "/recipe-display.html?recipeID=" + data.id))
                 })
             })
             .catch(function (error) {

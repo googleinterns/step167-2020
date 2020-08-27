@@ -66,15 +66,12 @@
         // Load the recipe and comments on the page.
         getDetailedRecipe(getRecipeID(), app)
         getComments(getRecipeID())
-
-        //setUpSaveButton()
-
+        
         savePostButton.addEventListener("click", toggleSave)
         submitCommButton.addEventListener("click", submitComment)
         upvoteButton.addEventListener("click", () => toggleVote(true))
         downvoteButton.addEventListener("click", () => toggleVote(false))
 
-        //toggleElementVisibility(app.auth().currentUser)
 
         // Set Firebase auth state change listener.
         app.auth().onAuthStateChanged(function (user) {

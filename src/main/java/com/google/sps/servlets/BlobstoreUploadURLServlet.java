@@ -17,13 +17,6 @@ import javax.servlet.http.HttpServletResponse;
 public class BlobstoreUploadURLServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String token = request.getParameter("token");
-
-    String uid = Auth.getUid(token, response);
-    if (uid == null) {
-      return;
-    }
-
     BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
     // Here we get the Blobstore upload URL and forward POST requests to RecipeServlet.
     String uploadUrl = blobstoreService.createUploadUrl("/api/post");
