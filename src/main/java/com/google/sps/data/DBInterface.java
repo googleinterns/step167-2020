@@ -67,7 +67,8 @@ public interface DBInterface {
   public List<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod);
 
   /**
-   * Gets a sorted list of all recipe metadata.
+   * Gets the given page from the sorted list of recipes
+   * sorted according to the given sortingMethod
    *
    * @param sortingMethod from SortingMethod.java
    * @param page pagination for recipe query
