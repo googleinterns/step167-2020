@@ -235,7 +235,7 @@ public interface DBInterface {
   public Boolean getUserProperty(String userId, String recipeId, String mapName, Transaction t);
 
   /**
-   * Returns a list of all recipe metadata with any of the tags in the tag IDs list.
+   * Returns a paginated list of recipe metadata with any of the tags in the tag IDs list.
    *
    * @param tagIds tags' Firestore IDs
    * @param sortingMethod such as TOP or NEW
@@ -246,7 +246,17 @@ public interface DBInterface {
       List<String> tagIds, SortingMethod sortingMethod, int page);
 
   /**
-   * Returns a list of the recipe metadata with a certain creator.
+   * Returns a list of all recipe metadata with any of the tags in the tag IDs list.
+   *
+   * @param tagIds tags' Firestore IDs
+   * @param sortingMethod such as TOP or NEW
+   * @return list of recipe metadata matching one or more of the tags in tagIds param
+   */
+  public List<RecipeMetadata> getRecipesMatchingTags(
+      List<String> tagIds, SortingMethod sortingMethod);
+
+  /**
+   * Returns a paginated list of recipe metadata with a certain creator.
    *
    * @param creatorId creator/user's Firestore ID
    * @param sortingMethod such as TOP or NEW
@@ -257,7 +267,17 @@ public interface DBInterface {
       String creatorId, SortingMethod sortingMethod, int page);
 
   /**
-   * Returns a list of the recipe metadata associated with the IDs of recipes saved by a user.
+   * Returns a list of the recipe metadata with a certain creator.
+   *
+   * @param creatorId creator/user's Firestore ID
+   * @param sortingMethod such as TOP or NEW
+   * @return user's created recipe metadata, sorted
+   */
+  public List<RecipeMetadata> getRecipesMatchingCreator(
+      String creatorId, SortingMethod sortingMethod);
+
+  /**
+   * Returns a paginated list of recipe metadata associated with the IDs of recipes saved by a user.
    *
    * @param userId user's Firestore ID
    * @param sortingMethod such as TOP or NEW
@@ -268,7 +288,17 @@ public interface DBInterface {
       String userId, SortingMethod sortingMethod, int page);
 
   /**
-   * Returns a list of the recipe metadata whose IDs match any one ID in a given list of IDs.
+   * Returns a list of the recipe metadata associated with the IDs of recipes saved by a user.
+   *
+   * @param userId user's Firestore ID
+   * @param sortingMethod such as TOP or NEW
+   * @return user's saved recipe metadata, sorted
+   */
+  public List<RecipeMetadata> getRecipesSavedBy(
+      String userId, SortingMethod sortingMethod);
+
+  /**
+   * Returns a paginated list of recipe metadata whose IDs match any one ID in a given list of IDs.
    *
    * @param Ids list of recipe Firestore IDs to be queried
    * @param sortingMethod such as TOP or NEW
@@ -277,6 +307,16 @@ public interface DBInterface {
    */
   public List<RecipeMetadata> getRecipesMatchingIDs(
       List<String> Ids, SortingMethod sortingMethod, int page);
+
+  /**
+   * Returns a list of the recipe metadata whose IDs match any one ID in a given list of IDs.
+   *
+   * @param Ids list of recipe Firestore IDs to be queried
+   * @param sortingMethod such as TOP or NEW
+   * @return list of RecipeMetadata whose IDs are in Ids param
+   */
+  public List<RecipeMetadata> getRecipesMatchingIDs(
+      List<String> Ids, SortingMethod sortingMethod);
 
   /**
    * Recursively constructs a query on recipes matching any of the tags passed in eg.

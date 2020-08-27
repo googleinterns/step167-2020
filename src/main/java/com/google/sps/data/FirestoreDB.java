@@ -61,7 +61,7 @@ public class FirestoreDB implements DBInterface {
 
   public List<RecipeMetadata> getAllRecipes(SortingMethod sortingMethod) {
     Query recipesQuery = DBUtils.recipeMetadata();
-    return getRecipeMetadataQuery(recipesQuery, sortingMethod, -1);
+    return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
 
   public List<RecipeMetadata> getRecipePage(SortingMethod sortingMethod, int page) {
@@ -210,16 +210,34 @@ public class FirestoreDB implements DBInterface {
     return getRecipeMetadataQuery(recipesQuery, sortingMethod, page);
   }
 
+  public List<RecipeMetadata> getRecipesMatchingTags(
+      List<String> tagIds, SortingMethod sortingMethod) {
+    Query recipesQuery = recipesMatchingTags(tagIds, tagIds.iterator());
+    return getRecipeMetadataQuery(recipesQuery, sortingMethod);
+  }
+
   public List<RecipeMetadata> getRecipesMatchingCreator(
       String creatorId, SortingMethod sortingMethod, int page) {
     Query recipesQuery = DBUtils.recipeMetadata().whereEqualTo(Recipe.CREATOR_ID_KEY, creatorId);
     return getRecipeMetadataQuery(recipesQuery, sortingMethod, page);
   }
 
+  public List<RecipeMetadata> getRecipesMatchingCreator(
+      String creatorId, SortingMethod sortingMethod) {
+    Query recipesQuery = DBUtils.recipeMetadata().whereEqualTo(Recipe.CREATOR_ID_KEY, creatorId);
+    return getRecipeMetadataQuery(recipesQuery, sortingMethod);
+  }
+
   public List<RecipeMetadata> getRecipesSavedBy(
       String userId, SortingMethod sortingMethod, int page) {
     List<String> saved_Ids = savedRecipeIds(userId);
     return getRecipesMatchingIDs(saved_Ids, sortingMethod, page);
+  }
+
+  public List<RecipeMetadata> getRecipesSavedBy(
+      String userId, SortingMethod sortingMethod) {
+    List<String> saved_Ids = savedRecipeIds(userId);
+    return getRecipesMatchingIDs(saved_Ids, sortingMethod);
   }
 
   public List<RecipeMetadata> getRecipesMatchingIDs(
@@ -231,8 +249,18 @@ public class FirestoreDB implements DBInterface {
     return getRecipeMetadataQuery(recipesQuery, sortingMethod, page);
   }
 
-  private List<RecipeMetadata> getRecipeMetadataQuery(
-      Query recipesQuery, SortingMethod sortingMethod, int page) {
+  public List<RecipeMetadata> getRecipesMatchingIDs(
+      List<String> Ids, SortingMethod sortingMethod) {
+    Query recipesQuery = DBUtils.recipeMetadata().whereIn(Recipe.ID_KEY, Ids);
+    if (Ids.size() == 0) {
+      return new ArrayList<RecipeMetadata>();
+    }
+    return getRecipeMetadataQuery(recipesQuery, sortingMethod);
+  }
+
+    private List<RecipeMetadata> getRecipeMetadataQuery(
+      Query recipesQuery, SortingMethod sortingMethod) {
+
     switch (sortingMethod) { // Note: this does not currently work with tagID queries, requires
                              // custom index
       case TOP:
@@ -243,11 +271,33 @@ public class FirestoreDB implements DBInterface {
         break;
     }
 
-    if (page >= 0) {
-      recipesQuery = recipesQuery.offset(page * RECIPES_PER_PAGE).limit(RECIPES_PER_PAGE);
-    } else {
-      recipesQuery = recipesQuery.limit(MAX_RECIPES_PER_REQUEST);
+    recipesQuery = recipesQuery.limit(MAX_RECIPES_PER_REQUEST);
+
+    QuerySnapshot querySnapshot = DBUtils.blockOnFuture(recipesQuery.get());
+
+    if (querySnapshot == null) {
+      return null;
     }
+
+    return querySnapshot.toObjects(RecipeMetadata.class);
+  }
+
+  private List<RecipeMetadata> getRecipeMetadataQuery(
+      Query recipesQuery, SortingMethod sortingMethod, int page) {
+    
+    // overloaded method for getting recipes by page num
+
+    switch (sortingMethod) { // Note: this does not currently work with tagID queries, requires
+                             // custom index
+      case TOP:
+        recipesQuery = recipesQuery.orderBy(Recipe.VOTES_KEY, Query.Direction.DESCENDING);
+        break;
+      case NEW:
+        recipesQuery = recipesQuery.orderBy(Recipe.TIMESTAMP_KEY, Query.Direction.DESCENDING);
+        break;
+    }
+
+      recipesQuery = recipesQuery.offset(page * RECIPES_PER_PAGE).limit(RECIPES_PER_PAGE);
 
     QuerySnapshot querySnapshot = DBUtils.blockOnFuture(recipesQuery.get());
 
