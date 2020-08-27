@@ -41,9 +41,6 @@ const FeedMap = props => {
               }
             });
           }
-          //newCoords = response.results[0].geometry.location;
-          //console.log("Results: " + JSON.stringify(response.results[0]));
-          //console.log("New coords found: " + JSON.stringify(newCoords));
           if (newCoords === null) {
             newCoords = { lat: 0, lng: 0 };
           }
