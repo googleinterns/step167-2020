@@ -8,32 +8,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Maven compile
+    - name: Maven Package
       run: mvn package
     - name: install node dependencies
       if: always()
       run: make node_modules
-    - name: Validate HTML
+    - name: ESLint Validate
       if: always()
-      run: node_modules/html-validate/bin/html-validate.js src/main/webapp/*.html
-    - name: Validate CSS
+      run: cd src/main/react && npx eslint src/**/*.js
+    - name: Check ReactJS Formatting
       if: always()
-      run: node_modules/css-validator/bin/css-validator src/main/webapp/*.css
-    - name: Validate JavaScript
-      if: always()
-      run: node_modules/eslint/bin/eslint.js src/main/webapp/scripts/*.js
-    - name: Check HTML Formatting
-      if: always()
-      run: node_modules/prettier/bin-prettier.js -c src/main/webapp/*.html
-    - name: Check CSS Formatting
-      if: always()
-      run: node_modules/prettier/bin-prettier.js -c src/main/webapp/*.css
-    - name: Check JavaScript Formatting
-      if: always()
-      run: diff -u <(cat src/main/webapp/scripts/*.js) <(node_modules/clang-format/bin/linux_x64/clang-format --style=Google src/main/webapp/scripts/*.js)
+      run: diff -u <(cat src/main/react/src/**/*.js) <(cd src/main/react && npx prettier src/**/*.js)
     - name: Check Java Formatting
       if: always()
       run: diff -u <(cat src/main/java/com/google/sps/servlets/*.java) <(node_modules/clang-format/bin/linux_x64/clang-format --style=Google src/main/java/com/google/sps/servlets/*.java)
-    - name: Notify on failure
+    - name: Notify On Failure
       if: failure()
       run: echo 'run "make validate" and "make pretty" to see/fix errors locally'

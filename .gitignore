@@ -12,3 +12,6 @@ target/
 # Ignore API keys
 keys/meltingpot-step-2020-firebase-adminsdk-jfz0g-f79f87476e.json
 keys/meltingpot-step2020-91a60ee70597.json
+
+# Ignore React build folder
+build/

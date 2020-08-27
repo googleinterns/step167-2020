@@ -94,6 +94,8 @@ public class UserServlet extends HttpServlet {
           response.getWriter().println(Arrays.toString(areSavedRecipes));
         }
         break;
+      case FOLLOW_TAG:
+        response.getWriter().println(gson.toJson(db.followedTagIds(uid)));
     }
   }
 
