@@ -9,18 +9,16 @@ import "firebase/auth";
 const RecipeCard = props => {
   const recipe = props.recipe;
 
-  const [votes, setVotes] = useState(recipe.votes);
+  const [votes, setVotes] = useState(props.recipe.votes);
   const [downvote, setDownvote] = useState(false);
   const [upvote, setUpvote] = useState(false);
   const [save, setSave] = useState(props.recipe.saved);
 
   useEffect(() => {
-    if (recipe.voted === true) {
-      setUpvote(true);
-    } else if (recipe.voted === false) {
-      setDownvote(true);
-    }
-  }, [recipe.voted]);
+    setVotes(props.recipe.votes);
+    setUpvote(props.recipe.voted === true);
+    setDownvote(props.recipe.voted === false);
+  }, [props]);
 
   const toggleSave = () => {
     app

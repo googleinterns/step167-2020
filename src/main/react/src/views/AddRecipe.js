@@ -48,6 +48,8 @@ const AddRecipe = () => {
 
   const [allTags, setAllTags] = useState([]);
 
+  const [submitted, setSubmitted] = useState(false);
+
   let signedIn = false;
 
   const MAX_TAGS = 3;
@@ -59,6 +61,7 @@ const AddRecipe = () => {
   }, []);
 
   const postRecipe = () => {
+    setSubmitted(true);
     if (signedIn) {
       app
         .auth()
@@ -187,7 +190,14 @@ const AddRecipe = () => {
               </CModal>
             </CCardBody>
             <CCardFooter>
-              <CButton type="submit" size="sm" color="primary" className="float-right" onClick={postRecipe}>
+              <CButton
+                disabled={submitted}
+                type="submit"
+                size="sm"
+                color="primary"
+                className="float-right"
+                onClick={postRecipe}
+              >
                 Submit
               </CButton>
             </CCardFooter>

@@ -19,15 +19,8 @@ import app from "firebase/app";
 import "firebase/auth";
 import FeedMap from "../components/FeedMap";
 
-const getRecipes = async feedType => {
+const getRecipes = async () => {
   let qs = requestRoute + "api/post";
-  if (feedType === "saved") {
-    let token = await app.auth().currentUser.getIdToken();
-    qs += "?saved=true&token=" + token;
-  } else if (feedType === "created") {
-    let token = await app.auth().currentUser.getIdToken();
-    qs += "?token=" + token;
-  }
   let res = await fetch(qs);
   let data = await res.json();
   return data;
@@ -48,17 +41,16 @@ const MapPage = props => {
     // do on first render
     app.auth().onAuthStateChanged(async user => {
       let recipeData = await getRecipes();
-      let tagIds = {};
-      recipeData.forEach(recipe => Object.assign(tagIds, recipe.tagIds));
-      setTags(await getTags(tagIds));
-      if (user) {
-        let voteData = await getRecipesVote(recipeData);
-        recipeData.forEach((recipe, i) => (recipe.voted = voteData[i]));
-        let savedData = await getRecipesSaved(recipeData);
-        recipeData.forEach((recipe, i) => (recipe.saved = savedData[i]));
-      }
       setRecipes(recipeData);
       setLoaded(true); // Forces Map component to re-render once recipe loading finished.
+      getTags().then(setTags);
+      if (user) {
+        let [voteData, savedData] = await Promise.all([getRecipesVote(recipeData), getRecipesSaved(recipeData)]);
+        recipeData.forEach((recipe, i) => {
+          recipe.voted = voteData[i];
+          recipe.saved = savedData[i];
+        });
+      }
     });
   }, [props.feedType]);
 
