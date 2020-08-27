@@ -2,25 +2,24 @@ import React, { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import {
   CButton,
+  CCol,
   CCard,
   CCardBody,
-  CCol,
-  CRow,
   CModal,
   CModalBody,
   CModalFooter,
   CModalHeader,
   CModalTitle,
+  CRow,
 } from "@coreui/react";
 import RecipeCard from "../components/RecipeCard";
 import loading from "../assets/loading.gif";
 import requestRoute, { getTags, getRecipesVote, getRecipesSaved } from "../requests";
 import app from "firebase/app";
 import "firebase/auth";
-import FeedMap from "../components/FeedMap";
 
 const getRecipes = async (feedType, page) => {
-  let qs = requestRoute + "api/post?dummyParam=0" + (page !== undefined ? "&page=" + page : "");
+  let qs = requestRoute + "api/post?page=" + page;
   if (feedType === "saved") {
     let token = await app.auth().currentUser.getIdToken();
     qs += "&saved=true&sort=NEW&token=" + token;
@@ -73,16 +72,11 @@ const Feed = props => {
     if (signedIn) {
       // do on feedtype change and initial render
       setTags(await getTags());
-      if (!props.mapMode) {
-        let recipeDataPage0 = await loadRecipes(app.auth().currentUser, 0);
-        setRecipes([recipeDataPage0]);
-        setLoaded(true); // Forces component to re-render once recipe loading finished.
-      } else {
-        setRecipes(await loadRecipes(app.auth().currentUser));
-        setLoaded(true);
-      }
+      let recipeDataPage0 = await loadRecipes(app.auth().currentUser, 0);
+      setRecipes([recipeDataPage0]);
+      setLoaded(true); // Forces component to re-render once recipe loading finished.
     }
-  }, [signedIn, props.mapMode, loadRecipes]);
+  }, [signedIn, loadRecipes]);
 
   useEffect(() => {
     initRender();
@@ -121,7 +115,7 @@ const Feed = props => {
 
   return (
     <>
-      {!props.mapMode && recipes.length > 0 && (
+      {recipes.length > 0 && (
         <>
           <CRow>
             {recipes[page].map((recipe, idx) => (
@@ -148,24 +142,11 @@ const Feed = props => {
           </CRow>
         </>
       )}
-      {!props.mapMode && recipes[page].length === 0 && (
+      {recipes[page].length === 0 && (
         <CRow>
           <CCard>
             <CCardBody>There seem to be no recipes here.</CCardBody>
           </CCard>
-        </CRow>
-      )}
-      {props.mapMode && (
-        <CRow>
-          <CCol xs="36" sm="18" md="12">
-            <CCard>
-              <CCardBody>
-                <div className="min-vh-100">
-                  <FeedMap recipes={recipes} tags={tags} setErrMsg={setErrMsg} />
-                </div>
-              </CCardBody>
-            </CCard>
-          </CCol>
         </CRow>
       )}
       <CModal show={errMsg !== ""} onClose={() => setErrMsg("")} color="danger" size="sm">
@@ -185,7 +166,6 @@ const Feed = props => {
 
 Feed.propTypes = {
   feedType: PropTypes.string,
-  mapMode: PropTypes.bool,
 };
 
 export default Feed;

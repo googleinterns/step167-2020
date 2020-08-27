@@ -36,6 +36,7 @@ const AddRecipe = () => {
   const [content, setContent] = useState("Content");
   const [tagIds, setTagIds] = useState({});
   const [location, setLocation] = useState(null);
+  const [decodedRegion, setDecodedRegion] = useState("");
 
   const [mapModal, setMapModal] = useState(false);
 
@@ -46,6 +47,8 @@ const AddRecipe = () => {
   const [errMsg, setErrMsg] = useState("");
 
   const [allTags, setAllTags] = useState([]);
+
+  const [submitted, setSubmitted] = useState(false);
 
   let signedIn = false;
 
@@ -58,6 +61,7 @@ const AddRecipe = () => {
   }, []);
 
   const postRecipe = () => {
+    setSubmitted(true);
     if (signedIn) {
       app
         .auth()
@@ -155,29 +159,45 @@ const AddRecipe = () => {
                 </CFormGroup>
                 <CFormGroup row>
                   <CCol md="3"></CCol>
-                  <CCol xs="12" md="9">
+                  <CCol xs="4" md="3">
                     <CButton onClick={toggle} className="mr-1" color="secondary">
                       Select Location
                     </CButton>
-                    <CModal show={mapModal} onClose={toggle} size="xl">
-                      <CModalHeader>Where does this recipe come from?</CModalHeader>
-                      <CModalBody>
-                        <div className="min-vh-100">
-                          <RecipeUploadMap location={location} setLocation={setLocation} />
-                        </div>
-                      </CModalBody>
-                      <CModalFooter>
-                        <CButton color="primary" onClick={toggle}>
-                          Done
-                        </CButton>
-                      </CModalFooter>
-                    </CModal>
+                  </CCol>
+                  <CCol xs="8" md="6">
+                    {decodedRegion && <p>{decodedRegion}</p>}
+                    {!decodedRegion && <p>None selected</p>}
                   </CCol>
                 </CFormGroup>
               </CForm>
+              <CModal show={mapModal} onClose={toggle} size="xl">
+                <CModalHeader>Where does this recipe come from?</CModalHeader>
+                <CModalBody>
+                  <div className="min-vh-100">
+                    <RecipeUploadMap
+                      location={location}
+                      setLocation={setLocation}
+                      decodedRegion={decodedRegion}
+                      setDecodedRegion={setDecodedRegion}
+                    />
+                  </div>
+                </CModalBody>
+                <CModalFooter>
+                  <CButton color="primary" onClick={toggle}>
+                    Done
+                  </CButton>
+                </CModalFooter>
+              </CModal>
             </CCardBody>
             <CCardFooter>
-              <CButton type="submit" size="sm" color="primary" className="float-right" onClick={postRecipe}>
+              <CButton
+                disabled={submitted}
+                type="submit"
+                size="sm"
+                color="primary"
+                className="float-right"
+                onClick={postRecipe}
+              >
                 Submit
               </CButton>
             </CCardFooter>
