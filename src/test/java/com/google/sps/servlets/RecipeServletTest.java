@@ -565,8 +565,7 @@ public final class RecipeServletTest {
     RecipeMetadata testMetadata = new RecipeMetadata("RECIPE_ID");
     ArrayList<RecipeMetadata> recipeList = new ArrayList<>();
     recipeList.add(testMetadata);
-    when(mockDbInterface.getRecipesSavedBy(anyString(), anyObject()))
-        .thenReturn(recipeList);
+    when(mockDbInterface.getRecipesSavedBy(anyString(), anyObject())).thenReturn(recipeList);
 
     Auth.testModeWithParams(mockFirebaseAuth);
     String actual = recipeServlet.getRecipeList(request, response);
@@ -618,8 +617,7 @@ public final class RecipeServletTest {
     RecipeMetadata testMetadata = new RecipeMetadata("RECIPE_ID");
     ArrayList<RecipeMetadata> recipeList = new ArrayList<>();
     recipeList.add(testMetadata);
-    when(mockDbInterface.getRecipesMatchingTags(anyObject(), anyObject()))
-        .thenReturn(recipeList);
+    when(mockDbInterface.getRecipesMatchingTags(anyObject(), anyObject())).thenReturn(recipeList);
 
     String actual = recipeServlet.getRecipeList(request, response);
 

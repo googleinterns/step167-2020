@@ -294,8 +294,7 @@ public interface DBInterface {
    * @param sortingMethod such as TOP or NEW
    * @return user's saved recipe metadata, sorted
    */
-  public List<RecipeMetadata> getRecipesSavedBy(
-      String userId, SortingMethod sortingMethod);
+  public List<RecipeMetadata> getRecipesSavedBy(String userId, SortingMethod sortingMethod);
 
   /**
    * Returns a paginated list of recipe metadata whose IDs match any one ID in a given list of IDs.
@@ -315,8 +314,7 @@ public interface DBInterface {
    * @param sortingMethod such as TOP or NEW
    * @return list of RecipeMetadata whose IDs are in Ids param
    */
-  public List<RecipeMetadata> getRecipesMatchingIDs(
-      List<String> Ids, SortingMethod sortingMethod);
+  public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids, SortingMethod sortingMethod);
 
   /**
    * Recursively constructs a query on recipes matching any of the tags passed in eg.

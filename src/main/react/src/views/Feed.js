@@ -96,10 +96,8 @@ const Feed = props => {
         );
       }
     }
-    // we do not include recipes
-    // in the dependency array
-    // because that would cause
-    // an infinite rerender loop
+    // we do not include recipes in the dependency array
+    // because that would cause an infinite rerender loop
     // eslint-disable-next-line
   }, [page, loadRecipes, signedIn, loaded]);
 

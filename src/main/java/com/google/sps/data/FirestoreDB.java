@@ -234,8 +234,7 @@ public class FirestoreDB implements DBInterface {
     return getRecipesMatchingIDs(saved_Ids, sortingMethod, page);
   }
 
-  public List<RecipeMetadata> getRecipesSavedBy(
-      String userId, SortingMethod sortingMethod) {
+  public List<RecipeMetadata> getRecipesSavedBy(String userId, SortingMethod sortingMethod) {
     List<String> saved_Ids = savedRecipeIds(userId);
     return getRecipesMatchingIDs(saved_Ids, sortingMethod);
   }
@@ -249,8 +248,7 @@ public class FirestoreDB implements DBInterface {
     return getRecipeMetadataQuery(recipesQuery, sortingMethod, page);
   }
 
-  public List<RecipeMetadata> getRecipesMatchingIDs(
-      List<String> Ids, SortingMethod sortingMethod) {
+  public List<RecipeMetadata> getRecipesMatchingIDs(List<String> Ids, SortingMethod sortingMethod) {
     Query recipesQuery = DBUtils.recipeMetadata().whereIn(Recipe.ID_KEY, Ids);
     if (Ids.size() == 0) {
       return new ArrayList<RecipeMetadata>();
@@ -258,9 +256,8 @@ public class FirestoreDB implements DBInterface {
     return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
 
-    private List<RecipeMetadata> getRecipeMetadataQuery(
+  private List<RecipeMetadata> getRecipeMetadataQuery(
       Query recipesQuery, SortingMethod sortingMethod) {
-
     switch (sortingMethod) { // Note: this does not currently work with tagID queries, requires
                              // custom index
       case TOP:
@@ -284,7 +281,6 @@ public class FirestoreDB implements DBInterface {
 
   private List<RecipeMetadata> getRecipeMetadataQuery(
       Query recipesQuery, SortingMethod sortingMethod, int page) {
-    
     // overloaded method for getting recipes by page num
 
     switch (sortingMethod) { // Note: this does not currently work with tagID queries, requires
@@ -297,7 +293,7 @@ public class FirestoreDB implements DBInterface {
         break;
     }
 
-      recipesQuery = recipesQuery.offset(page * RECIPES_PER_PAGE).limit(RECIPES_PER_PAGE);
+    recipesQuery = recipesQuery.offset(page * RECIPES_PER_PAGE).limit(RECIPES_PER_PAGE);
 
     QuerySnapshot querySnapshot = DBUtils.blockOnFuture(recipesQuery.get());
 

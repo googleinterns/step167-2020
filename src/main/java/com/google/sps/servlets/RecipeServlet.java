@@ -180,17 +180,22 @@ public class RecipeServlet extends HttpServlet {
       // Then perform the corresponding query
       // if page is null, we want to get all associated recipes
       if (isSavedRequest) {
-        return gson.toJson(page != null ? db.getRecipesSavedBy(uid, sortingMethod, page) : db.getRecipesSavedBy(uid, sortingMethod));
+        return gson.toJson(page != null ? db.getRecipesSavedBy(uid, sortingMethod, page)
+                                        : db.getRecipesSavedBy(uid, sortingMethod));
       } else {
-        return gson.toJson(page != null ? db.getRecipesMatchingCreator(uid, sortingMethod, page) : db.getRecipesMatchingCreator(uid, sortingMethod));
+        return gson.toJson(page != null ? db.getRecipesMatchingCreator(uid, sortingMethod, page)
+                                        : db.getRecipesMatchingCreator(uid, sortingMethod));
       }
     } else if (isTagQuery && !isCreatorQuery) {
       // If the frontend is requesting recipes satisfying a certain set of tags,
       // then perform the query
-      return gson.toJson(page != null ? db.getRecipesMatchingTags(Arrays.asList(tagIDs), sortingMethod, page) : db.getRecipesMatchingTags(Arrays.asList(tagIDs), sortingMethod));
+      return gson.toJson(page != null
+              ? db.getRecipesMatchingTags(Arrays.asList(tagIDs), sortingMethod, page)
+              : db.getRecipesMatchingTags(Arrays.asList(tagIDs), sortingMethod));
     } else { // Currently addresses cases where frontend is requesting both a tag query and
              // a creator query, or none of the above query types
-      return gson.toJson(page != null ? db.getRecipePage(sortingMethod, page) : db.getAllRecipes(sortingMethod));
+      return gson.toJson(
+          page != null ? db.getRecipePage(sortingMethod, page) : db.getAllRecipes(sortingMethod));
     }
   }
 
