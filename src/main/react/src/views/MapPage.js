@@ -1,11 +1,23 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { CButton, CCol, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow } from "@coreui/react";
-import RecipeCard from "../components/RecipeCard";
-import loading from "../assets/loading.gif";
+import {
+  CButton,
+  CCard,
+  CCardBody,
+  CCardHeader,
+  CCol,
+  CInput,
+  CModal,
+  CModalBody,
+  CModalFooter,
+  CModalHeader,
+  CModalTitle,
+  CRow,
+} from "@coreui/react";
 import requestRoute, { getTags, getRecipesVote, getRecipesSaved } from "../requests";
 import app from "firebase/app";
 import "firebase/auth";
+import FeedMap from "../components/FeedMap";
 
 const getRecipes = async feedType => {
   let qs = requestRoute + "api/post";
@@ -21,19 +33,21 @@ const getRecipes = async feedType => {
   return data;
 };
 
-const Feed = props => {
+const MapPage = props => {
+  console.log(props.feedType);
   const [recipes, setRecipes] = useState([]);
   const [tags, setTags] = useState({});
+  const [loaded, setLoaded] = useState(false);
+  const [mapCenter, setMapCenter] = useState("");
 
   const [errMsg, setErrMsg] = useState("");
 
-  const [loaded, setLoaded] = useState(false);
+  let searchBarVal = "";
 
   useEffect(() => {
-    // do on feedtype change and initial render
-    let listener = app.auth().onAuthStateChanged(async user => {
-      listener();
-      let recipeData = await getRecipes(props.feedType);
+    // do on first render
+    app.auth().onAuthStateChanged(async user => {
+      let recipeData = await getRecipes();
       let tagIds = {};
       recipeData.forEach(recipe => Object.assign(tagIds, recipe.tagIds));
       setTags(await getTags(tagIds));
@@ -44,35 +58,39 @@ const Feed = props => {
         recipeData.forEach((recipe, i) => (recipe.saved = savedData[i]));
       }
       setRecipes(recipeData);
-      setLoaded(true); // Forces component to re-render once recipe loading finished.
+      setLoaded(true); // Forces Map component to re-render once recipe loading finished.
     });
-    return () => {
-      // return the cleanup function
-      setRecipes([]);
-      setTags({});
-      setLoaded(false);
-    };
   }, [props.feedType]);
-
-  if (!loaded) {
-    return (
-      <CRow className="justify-content-center">
-        <CCol sm={2}>
-          <img src={loading} alt="loading..." />
-        </CCol>
-      </CRow>
-    );
-  }
 
   return (
     <>
       <CRow>
-        {recipes.length > 0 &&
-          recipes.map((recipe, idx) => (
-            <CCol xs="12" sm="6" md="4" key={idx}>
-              <RecipeCard recipe={recipe} tags={tags} setErrMsg={setErrMsg} />
-            </CCol>
-          ))}
+        {loaded && (
+          <CCol xs="36" sm="18" md="12">
+            <CCard>
+              <CCardHeader>
+                <CRow>
+                  <CCol>
+                    <CInput
+                      onChange={event => (searchBarVal = event.target.value)}
+                      placeholder="Search By Location"
+                    ></CInput>
+                  </CCol>
+                  <CCol>
+                    <CButton color="primary" onClick={() => setMapCenter(searchBarVal)}>
+                      Go
+                    </CButton>
+                  </CCol>
+                </CRow>
+              </CCardHeader>
+              <CCardBody>
+                <div className="min-vh-100">
+                  <FeedMap recipes={recipes} tags={tags} setErrMsg={setErrMsg} mapCenter={mapCenter} />
+                </div>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        )}
       </CRow>
       <CModal show={errMsg !== ""} onClose={() => setErrMsg("")} color="danger" size="sm">
         <CModalHeader closeButton>
@@ -89,8 +107,8 @@ const Feed = props => {
   );
 };
 
-Feed.propTypes = {
+MapPage.propTypes = {
   feedType: PropTypes.string,
 };
 
-export default Feed;
+export default MapPage;

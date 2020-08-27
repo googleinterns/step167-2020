@@ -2,6 +2,7 @@ import app from 'firebase/app';
 import 'firebase/auth';
 
 const requestRoute = "http://localhost:8080/";
+const mapsApiKey = "AIzaSyAe5HlFZFuhzMimXrKW1z3kglajbdHf_Rc";
 
 const getTags = async (tagIds) => {
   let qs;
@@ -59,6 +60,7 @@ export {
   getTags,
   getRecipesVote,
   getRecipesSaved,
-  createUser
+  createUser,
+  mapsApiKey
 };
 export default requestRoute;

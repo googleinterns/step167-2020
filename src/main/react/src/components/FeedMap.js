@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Map, GoogleApiWrapper, Marker, InfoWindow } from "google-maps-react";
 import PropTypes from "prop-types";
 import RecipeCard from "./RecipeCard";
+import { mapsApiKey } from "../requests";
+import Geocode from "react-geocode";
 
 const FeedMap = props => {
   const initialWindows = () => {
@@ -18,6 +20,40 @@ const FeedMap = props => {
   };
 
   const [windows, setWindows] = useState(initialWindows());
+  const [center, setCenter] = useState(null);
+
+  useEffect(() => {
+    if (props.mapCenter !== "") {
+      Geocode.setApiKey(mapsApiKey);
+      Geocode.fromAddress(props.mapCenter).then(
+        response => {
+          let newCoords = null;
+          if (response.results[0]) {
+            // If there are results, traverse the array of address components
+            // looking for a country, or, if none is found, a natural feature
+            response.results.forEach(result => {
+              console.log(result.formatted_address + JSON.stringify(result.types));
+              if (
+                result.types.includes("country") ||
+                (result.types.includes("natural_feature") && newCoords === null)
+              ) {
+                newCoords = result.geometry.location;
+              }
+            });
+          }
+          if (newCoords === null) {
+            newCoords = { lat: 0, lng: 0 };
+          }
+          setCenter(newCoords);
+        },
+        error => {
+          console.log(error);
+          setCenter({ lat: 0, lng: 0 });
+        }
+      );
+    }
+    setCenter({ lat: 0, lng: 0 });
+  }, [props.mapCenter]);
 
   const getVisibility = recipeId => {
     if (!windows) return false;
@@ -84,7 +120,7 @@ const FeedMap = props => {
   };
 
   return (
-    <Map google={props.google} zoom={2} style={mapStyles} initialCenter={{ lat: 0, lng: 0 }} onClick={mapClicked}>
+    <Map google={props.google} zoom={props.mapCenter ? 4 : 2} style={mapStyles} center={center} onClick={mapClicked}>
       {displayMarkers()}
       {displayWindows()}
     </Map>
@@ -96,13 +132,14 @@ FeedMap.propTypes = {
   google: PropTypes.object,
   tags: PropTypes.object,
   setErrMsg: PropTypes.func,
+  mapCenter: PropTypes.string,
 };
 
 const mapStyles = {
   width: "95%",
-  height: "95%",
+  height: "85%",
 };
 
 export default GoogleApiWrapper({
-  apiKey: "AIzaSyAe5HlFZFuhzMimXrKW1z3kglajbdHf_Rc",
+  apiKey: mapsApiKey,
 })(FeedMap);

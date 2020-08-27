@@ -46,6 +46,7 @@
     "react": "^16.13.1",
     "react-app-polyfill": "^1.0.6",
     "react-dom": "^16.13.1",
+    "react-geocode": "^0.2.1",
     "react-marked-markdown": "^1.4.6",
     "react-redux": "7.2.0",
     "react-router-dom": "^5.2.0",
