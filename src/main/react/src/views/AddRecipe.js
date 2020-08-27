@@ -65,6 +65,17 @@ const AddRecipe = () => {
   }, []);
 
   const postRecipe = async () => {
+    if (file === null) {
+      setErrMsg("Upload a picture of your recipe!");
+      return;
+    } else if (title === "Title" || title === "") {
+      setErrMsg("Your title cannot be empty!");
+      return;
+    } else if (content === "Content" || content === "content") {
+      setErrMsg("The content cannot be empty!");
+      return;
+    }
+
     setSubmitted(true);
     if (signedIn) {
       let tokenPromise = app
