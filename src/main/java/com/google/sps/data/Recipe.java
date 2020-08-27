@@ -4,7 +4,6 @@ public class Recipe extends DBObject {
   public static final String CONTENT_KEY = "content";
   public static final String CREATOR_ID_KEY = "creatorId";
   public static final String ID_KEY = "id";
-  public static final String IM_KEY = "blobKey";
   public static final String TITLE_KEY = "title";
   public static final String VOTES_KEY = "votes";
   public static final String TIMESTAMP_KEY = "timestamp";
@@ -12,7 +11,6 @@ public class Recipe extends DBObject {
 
   public RecipeMetadata metadata;
   public String content;
-  public String blobKey;
 
   public Recipe() {}
   

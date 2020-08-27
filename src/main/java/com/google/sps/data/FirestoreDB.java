@@ -40,7 +40,6 @@ public class FirestoreDB implements DBInterface {
     String blobKey = newRecipe.metadata.blobKey;
     if (blobKey != null && blobKey != "") {
       DBUtils.blockOnFuture(newRecipeMetadataRef.set(Collections.singletonMap(RecipeMetadata.IM_KEY, blobKey)));
-      DBUtils.blockOnFuture(newContentRef.set(Collections.singletonMap(Recipe.IM_KEY, blobKey)));
     }
 
     return newRecipe.metadata.id;
