@@ -10,6 +10,9 @@
       "jsx": true
     }
   },
+  "env": {
+    "es6": true
+  },
   "globals": {
     "fetch": true,
     "URLSearchParams": true,
