@@ -20,6 +20,15 @@ const RecipeCard = props => {
     setDownvote(props.recipe.voted === false);
   }, [props]);
 
+  const deleteRecipe = async () => {
+    let idToken = await app.auth().currentUser.getIdToken();
+    fetch(requestRoute + "api/post?recipeID=" + recipe.id + "&token=" + idToken, { method: "DELETE" });
+    if (props.deleteRecipeOuter) {
+      // meant for feed to delete recipecard, map to delete marker, etc
+      props.deleteRecipeOuter(recipe.id);
+    }
+  };
+
   const toggleSave = () => {
     app
       .auth()
@@ -94,6 +103,11 @@ const RecipeCard = props => {
           <CLink className="card-header-action" onClick={toggleSave} style={{ marginRight: 5 }}>
             <CIcon name="cil-save" className={save ? "text-success" : ""} />
           </CLink>
+          {app.auth().currentUser.uid === recipe.creatorId && (
+            <CLink className="card-header-action" onClick={deleteRecipe} style={{ marginRight: 5 }}>
+              <CIcon name="cil-trash" />
+            </CLink>
+          )}
           <CBadge shape="pill" color="primary">
             {votes}
           </CBadge>
@@ -129,7 +143,7 @@ RecipeCard.propTypes = {
   recipe: PropTypes.object,
   setErrMsg: PropTypes.func,
   tags: PropTypes.object,
-  saved: PropTypes.bool,
+  deleteRecipeOuter: PropTypes.func,
 };
 
 export default RecipeCard;

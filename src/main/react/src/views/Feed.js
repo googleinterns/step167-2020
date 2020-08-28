@@ -78,6 +78,14 @@ const Feed = props => {
     }
   }, [signedIn, loadRecipes]);
 
+  const deleteRecipeOuter = recipeId => {
+    let recipesCopy = recipes;
+    recipesCopy[page] = recipesCopy[page].filter(recipe => recipe.id !== recipeId);
+    setRecipes([...recipesCopy]);
+    // It should be setRecipes(recipesCopy), but for some reason
+    // that doesn't work and setRecipes([...recipesCopy]) does.
+  };
+
   useEffect(() => {
     initRender();
     return () => {
@@ -118,7 +126,7 @@ const Feed = props => {
           <CRow>
             {recipes[page].map((recipe, idx) => (
               <CCol xs="12" sm="6" md="4" key={idx}>
-                <RecipeCard recipe={recipe} tags={tags} setErrMsg={setErrMsg} />
+                <RecipeCard recipe={recipe} tags={tags} setErrMsg={setErrMsg} deleteRecipeOuter={deleteRecipeOuter} />
               </CCol>
             ))}
           </CRow>
