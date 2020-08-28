@@ -18,7 +18,7 @@ import {
 import CIcon from "@coreui/icons-react";
 import Comment from "../components/Comment";
 import { MarkdownPreview } from "react-marked-markdown";
-import requestRoute, { getTags, getRecipesVote } from "../requests";
+import requestRoute, { getTags, getVoteData } from "../requests";
 import Page404 from "./pages/page404/Page404";
 import app from "firebase/app";
 import "firebase/auth";
@@ -182,7 +182,7 @@ const Recipe = () => {
           setComments(await getComments(recipeId));
           setRecipe(recipeData);
           if (user) {
-            let voteData = (await getRecipesVote([recipeData.metadata]))[0];
+            let voteData = (await getVoteData([recipeData.metadata]))[0];
             if (voteData) {
               setUpvote(true);
             } else if (voteData === false) {

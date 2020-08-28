@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import {
   CBadge,
@@ -23,18 +23,18 @@ import {
   CModalTitle,
 } from "@coreui/react";
 import { MarkdownPreview } from "react-marked-markdown";
-import Select from "react-select";
 import app from "firebase/app";
 import "firebase/auth";
-import requestRoute, { getTags } from "../requests";
+import requestRoute from "../requests";
 import RecipeUploadMap from "../components/RecipeUploadMap";
+import TagSelect from "../components/TagSelect";
 
 const AddRecipe = () => {
   const history = useHistory();
 
   const [title, setTitle] = useState("Title");
   const [content, setContent] = useState("Content");
-  const [tagIds, setTagIds] = useState({});
+  const [selectedTags, setSelectedTags] = useState({});
   const [location, setLocation] = useState(null);
   const [decodedRegion, setDecodedRegion] = useState("");
 
@@ -46,8 +46,6 @@ const AddRecipe = () => {
 
   const [errMsg, setErrMsg] = useState("");
 
-  const [allTags, setAllTags] = useState([]);
-
   const [submitted, setSubmitted] = useState(false);
 
   let signedIn = false;
@@ -56,10 +54,6 @@ const AddRecipe = () => {
 
   app.auth().onAuthStateChanged(user => (signedIn = user ? true : false));
 
-  useEffect(() => {
-    getTags().then(data => setAllTags(data));
-  }, []);
-
   const postRecipe = () => {
     setSubmitted(true);
     if (signedIn) {
@@ -67,6 +61,8 @@ const AddRecipe = () => {
         .auth()
         .currentUser.getIdToken()
         .then(idToken => {
+          let tagIds = {};
+          Object.keys(selectedTags).forEach(tag => (tagIds[tag] = true));
           fetch(requestRoute + "api/post?token=" + idToken, {
             method: "POST",
             body: JSON.stringify({
@@ -114,27 +110,7 @@ const AddRecipe = () => {
                     <CLabel htmlFor="text-input">Tags</CLabel>
                   </CCol>
                   <CCol xs="12" md="9">
-                    <Select
-                      id="tags-select"
-                      name="tags-select"
-                      isMulti
-                      options={
-                        Object.keys(tagIds).length >= MAX_TAGS
-                          ? []
-                          : Object.keys(allTags).map(tagId => {
-                              return { label: allTags[tagId].name, value: tagId };
-                            })
-                      }
-                      onChange={selected => {
-                        if (selected === null) {
-                          setTagIds({});
-                          return;
-                        }
-                        let newTagIds = {};
-                        selected.forEach(tag => (newTagIds[tag.value] = true));
-                        setTagIds(newTagIds);
-                      }}
-                    />
+                    <TagSelect tags={selectedTags} setTags={setSelectedTags} maxTags={MAX_TAGS} />
                     <CFormText className="help-block">Max {MAX_TAGS} tags</CFormText>
                   </CCol>
                 </CFormGroup>
@@ -209,9 +185,9 @@ const AddRecipe = () => {
             <CCardHeader>
               {title}
               <div className="card-header-actions">
-                {Object.keys(tagIds).map((tagId, idx) => (
+                {Object.keys(selectedTags).map((tag, idx) => (
                   <CBadge color="success" key={idx} style={{ marginRight: 5 }}>
-                    {allTags[tagId].name}
+                    {selectedTags[tag]}
                   </CBadge>
                 ))}
               </div>
