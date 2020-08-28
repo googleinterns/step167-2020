@@ -18,6 +18,7 @@ const RecipeCard = props => {
     setVotes(props.recipe.votes);
     setUpvote(props.recipe.voted === true);
     setDownvote(props.recipe.voted === false);
+    console.log("RecipeCard useEffect called.");
   }, [props]);
 
   const toggleSave = () => {
