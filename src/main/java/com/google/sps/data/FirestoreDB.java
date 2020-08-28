@@ -69,16 +69,9 @@ public class FirestoreDB implements DBInterface {
     return getRecipeMetadataQuery(recipesQuery, sortingMethod, page);
   }
 
-  public List<Comment> getAllCommentsInRecipe(String recipeId, SortingMethod sortingMethod) {
+  public List<Comment> getAllCommentsInRecipe(String recipeId) {
     Query commentsQuery = DBUtils.comments(recipeId);
-    switch (sortingMethod) {
-      case TOP:
-        commentsQuery = commentsQuery.orderBy(Comment.VOTES_KEY, Query.Direction.DESCENDING);
-        break;
-      case NEW:
-        commentsQuery = commentsQuery.orderBy(Comment.TIMESTAMP_KEY, Query.Direction.DESCENDING);
-        break;
-    }
+    commentsQuery = commentsQuery.orderBy(Comment.LEVEL_KEY, Query.Direction.ASCENDING);
     // blockOnFuture() returns a QuerySnapshot
     return DBUtils.blockOnFuture(commentsQuery.get()).toObjects(Comment.class);
   }

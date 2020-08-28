@@ -65,7 +65,7 @@ public class CommentServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     } else {
-      json = gson.toJson(db.getAllCommentsInRecipe(recipeID, SortingMethod.NEW));
+      json = gson.toJson(db.getAllCommentsInRecipe(recipeID));
     }
 
     if (json == null || json.equals(gson.toJson(null))) {
@@ -86,7 +86,8 @@ public class CommentServlet extends HttpServlet {
     String token = request.getParameter("token");
 
     Comment newComment = gson.fromJson(commentData, Comment.class);
-    if (recipeID == null || newComment.content == null || newComment.content.isEmpty()) {
+    if (recipeID == null || newComment.content == null || newComment.content.isEmpty()
+        || (newComment.level > 0 && newComment.replyTo == null)) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }

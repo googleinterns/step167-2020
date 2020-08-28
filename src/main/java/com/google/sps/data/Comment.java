@@ -10,12 +10,16 @@ public class Comment extends DBObject {
   public static final String CREATOR_ID_KEY = "creatorId";
   public static final String VOTES_KEY = "votes";
   public static final String LDAP_KEY = "ldap";
+  public static final String LEVEL_KEY = "level";
+  public static final String REPLY_TO_KEY = "replyTo";
 
   public String content;
   public long timestamp;
   public String creatorId;
   public long votes;
   public String ldap;
+  public int level;
+  public String replyTo;
 
   public Comment() {
     super();

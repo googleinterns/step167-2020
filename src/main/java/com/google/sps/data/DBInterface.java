@@ -77,13 +77,13 @@ public interface DBInterface {
   public List<RecipeMetadata> getRecipePage(SortingMethod sortingMethod, int page);
 
   /**
-   * Gets a sorted list of all comments associated with a recipe.
+   * Gets a sorted list of all comments associated with a recipe,
+   * ordered by level in the implicit comment tree.
    *
    * @param recipeId recipe Firestore ID
-   * @param sortingMethod from SortingMethod.java
    * @return ordered list of recipe comments
    */
-  public List<Comment> getAllCommentsInRecipe(String recipeId, SortingMethod sortingMethod);
+  public List<Comment> getAllCommentsInRecipe(String recipeId);
 
   /**
    * Returns all the tags in the DB.

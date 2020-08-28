@@ -81,7 +81,7 @@ public final class CommentServletTest {
   @Test
   public void getNullCommentsJSON() throws IOException {
     when(request.getParameter("recipeID")).thenReturn("recipeID");
-    when(db.getAllCommentsInRecipe(anyString(), any(SortingMethod.class))).thenReturn(null);
+    when(db.getAllCommentsInRecipe(anyString())).thenReturn(null);
 
     commentServlet.doGet(request, response);
 
@@ -97,7 +97,7 @@ public final class CommentServletTest {
   @Test
   public void getIsSuccessful() throws IOException {
     when(request.getParameter("recipeID")).thenReturn("recipeID");
-    when(db.getAllCommentsInRecipe(anyString(), any(SortingMethod.class)))
+    when(db.getAllCommentsInRecipe(anyString()))
         .thenReturn(exampleCommentList);
 
     StringWriter sw = new StringWriter();
