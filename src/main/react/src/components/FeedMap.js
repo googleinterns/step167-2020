@@ -31,7 +31,8 @@ const FeedMap = props => {
       setCenter({ lat: 0, lng: 0 });
       setMapZoom(2);
     }
-  }, [props.mapCenter]);
+    // eslint-disable-next-line
+  }, [props.mapCenter, props.recipes]);
 
   const getVisibility = recipeId => {
     if (!windows) return false;
