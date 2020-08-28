@@ -14,6 +14,7 @@ public class RecipeMetadata extends DBObject {
   public String title;
   public String creatorId;
   public String creatorLdap;
+  public String imageUrl;
   public long timestamp;
   public Map<String, Boolean> tagIds;
   public long votes;

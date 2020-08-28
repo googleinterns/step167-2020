@@ -14,6 +14,7 @@ import {
   CModalFooter,
   CModalHeader,
   CModalTitle,
+  CImg,
 } from "@coreui/react";
 import CIcon from "@coreui/icons-react";
 import Comment from "../components/Comment";
@@ -228,6 +229,11 @@ const Recipe = () => {
             </CBadge>
           </div>
         </CCardHeader>
+        {recipe.metadata.imageUrl && (
+          <CCardBody>
+            <CImg src={recipe.metadata.imageUrl} style={{ width: "40%", marginLeft: "30%" }} />
+          </CCardBody>
+        )}
         <CCardBody>
           <MarkdownPreview value={recipe.content} />
         </CCardBody>
