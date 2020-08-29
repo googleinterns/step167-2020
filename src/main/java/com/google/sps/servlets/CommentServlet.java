@@ -54,7 +54,7 @@ public class CommentServlet extends HttpServlet {
     db = new FirestoreDB();
   }
 
-  /** As of 8.12.20, returns all comments flatly with NEW sorting method. */
+  /** As of 8.12.20, returns all comments flatly sorted by level. */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String recipeID = request.getParameter("recipeID");
@@ -87,7 +87,7 @@ public class CommentServlet extends HttpServlet {
 
     Comment newComment = gson.fromJson(commentData, Comment.class);
     if (recipeID == null || newComment.content == null || newComment.content.isEmpty()
-        || (newComment.level > 0 && newComment.replyTo == null)) {
+        || (newComment.level > 0 && newComment.replyId == null)) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
@@ -137,14 +137,14 @@ public class CommentServlet extends HttpServlet {
       throws IOException {
     String recipeID = request.getParameter("recipeID");
     String commentID = request.getParameter("commentID");
+    String isLeaf = request.getParameter("isLeaf");
 
-    if (recipeID == null || commentID == null) {
+    if (recipeID == null || commentID == null || isLeaf == null
+        || !(isLeaf.equals("true") || isLeaf.equals("false"))) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
-    // Product Alpha TODO: Check if comment has replies
-    //   If so replace with "[deleted]"
-    //   Else:
-    db.deleteComment(commentID, recipeID);
+
+    db.deleteComment(commentID, recipeID, Boolean.parseBoolean(isLeaf));
   }
 }

@@ -324,8 +324,16 @@ public class FirestoreDB implements DBInterface {
     return newCommentRef.getId();
   }
 
-  public void deleteComment(String Id, String recipeId) {
-    DBUtils.blockOnFuture(DBUtils.comments(recipeId).document(Id).delete());
+  public void deleteComment(String commentId, String recipeId, boolean isLeaf) {
+    if(isLeaf) {
+      // then we can delete it entirely from the db
+      DBUtils.blockOnFuture(DBUtils.comment(recipeId, commentId).delete());
+    } else {
+      // we need to update creatorId, ldap, and content
+      DBUtils.blockOnFuture(DBUtils.comment(recipeId, commentId).update(Comment.CREATOR_ID_KEY, Comment.DELETED));
+      DBUtils.blockOnFuture(DBUtils.comment(recipeId, commentId).update(Comment.LDAP_KEY, Comment.DELETED));
+      DBUtils.blockOnFuture(DBUtils.comment(recipeId, commentId).update(Comment.CONTENT_KEY, Comment.DELETED));
+    }
   }
 
   public void deleteComments(String recipeId) {

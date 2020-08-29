@@ -97,8 +97,7 @@ public final class CommentServletTest {
   @Test
   public void getIsSuccessful() throws IOException {
     when(request.getParameter("recipeID")).thenReturn("recipeID");
-    when(db.getAllCommentsInRecipe(anyString()))
-        .thenReturn(exampleCommentList);
+    when(db.getAllCommentsInRecipe(anyString())).thenReturn(exampleCommentList);
 
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw);
@@ -326,6 +325,6 @@ public final class CommentServletTest {
     commentServlet.doDelete(request, response);
 
     verify(response, times(1)).setStatus(HttpServletResponse.SC_BAD_REQUEST);
-    verify(db, never()).deleteComment(anyString(), anyString());
+    verify(db, never()).deleteComment(anyString(), anyString(), anyBoolean());
   }
 }

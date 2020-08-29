@@ -336,11 +336,14 @@ public interface DBInterface {
 
   /**
    * Deletes a single specified comment in a recipe's comment subcollection in Firestore.
+   * If the comment is a leaf (has no replies), delete it fully
+   * else, replace the creatorId, ldap, and content with Comment.DELETED
    *
    * @param Id the comment's Firestore ID.
    * @param recipeId the recipe's Firestore ID.
+   * @param isLeaf indicates whether a recipe is a leaf or not
    */
-  public void deleteComment(String Id, String recipeId);
+  public void deleteComment(String Id, String recipeId, boolean isLeaf);
 
   /**
    * Deletes all the comments in a recipe's comment subcollection in Firestore.
