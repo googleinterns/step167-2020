@@ -33,7 +33,7 @@ const getRecipes = async (feedType, page) => {
     qs += "&sort=TOP";
   } else if (feedType === "new") {
     qs += "&sort=NEW";
-  } 
+  }
   let res = await fetch(qs);
   let data = await res.json();
   return data;

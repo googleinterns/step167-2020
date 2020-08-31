@@ -230,24 +230,26 @@ public class FirestoreDB implements DBInterface {
     Query recipesQuery = DBUtils.recipeMetadata().whereEqualTo(Recipe.CREATOR_ID_KEY, creatorId);
     return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
-   
-  // TODO: Currently, sorting method is unused. Used TOP in recipesMatchingAnyTags() for consistent order.
-  public List<RecipeMetadata> getRecipesMatchingFollowedTags (
+
+  // TODO: Currently, sorting method is unused. Used TOP in recipesMatchingAnyTags() for consistent
+  // order.
+  public List<RecipeMetadata> getRecipesMatchingFollowedTags(
       String userId, SortingMethod sortingMethod, int page) {
     List<RecipeMetadata> followedTagsRecipes = recipesMatchingAnyTags(followedTagIds(userId));
     // Return the appropriate page of recipes manually.
     try {
-      return followedTagsRecipes.subList((page * RECIPES_PER_PAGE), ((page + 1) * RECIPES_PER_PAGE));
+      return followedTagsRecipes.subList(
+          (page * RECIPES_PER_PAGE), ((page + 1) * RECIPES_PER_PAGE));
     } catch (IndexOutOfBoundsException e) {
       if (page == 0) {
         return followedTagsRecipes;
       } else {
-        return null; 
-      } 
+        return null;
+      }
     }
   }
-  
-  public List<RecipeMetadata> getRecipesMatchingFollowedTags (
+
+  public List<RecipeMetadata> getRecipesMatchingFollowedTags(
       String userId, SortingMethod sortingMethod) {
     List<String> followedTagIds = followedTagIds(userId);
     // Query for recipes matching the followed tag Ids.
@@ -292,7 +294,7 @@ public class FirestoreDB implements DBInterface {
       case NEW:
         recipesQuery = recipesQuery.orderBy(Recipe.TIMESTAMP_KEY, Query.Direction.DESCENDING);
         break;
-      default: 
+      default:
         break;
     }
 
@@ -342,15 +344,16 @@ public class FirestoreDB implements DBInterface {
     return DBUtils.recipeMetadata();
   }
 
-// todo: add to interface (returns list of recipeIDs matching any of the tags)
+  // todo: add to interface (returns list of recipeIDs matching any of the tags)
   public List<RecipeMetadata> recipesMatchingAnyTags(List<String> tagIds) {
     CollectionReference recipes = DBUtils.recipeMetadata();
     Set<RecipeMetadata> metadata = new HashSet<RecipeMetadata>();
-    for (String tagId: tagIds) {
+    for (String tagId : tagIds) {
       if (metadata.size() >= MAX_RECIPES_PER_REQUEST) {
         break;
       }
-      metadata.addAll(getRecipeMetadataQuery(recipes.whereEqualTo("tagIds." + tagId, true), SortingMethod.TOP));
+      metadata.addAll(
+          getRecipeMetadataQuery(recipes.whereEqualTo("tagIds." + tagId, true), SortingMethod.TOP));
     }
     List<RecipeMetadata> taggedRecipes = new ArrayList<RecipeMetadata>(metadata);
     taggedRecipes.addAll(metadata);
