@@ -71,7 +71,6 @@ public class FirestoreDB implements DBInterface {
 
   public List<Comment> getAllCommentsInRecipe(String recipeId) {
     Query commentsQuery = DBUtils.comments(recipeId);
-    commentsQuery = commentsQuery.orderBy(Comment.LEVEL_KEY, Query.Direction.ASCENDING);
     // blockOnFuture() returns a QuerySnapshot
     return DBUtils.blockOnFuture(commentsQuery.get()).toObjects(Comment.class);
   }

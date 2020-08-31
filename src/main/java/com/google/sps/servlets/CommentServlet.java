@@ -54,7 +54,7 @@ public class CommentServlet extends HttpServlet {
     db = new FirestoreDB();
   }
 
-  /** As of 8.12.20, returns all comments flatly sorted by level. */
+  /** As of 8.31.20, returns all comments */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String recipeID = request.getParameter("recipeID");
@@ -86,8 +86,7 @@ public class CommentServlet extends HttpServlet {
     String token = request.getParameter("token");
 
     Comment newComment = gson.fromJson(commentData, Comment.class);
-    if (recipeID == null || newComment.content == null || newComment.content.isEmpty()
-        || (newComment.level > 0 && newComment.replyId == null)) {
+    if (recipeID == null || newComment.content == null || newComment.content.isEmpty()) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }

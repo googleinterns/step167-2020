@@ -10,7 +10,6 @@ public class Comment extends DBObject {
   public static final String CREATOR_ID_KEY = "creatorId";
   public static final String VOTES_KEY = "votes";
   public static final String LDAP_KEY = "ldap";
-  public static final String LEVEL_KEY = "level";
   public static final String REPLY_ID_KEY = "replyId";
 
   public static final String DELETED = "[deleted]";
@@ -20,7 +19,6 @@ public class Comment extends DBObject {
   public String creatorId;
   public long votes;
   public String ldap;
-  public int level;
   public String replyId;
 
   public Comment() {

@@ -40,13 +40,11 @@ let commentFlatList = [];
 let commentDict = {};
 
 const buildCommentTree = (flatList, dict) => {
-  console.log(flatList);
   flatList.forEach(comment => (comment.replies = []));
   flatList.forEach(comment => (dict[comment.id] = comment));
-  let commentTree = flatList.filter(comment => comment.level === 0);
-  let replies = flatList.filter(comment => comment.level > 0);
+  let commentTree = flatList.filter(comment => (comment.replyId ? false : true));
+  let replies = flatList.filter(comment => (comment.replyId ? true : false));
   replies.forEach(reply => dict[reply.replyId].replies.push(reply));
-  console.log(commentTree);
   return commentTree;
 };
 
@@ -83,7 +81,7 @@ const Recipe = () => {
   const recipeId = searchParams.get("id");
   const [notFound, setNotFound] = useState(false);
 
-  const submitComment = async (content, level, replyId) => {
+  const submitComment = async (content, replyId) => {
     if (content === "") {
       setErrMsg("Empty comments are not allowed");
       return;
@@ -93,7 +91,6 @@ const Recipe = () => {
       method: "POST",
       body: JSON.stringify({
         content: content,
-        level: level,
         replyId: replyId,
       }),
     });
@@ -102,11 +99,11 @@ const Recipe = () => {
       content: content,
       ldap: app.auth().currentUser.email,
       id: commentData.id,
-      level: level,
       replyId: replyId,
     };
-    commentFlatList.push(newComment);
+    commentFlatList.unshift(newComment);
     commentDict[newComment.id] = newComment;
+    setComments(buildCommentTree(commentFlatList, commentDict));
   };
 
   const deleteComment = commentId => {
@@ -298,7 +295,7 @@ const Recipe = () => {
               size="sm"
               color="primary"
               className="float-right"
-              onClick={() => submitComment(newCommentInput.current.value, 0, null)}
+              onClick={() => submitComment(newCommentInput.current.value, null)}
             >
               Submit
             </CButton>
