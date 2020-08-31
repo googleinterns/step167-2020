@@ -41,7 +41,6 @@ let commentDict = {};
 
 const buildCommentTree = (flatList, dict) => {
   flatList.forEach(comment => (comment.replies = []));
-  flatList.forEach(comment => (dict[comment.id] = comment));
   let commentTree = flatList.filter(comment => (comment.replyId ? false : true));
   let replies = flatList.filter(comment => (comment.replyId ? true : false));
   replies.forEach(reply => dict[reply.replyId].replies.push(reply));
