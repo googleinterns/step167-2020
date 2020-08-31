@@ -77,7 +77,15 @@ const Comment = props => {
                 <CTextarea rows="2" innerRef={replyContent} />
               </CCardBody>
               <CCardFooter>
-                <CButton color="primary" size="sm" className="float-right" onClick={() => setReplyMode(false)}>
+                <CButton
+                  color="primary"
+                  size="sm"
+                  className="float-right"
+                  onClick={() => {
+                    setReplyMode(false);
+                    props.add(replyContent.current.value, props.comment.id);
+                  }}
+                >
                   Submit
                 </CButton>
                 <CButton variant="ghost" size="sm" className="float-right" onClick={() => setReplyMode(false)}>
@@ -104,6 +112,7 @@ const Comment = props => {
             recipeId={props.recipeId}
             delete={props.delete}
             edit={props.edit}
+            add={props.add}
             setErrMsg={props.setErrMsg}
           />
         ))}
@@ -118,6 +127,7 @@ Comment.propTypes = {
   recipePosterLdap: PropTypes.string,
   delete: PropTypes.func,
   edit: PropTypes.func,
+  add: PropTypes.func,
   recipeId: PropTypes.string,
   setErrMsg: PropTypes.func,
 };

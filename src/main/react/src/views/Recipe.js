@@ -314,6 +314,7 @@ const Recipe = () => {
           recipeId={recipeId}
           delete={deleteComment}
           edit={editComment}
+          add={submitComment}
           setErrMsg={setErrMsg}
         />
       ))}
