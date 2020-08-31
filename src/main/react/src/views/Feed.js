@@ -26,11 +26,14 @@ const getRecipes = async (feedType, page) => {
   } else if (feedType === "created") {
     let token = await app.auth().currentUser.getIdToken();
     qs += "&sort=NEW&token=" + token;
+  } else if (feedType === "tags") {
+    let token = await app.auth().currentUser.getIdToken();
+    qs += "&sort=TAGS&token=" + token;
   } else if (feedType === "popular") {
     qs += "&sort=TOP";
   } else if (feedType === "new") {
     qs += "&sort=NEW";
-  }
+  } 
   let res = await fetch(qs);
   let data = await res.json();
   return data;

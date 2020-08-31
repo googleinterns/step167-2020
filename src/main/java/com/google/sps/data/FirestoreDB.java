@@ -1,6 +1,7 @@
 package com.google.sps.meltingpot.data;
 
 import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.FieldValue;
@@ -10,9 +11,11 @@ import com.google.cloud.firestore.Transaction;
 import com.google.cloud.firestore.WriteBatch;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class FirestoreDB implements DBInterface {
   private static final int RECIPES_PER_PAGE = 12;
@@ -227,6 +230,29 @@ public class FirestoreDB implements DBInterface {
     Query recipesQuery = DBUtils.recipeMetadata().whereEqualTo(Recipe.CREATOR_ID_KEY, creatorId);
     return getRecipeMetadataQuery(recipesQuery, sortingMethod);
   }
+   
+  // TODO: Currently, sorting method is unused. Used TOP in recipesMatchingAnyTags() for consistent order.
+  public List<RecipeMetadata> getRecipesMatchingFollowedTags (
+      String userId, SortingMethod sortingMethod, int page) {
+    List<RecipeMetadata> followedTagsRecipes = recipesMatchingAnyTags(followedTagIds(userId));
+    // Return the appropriate page of recipes manually.
+    try {
+      return followedTagsRecipes.subList((page * RECIPES_PER_PAGE), ((page + 1) * RECIPES_PER_PAGE));
+    } catch (IndexOutOfBoundsException e) {
+      if (page == 0) {
+        return followedTagsRecipes;
+      } else {
+        return null; 
+      } 
+    }
+  }
+  
+  public List<RecipeMetadata> getRecipesMatchingFollowedTags (
+      String userId, SortingMethod sortingMethod) {
+    List<String> followedTagIds = followedTagIds(userId);
+    // Query for recipes matching the followed tag Ids.
+    return recipesMatchingAnyTags(followedTagIds);
+  }
 
   public List<RecipeMetadata> getRecipesSavedBy(
       String userId, SortingMethod sortingMethod, int page) {
@@ -266,6 +292,8 @@ public class FirestoreDB implements DBInterface {
       case NEW:
         recipesQuery = recipesQuery.orderBy(Recipe.TIMESTAMP_KEY, Query.Direction.DESCENDING);
         break;
+      default: 
+        break;
     }
 
     recipesQuery = recipesQuery.limit(MAX_RECIPES_PER_REQUEST);
@@ -291,6 +319,8 @@ public class FirestoreDB implements DBInterface {
       case NEW:
         recipesQuery = recipesQuery.orderBy(Recipe.TIMESTAMP_KEY, Query.Direction.DESCENDING);
         break;
+      default:
+        break;
     }
 
     recipesQuery = recipesQuery.offset(page * RECIPES_PER_PAGE).limit(RECIPES_PER_PAGE);
@@ -310,6 +340,21 @@ public class FirestoreDB implements DBInterface {
       return recipesMatchingTags(tagIds, iter).whereEqualTo("tagIds." + nextTag, true);
     }
     return DBUtils.recipeMetadata();
+  }
+
+// todo: add to interface (returns list of recipeIDs matching any of the tags)
+  public List<RecipeMetadata> recipesMatchingAnyTags(List<String> tagIds) {
+    CollectionReference recipes = DBUtils.recipeMetadata();
+    Set<RecipeMetadata> metadata = new HashSet<RecipeMetadata>();
+    for (String tagId: tagIds) {
+      if (metadata.size() >= MAX_RECIPES_PER_REQUEST) {
+        break;
+      }
+      metadata.addAll(getRecipeMetadataQuery(recipes.whereEqualTo("tagIds." + tagId, true), SortingMethod.TOP));
+    }
+    List<RecipeMetadata> taggedRecipes = new ArrayList<RecipeMetadata>(metadata);
+    taggedRecipes.addAll(metadata);
+    return taggedRecipes;
   }
 
   public List<String> savedRecipeIds(String userId) {

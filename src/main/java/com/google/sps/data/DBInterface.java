@@ -277,6 +277,29 @@ public interface DBInterface {
       String creatorId, SortingMethod sortingMethod);
 
   /**
+   * Returns a paginated list of recipe metadata associated with tags followd by
+   * a certain user.
+   *
+   * @param userId user's Firestore ID
+   * @param sortingMethod such as TOP or NEW
+   * @param page pagination for recipe query
+   * @return user's follow-associated recipe metadata, sorted
+   */
+  public List<RecipeMetadata> getRecipesMatchingFollowedTags(
+      String userId, SortingMethod sortingMethod, int page);
+
+  /**
+   * Returns a non-paginated list of recipe metadata associated with tags followd by
+   * a certain user.
+   *
+   * @param userId user's Firestore ID
+   * @param sortingMethod such as TOP or NEW
+   * @return user's follow-associated recipe metadata, sorted
+   */
+  public List<RecipeMetadata> getRecipesMatchingFollowedTags(
+      String userId, SortingMethod sortingMethod);
+
+  /**
    * Returns a paginated list of recipe metadata associated with the IDs of recipes saved by a user.
    *
    * @param userId user's Firestore ID

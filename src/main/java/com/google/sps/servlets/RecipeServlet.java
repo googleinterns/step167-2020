@@ -168,6 +168,7 @@ public class RecipeServlet extends HttpServlet {
 
     boolean isTagQuery = (tagIDs != null && tagIDs.length > 0 && !tagIDs[0].equals("None"));
     boolean isCreatorQuery = (creatorToken != null && !creatorToken.equals("None"));
+    boolean isFollowedTagsQuery = (isCreatorQuery && sortingMethod == SortingMethod.TAGS);
 
     if (isSavedRequest || (isCreatorQuery && !isTagQuery)) {
       // If frontend is requesting saved recipes or created recipes of a given user,
@@ -192,6 +193,17 @@ public class RecipeServlet extends HttpServlet {
       return gson.toJson(page != null
               ? db.getRecipesMatchingTags(Arrays.asList(tagIDs), sortingMethod, page)
               : db.getRecipesMatchingTags(Arrays.asList(tagIDs), sortingMethod));
+    } else if (isFollowedTagsQuery) {
+      // If the front end is requesting recipes tagged with the tags that a certain user follows, 
+      // then perform that query
+      String uid = Auth.getUid(creatorToken, response);
+      if (uid == null) {
+        return null;
+      }
+      
+      return gson.toJson(page != null
+              ? db.getRecipesMatchingFollowedTags(uid, sortingMethod, page)
+              : db.getRecipesMatchingFollowedTags(uid, sortingMethod));
     } else { // Currently addresses cases where frontend is requesting both a tag query and
              // a creator query, or none of the above query types
       return gson.toJson(
