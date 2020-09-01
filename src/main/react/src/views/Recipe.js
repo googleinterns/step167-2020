@@ -106,16 +106,13 @@ const Recipe = () => {
   };
 
   const deleteComment = commentId => {
-    let isLeaf;
     if (commentDict[commentId].replies.length > 0) {
       // then we can't really delete it because it has replies
-      isLeaf = false;
       let comment = commentDict[commentId];
       comment.ldap = "[deleted]";
       comment.content = "[deleted]";
     } else {
       // we can really delete it
-      isLeaf = true;
       commentFlatList = commentFlatList.filter(comment => comment.id !== commentId);
       delete commentDict[commentId];
     }
@@ -131,9 +128,7 @@ const Recipe = () => {
             "&commentID=" +
             commentId +
             "&token=" +
-            idToken +
-            "&isLeaf=" +
-            isLeaf,
+            idToken,
           {
             method: "DELETE",
           }

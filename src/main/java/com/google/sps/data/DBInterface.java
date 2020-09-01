@@ -340,9 +340,8 @@ public interface DBInterface {
    *
    * @param Id the comment's Firestore ID.
    * @param recipeId the recipe's Firestore ID.
-   * @param isLeaf indicates whether a recipe is a leaf or not
    */
-  public void deleteComment(String Id, String recipeId, boolean isLeaf);
+  public void deleteComment(String Id, String recipeId);
 
   /**
    * Deletes all the comments in a recipe's comment subcollection in Firestore.

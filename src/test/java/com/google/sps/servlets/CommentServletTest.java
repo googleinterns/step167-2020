@@ -325,6 +325,6 @@ public final class CommentServletTest {
     commentServlet.doDelete(request, response);
 
     verify(response, times(1)).setStatus(HttpServletResponse.SC_BAD_REQUEST);
-    verify(db, never()).deleteComment(anyString(), anyString(), anyBoolean());
+    verify(db, never()).deleteComment(anyString(), anyString());
   }
 }

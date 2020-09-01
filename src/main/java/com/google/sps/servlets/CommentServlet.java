@@ -136,14 +136,12 @@ public class CommentServlet extends HttpServlet {
       throws IOException {
     String recipeID = request.getParameter("recipeID");
     String commentID = request.getParameter("commentID");
-    String isLeaf = request.getParameter("isLeaf");
 
-    if (recipeID == null || commentID == null || isLeaf == null
-        || !(isLeaf.equals("true") || isLeaf.equals("false"))) {
+    if (recipeID == null || commentID == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
 
-    db.deleteComment(commentID, recipeID, Boolean.parseBoolean(isLeaf));
+    db.deleteComment(commentID, recipeID);
   }
 }
