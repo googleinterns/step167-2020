@@ -13,6 +13,12 @@ export default [
   },
   {
     _tag: "CSidebarNavItem",
+    name: "Followed",
+    to: "/followed",
+    icon: "cil-tags",
+  },
+  {
+    _tag: "CSidebarNavItem",
     name: "Map",
     to: "/map",
     icon: "cil-location-pin",
