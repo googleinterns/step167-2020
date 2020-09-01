@@ -36,6 +36,17 @@ const getComments = async id => {
   return data;
 };
 
+let commentFlatList = [];
+let commentDict = {};
+
+const buildCommentTree = (flatList, dict) => {
+  flatList.forEach(comment => (comment.replies = []));
+  let commentTree = flatList.filter(comment => (comment.parentId ? false : true));
+  let replies = flatList.filter(comment => (comment.parentId ? true : false));
+  replies.forEach(reply => dict[reply.parentId].replies.push(reply));
+  return commentTree;
+};
+
 const Recipe = () => {
   const [recipe, setRecipe] = useState({
     content: "",
@@ -69,8 +80,8 @@ const Recipe = () => {
   const recipeId = searchParams.get("id");
   const [notFound, setNotFound] = useState(false);
 
-  const submitComment = async () => {
-    if (newCommentInput.current.value === "") {
+  const submitComment = async (content, parentId) => {
+    if (content === "") {
       setErrMsg("Empty comments are not allowed");
       return;
     }
@@ -78,27 +89,45 @@ const Recipe = () => {
     let res = await fetch(requestRoute + "api/comment?recipeID=" + recipeId + "&token=" + idToken, {
       method: "POST",
       body: JSON.stringify({
-        content: newCommentInput.current.value,
+        content: content,
+        parentId: parentId,
       }),
     });
     let commentData = await res.json();
     let newComment = {
-      content: newCommentInput.current.value,
+      content: content,
       ldap: app.auth().currentUser.email,
       id: commentData.id,
+      parentId: parentId,
     };
-    setComments([newComment].concat(comments));
+    commentFlatList.unshift(newComment);
+    commentDict[newComment.id] = newComment;
+    setComments(buildCommentTree(commentFlatList, commentDict));
   };
 
-  const deleteComment = async commentId => {
-    let idToken = await app.auth().currentUser.getIdToken();
-    fetch(requestRoute + "api/comment?recipeID=" + recipeId + "&commentID=" + commentId + "&token=" + idToken, {
-      method: "DELETE",
-    });
-    setComments(comments.filter(comment => comment.id !== commentId));
+  const deleteComment = commentId => {
+    if (commentDict[commentId].replies.length > 0) {
+      // then we can't really delete it because it has replies
+      let comment = commentDict[commentId];
+      comment.ldap = "[deleted]";
+      comment.content = "[deleted]";
+    } else {
+      // we can really delete it
+      commentFlatList = commentFlatList.filter(comment => comment.id !== commentId);
+      delete commentDict[commentId];
+    }
+    setComments(buildCommentTree(commentFlatList, commentDict));
+    app
+      .auth()
+      .currentUser.getIdToken()
+      .then(idToken =>
+        fetch(requestRoute + "api/comment?recipeID=" + recipeId + "&commentID=" + commentId + "&token=" + idToken, {
+          method: "DELETE",
+        })
+      );
   };
 
-  const editComment = (commentId, idx, newContent) => {
+  const editComment = (commentId, newContent) => {
     app
       .auth()
       .currentUser.getIdToken()
@@ -118,12 +147,9 @@ const Recipe = () => {
           }
         );
       });
-    let newComments = [...comments];
-    let editedComment = {};
-    Object.assign(editedComment, comments[idx]);
-    editedComment.content = newContent;
-    newComments[idx] = editedComment;
-    setComments(newComments);
+    console.log(newContent);
+    commentDict[commentId].content = newContent;
+    setComments(buildCommentTree(commentFlatList, commentDict));
   };
 
   const toggleVote = vote => {
@@ -180,7 +206,9 @@ const Recipe = () => {
         if (JSON.stringify(recipeData) !== "{}") {
           setTags(await getTags(recipeData.metadata.tagIds));
           setVotes(recipeData.metadata.votes);
-          setComments(await getComments(recipeId));
+          commentFlatList = await getComments(recipeId);
+          commentFlatList.forEach(comment => (commentDict[comment.id] = comment));
+          setComments(buildCommentTree(commentFlatList, commentDict));
           setRecipe(recipeData);
           if (user) {
             let voteData = (await getVoteData([recipeData.metadata]))[0];
@@ -248,7 +276,12 @@ const Recipe = () => {
         <CCard>
           <CCardHeader>
             Add a comment
-            <CButton size="sm" color="primary" className="float-right" onClick={submitComment}>
+            <CButton
+              size="sm"
+              color="primary"
+              className="float-right"
+              onClick={() => submitComment(newCommentInput.current.value, null)}
+            >
               Submit
             </CButton>
           </CCardHeader>
@@ -264,8 +297,9 @@ const Recipe = () => {
           signedIn={signedIn}
           recipePosterLdap={recipe.metadata.creatorLdap}
           recipeId={recipeId}
-          delete={() => deleteComment(comment.id)}
-          edit={newContent => editComment(comment.id, i, newContent)}
+          delete={deleteComment}
+          edit={editComment}
+          add={submitComment}
           setErrMsg={setErrMsg}
         />
       ))}

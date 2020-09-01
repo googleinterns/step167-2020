@@ -77,13 +77,12 @@ public interface DBInterface {
   public List<RecipeMetadata> getRecipePage(SortingMethod sortingMethod, int page);
 
   /**
-   * Gets a sorted list of all comments associated with a recipe.
+   * Gets a list of all comments associated with a recipe
    *
    * @param recipeId recipe Firestore ID
-   * @param sortingMethod from SortingMethod.java
    * @return ordered list of recipe comments
    */
-  public List<Comment> getAllCommentsInRecipe(String recipeId, SortingMethod sortingMethod);
+  public List<Comment> getAllCommentsInRecipe(String recipeId);
 
   /**
    * Returns all the tags in the DB.
@@ -336,6 +335,8 @@ public interface DBInterface {
 
   /**
    * Deletes a single specified comment in a recipe's comment subcollection in Firestore.
+   * If the comment is a leaf (has no replies), delete it fully
+   * else, replace the creatorId, ldap, and content with Comment.DELETED
    *
    * @param Id the comment's Firestore ID.
    * @param recipeId the recipe's Firestore ID.

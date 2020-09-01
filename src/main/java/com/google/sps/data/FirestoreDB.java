@@ -70,16 +70,8 @@ public class FirestoreDB implements DBInterface {
     return getRecipeMetadataQuery(recipesQuery, sortingMethod, page);
   }
 
-  public List<Comment> getAllCommentsInRecipe(String recipeId, SortingMethod sortingMethod) {
+  public List<Comment> getAllCommentsInRecipe(String recipeId) {
     Query commentsQuery = DBUtils.comments(recipeId);
-    switch (sortingMethod) {
-      case TOP:
-        commentsQuery = commentsQuery.orderBy(Comment.VOTES_KEY, Query.Direction.DESCENDING);
-        break;
-      case NEW:
-        commentsQuery = commentsQuery.orderBy(Comment.TIMESTAMP_KEY, Query.Direction.DESCENDING);
-        break;
-    }
     // blockOnFuture() returns a QuerySnapshot
     return DBUtils.blockOnFuture(commentsQuery.get()).toObjects(Comment.class);
   }
@@ -361,8 +353,26 @@ public class FirestoreDB implements DBInterface {
     return newCommentRef.getId();
   }
 
-  public void deleteComment(String Id, String recipeId) {
-    DBUtils.blockOnFuture(DBUtils.comments(recipeId).document(Id).delete());
+  public void deleteComment(String commentId, String recipeId) {
+    List<Comment> replies =
+        DBUtils
+            .blockOnFuture(
+                DBUtils.comments(recipeId).whereEqualTo(Comment.PARENT_ID_KEY, commentId).get())
+            .toObjects(Comment.class);
+    boolean isLeaf = replies.size() == 0;
+    System.out.println(isLeaf);
+    if (isLeaf) {
+      // then we can delete it entirely from the db
+      DBUtils.blockOnFuture(DBUtils.comment(recipeId, commentId).delete());
+    } else {
+      // we need to update creatorId, ldap, and content
+      DBUtils.blockOnFuture(
+          DBUtils.comment(recipeId, commentId).update(Comment.CREATOR_ID_KEY, Comment.DELETED));
+      DBUtils.blockOnFuture(
+          DBUtils.comment(recipeId, commentId).update(Comment.LDAP_KEY, Comment.DELETED));
+      DBUtils.blockOnFuture(
+          DBUtils.comment(recipeId, commentId).update(Comment.CONTENT_KEY, Comment.DELETED));
+    }
   }
 
   public void deleteComments(String recipeId) {

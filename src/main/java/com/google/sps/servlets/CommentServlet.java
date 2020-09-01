@@ -54,7 +54,7 @@ public class CommentServlet extends HttpServlet {
     db = new FirestoreDB();
   }
 
-  /** As of 8.12.20, returns all comments flatly with NEW sorting method. */
+  /** As of 8.31.20, returns all comments */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String recipeID = request.getParameter("recipeID");
@@ -65,7 +65,7 @@ public class CommentServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     } else {
-      json = gson.toJson(db.getAllCommentsInRecipe(recipeID, SortingMethod.NEW));
+      json = gson.toJson(db.getAllCommentsInRecipe(recipeID));
     }
 
     if (json == null || json.equals(gson.toJson(null))) {
@@ -141,9 +141,7 @@ public class CommentServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
-    // Product Alpha TODO: Check if comment has replies
-    //   If so replace with "[deleted]"
-    //   Else:
+
     db.deleteComment(commentID, recipeID);
   }
 }
