@@ -41,9 +41,9 @@ let commentDict = {};
 
 const buildCommentTree = (flatList, dict) => {
   flatList.forEach(comment => (comment.replies = []));
-  let commentTree = flatList.filter(comment => (comment.replyId ? false : true));
-  let replies = flatList.filter(comment => (comment.replyId ? true : false));
-  replies.forEach(reply => dict[reply.replyId].replies.push(reply));
+  let commentTree = flatList.filter(comment => (comment.parentId ? false : true));
+  let replies = flatList.filter(comment => (comment.parentId ? true : false));
+  replies.forEach(reply => dict[reply.parentId].replies.push(reply));
   return commentTree;
 };
 
@@ -80,7 +80,7 @@ const Recipe = () => {
   const recipeId = searchParams.get("id");
   const [notFound, setNotFound] = useState(false);
 
-  const submitComment = async (content, replyId) => {
+  const submitComment = async (content, parentId) => {
     if (content === "") {
       setErrMsg("Empty comments are not allowed");
       return;
@@ -90,7 +90,7 @@ const Recipe = () => {
       method: "POST",
       body: JSON.stringify({
         content: content,
-        replyId: replyId,
+        parentId: parentId,
       }),
     });
     let commentData = await res.json();
@@ -98,7 +98,7 @@ const Recipe = () => {
       content: content,
       ldap: app.auth().currentUser.email,
       id: commentData.id,
-      replyId: replyId,
+      parentId: parentId,
     };
     commentFlatList.unshift(newComment);
     commentDict[newComment.id] = newComment;
