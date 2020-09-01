@@ -121,18 +121,9 @@ const Recipe = () => {
       .auth()
       .currentUser.getIdToken()
       .then(idToken =>
-        fetch(
-          requestRoute +
-            "api/comment?recipeID=" +
-            recipeId +
-            "&commentID=" +
-            commentId +
-            "&token=" +
-            idToken,
-          {
-            method: "DELETE",
-          }
-        )
+        fetch(requestRoute + "api/comment?recipeID=" + recipeId + "&commentID=" + commentId + "&token=" + idToken, {
+          method: "DELETE",
+        })
       );
   };
 

@@ -324,7 +324,11 @@ public class FirestoreDB implements DBInterface {
   }
 
   public void deleteComment(String commentId, String recipeId) {
-    List<Comment> replies = DBUtils.blockOnFuture(DBUtils.comments(recipeId).whereEqualTo(Comment.PARENT_ID_KEY, commentId).get()).toObjects(Comment.class);
+    List<Comment> replies =
+        DBUtils
+            .blockOnFuture(
+                DBUtils.comments(recipeId).whereEqualTo(Comment.PARENT_ID_KEY, commentId).get())
+            .toObjects(Comment.class);
     boolean isLeaf = replies.size() == 0;
     System.out.println(isLeaf);
     if (isLeaf) {
