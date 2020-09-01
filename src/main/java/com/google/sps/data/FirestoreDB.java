@@ -10,6 +10,7 @@ import com.google.cloud.firestore.Transaction;
 import com.google.cloud.firestore.WriteBatch;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -207,13 +208,43 @@ public class FirestoreDB implements DBInterface {
   public List<RecipeMetadata> getRecipesMatchingTags(
       List<String> tagIds, SortingMethod sortingMethod, int page) {
     Query recipesQuery = recipesMatchingTags(tagIds, tagIds.iterator());
-    return getRecipeMetadataQuery(recipesQuery, sortingMethod, page);
+    List<RecipeMetadata> results = getRecipeMetadataQuery(recipesQuery, SortingMethod.NONE, page);
+
+    switch (sortingMethod) {
+      case TOP:
+        System.out.println("Sorting by: TOP");
+        Collections.sort(
+            results, Collections.reverseOrder(Comparator.comparingLong(RecipeMetadata::getVotes)));
+        break;
+      case NEW:
+        System.out.println("Sorting by: NEW");
+        Collections.sort(results,
+            Collections.reverseOrder(Comparator.comparingLong(RecipeMetadata::getTimestamp)));
+        break;
+    }
+
+    return results;
   }
 
   public List<RecipeMetadata> getRecipesMatchingTags(
       List<String> tagIds, SortingMethod sortingMethod) {
     Query recipesQuery = recipesMatchingTags(tagIds, tagIds.iterator());
-    return getRecipeMetadataQuery(recipesQuery, sortingMethod);
+    List<RecipeMetadata> results = getRecipeMetadataQuery(recipesQuery, SortingMethod.NONE);
+
+    switch (sortingMethod) {
+      case TOP:
+        System.out.println("Sorting by: TOP");
+        Collections.sort(
+            results, Collections.reverseOrder(Comparator.comparingLong(RecipeMetadata::getVotes)));
+        break;
+      case NEW:
+        System.out.println("Sorting by: NEW");
+        Collections.sort(results,
+            Collections.reverseOrder(Comparator.comparingLong(RecipeMetadata::getTimestamp)));
+        break;
+    }
+
+    return results;
   }
 
   public List<RecipeMetadata> getRecipesMatchingCreator(
@@ -282,7 +313,6 @@ public class FirestoreDB implements DBInterface {
   private List<RecipeMetadata> getRecipeMetadataQuery(
       Query recipesQuery, SortingMethod sortingMethod, int page) {
     // overloaded method for getting recipes by page num
-
     switch (sortingMethod) { // Note: this does not currently work with tagID queries, requires
                              // custom index
       case TOP:

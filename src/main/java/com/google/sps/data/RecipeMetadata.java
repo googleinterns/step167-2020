@@ -27,4 +27,12 @@ public class RecipeMetadata extends DBObject {
   public RecipeMetadata(String id) {
     super(id);
   }
+
+  public long getVotes() {
+    return this.votes;
+  }
+
+  public long getTimestamp() {
+    return this.timestamp;
+  }
 }
