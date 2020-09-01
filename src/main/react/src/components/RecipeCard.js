@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { CBadge, CCard, CCardBody, CCardFooter, CCardHeader, CLink } from "@coreui/react";
 import CIcon from "@coreui/icons-react";
 import requestRoute from "../requests";
+import noImageAvailable from "../assets/noImageAvailable.png";
 import app from "firebase/app";
 import "firebase/auth";
 
@@ -103,7 +104,7 @@ const RecipeCard = props => {
       <CLink href={"/#/recipe?id=" + recipe.id}>
         <CCardBody>
           <img
-            src="https://www.cookingclassy.com/wp-content/uploads/2019/07/birthday-cake-4-500x500.jpg"
+            src={recipe.imageUrl ? recipe.imageUrl : noImageAvailable}
             style={{ width: "70%", height: "70%", marginLeft: "15%" }}
             alt={recipe.title}
           />

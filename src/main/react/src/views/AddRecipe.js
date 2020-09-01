@@ -12,6 +12,7 @@ import {
   CCol,
   CLabel,
   CInput,
+  CInputFile,
   CFormText,
   CTextarea,
   CButton,
@@ -25,7 +26,9 @@ import {
 import { MarkdownPreview } from "react-marked-markdown";
 import app from "firebase/app";
 import "firebase/auth";
-import requestRoute from "../requests";
+import "firebase/storage";
+import { v4 as uuidv4 } from "uuid";
+import requestRoute, { getTags } from "../requests";
 import RecipeUploadMap from "../components/RecipeUploadMap";
 import TagSelect from "../components/TagSelect";
 
@@ -35,6 +38,7 @@ const AddRecipe = () => {
   const [title, setTitle] = useState("Title");
   const [content, setContent] = useState("Content");
   const [selectedTags, setSelectedTags] = useState({});
+  const [file, setFile] = useState(null);
   const [location, setLocation] = useState(null);
   const [decodedRegion, setDecodedRegion] = useState("");
 
@@ -54,36 +58,50 @@ const AddRecipe = () => {
 
   app.auth().onAuthStateChanged(user => (signedIn = user ? true : false));
 
-  const postRecipe = () => {
+  const postRecipe = async () => {
+    if (file === null) {
+      setErrMsg("Upload a picture of your recipe!");
+      return;
+    } else if (title === "Title" || title === "") {
+      setErrMsg("Your title cannot be empty!");
+      return;
+    } else if (content === "Content" || content === "content") {
+      setErrMsg("The content cannot be empty!");
+      return;
+    }
     setSubmitted(true);
     if (signedIn) {
-      app
+      let tokenPromise = app
         .auth()
         .currentUser.getIdToken()
-        .then(idToken => {
-          let tagIds = {};
-          Object.keys(selectedTags).forEach(tag => (tagIds[tag] = true));
-          fetch(requestRoute + "api/post?token=" + idToken, {
-            method: "POST",
-            body: JSON.stringify({
-              metadata: {
-                title: title,
-                tagIds: tagIds,
-                location: location,
-              },
-              content: content,
-            }),
-          }).then(response => {
-            if (!response.ok) {
-              setErrMsg("Error " + response.status.toString());
-              return;
-            }
-            response.json().then(data => history.push("/recipe?id=" + data.id));
-          });
-        })
-        .catch(() => {
-          setErrMsg("Error! Could not retrieve user ID token.");
-        });
+        .catch(() => setErrMsg("Error! Could not retrieve user ID token."));
+      let fileRef = app.auth().currentUser.uid + "/" + uuidv4();
+      let imageUploadPromise = app
+        .storage()
+        .ref(fileRef)
+        .put(file)
+        .then(() => app.storage().ref(fileRef).getDownloadURL());
+      let [idToken, imageUrl] = await Promise.all([tokenPromise, imageUploadPromise]);
+      let tagIds = {};
+      Object.keys(selectedTags).forEach(tag => (tagIds[tag] = true));
+      fetch(requestRoute + "api/post?token=" + idToken, {
+        method: "POST",
+        body: JSON.stringify({
+          metadata: {
+            title: title,
+            tagIds: tagIds,
+            location: location,
+            imageUrl: imageUrl,
+          },
+          content: content,
+        }),
+      }).then(response => {
+        if (!response.ok) {
+          setErrMsg("Error " + response.status.toString());
+          return;
+        }
+        response.json().then(data => history.push("/recipe?id=" + data.id));
+      });
     } else {
       setErrMsg("User must be signed in to submit a recipe.");
     }
@@ -112,6 +130,18 @@ const AddRecipe = () => {
                   <CCol xs="12" md="9">
                     <TagSelect tags={selectedTags} setTags={setSelectedTags} maxTags={MAX_TAGS} />
                     <CFormText className="help-block">Max {MAX_TAGS} tags</CFormText>
+                  </CCol>
+                </CFormGroup>
+                <CFormGroup row>
+                  <CCol md="3">
+                    <CLabel htmlFor="text-input">Add a picture</CLabel>
+                  </CCol>
+                  <CCol xs="12" md="9">
+                    <CInputFile
+                      onChange={e => {
+                        if (e.target.files[0]) setFile(e.target.files[0]);
+                      }}
+                    />
                   </CCol>
                 </CFormGroup>
                 <CFormGroup row>
