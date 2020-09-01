@@ -28,7 +28,7 @@ import app from "firebase/app";
 import "firebase/auth";
 import "firebase/storage";
 import { v4 as uuidv4 } from "uuid";
-import requestRoute, { getTags } from "../requests";
+import requestRoute from "../requests";
 import RecipeUploadMap from "../components/RecipeUploadMap";
 import TagSelect from "../components/TagSelect";
 
