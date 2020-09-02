@@ -30,7 +30,13 @@ const Feed = props => {
 
   const loadRecipes = useCallback(
     async (user, recipePage) => {
-      let recipeData = await getRecipes(props.feedType, recipePage, props.selectedTags);
+      let recipeData;
+      if (props.sortType) {
+        // sortType only exists for followed tags page
+        recipeData = await getRecipes(props.feedType, recipePage, {}, props.sortType);
+      } else {
+        recipeData = await getRecipes(props.feedType, recipePage, props.selectedTags, props.sortType);
+      }
       if (user) {
         let [voteData, savedData] = await Promise.all([getVoteData(recipeData), getSavedData(recipeData)]);
         recipeData.forEach((recipe, i) => {
@@ -40,7 +46,7 @@ const Feed = props => {
       }
       return recipeData;
     },
-    [props.feedType, props.selectedTags]
+    [props.feedType, props.selectedTags, props.sortType]
   );
 
   const [signedIn, setSignedIn] = useState(false);
@@ -149,6 +155,7 @@ const Feed = props => {
 Feed.propTypes = {
   feedType: PropTypes.string,
   selectedTags: PropTypes.object,
+  sortType: PropTypes.string,
 };
 
 export default Feed;

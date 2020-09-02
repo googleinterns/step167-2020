@@ -260,11 +260,11 @@ public class FirestoreDB implements DBInterface {
   public List<RecipeMetadata> getRecipesMatchingFollowedTags(
       String userId, SortingMethod sortingMethod, int page) {
     List<RecipeMetadata> followedTagsRecipes = recipesMatchingAnyTags(followedTagIds(userId));
-   
-    // Sort the results. 
+
+    // Sort the results.
     switch (sortingMethod) {
       case TOP:
-        Collections.sort(followedTagsRecipes, 
+        Collections.sort(followedTagsRecipes,
             Collections.reverseOrder(Comparator.comparingLong(RecipeMetadata::getVotes)));
         break;
       case NEW:
@@ -283,9 +283,9 @@ public class FirestoreDB implements DBInterface {
       } else {
         if (followedTagsRecipes.size() <= (page * RECIPES_PER_PAGE)) {
           return null;
-        }
-        else {
-          return (followedTagsRecipes.subList((page * RECIPES_PER_PAGE), followedTagsRecipes.size()));
+        } else {
+          return (
+              followedTagsRecipes.subList((page * RECIPES_PER_PAGE), followedTagsRecipes.size()));
         }
       }
     }
@@ -294,11 +294,11 @@ public class FirestoreDB implements DBInterface {
   public List<RecipeMetadata> getRecipesMatchingFollowedTags(
       String userId, SortingMethod sortingMethod) {
     List<RecipeMetadata> followedTagsRecipes = recipesMatchingAnyTags(followedTagIds(userId));
- 
-    // Sort the results. 
+
+    // Sort the results.
     switch (sortingMethod) {
       case TOP:
-        Collections.sort(followedTagsRecipes, 
+        Collections.sort(followedTagsRecipes,
             Collections.reverseOrder(Comparator.comparingLong(RecipeMetadata::getVotes)));
         break;
       case NEW:
@@ -402,13 +402,14 @@ public class FirestoreDB implements DBInterface {
     CollectionReference recipes = DBUtils.recipeMetadata();
     Set<RecipeMetadata> metadata = new HashSet<RecipeMetadata>();
     for (String tagId : tagIds) {
-      // Get only relevant recipes from the last week. 
+      // Get only relevant recipes from the last week.
       Calendar calendar = Calendar.getInstance();
-      calendar.add(Calendar.WEEK_OF_YEAR, -1); 
-      long oneWeekAgo = calendar.getTime().getTime(); // in millis. Calendar.getTime() returns a Date. 
+      calendar.add(Calendar.WEEK_OF_YEAR, -1);
+      long oneWeekAgo =
+          calendar.getTime().getTime(); // in millis. Calendar.getTime() returns a Date.
       metadata.addAll(
-          getRecipeMetadataQuery(
-              recipes.whereEqualTo("tagIds." + tagId, true).whereGreaterThanOrEqualTo("timestamp", oneWeekAgo), 
+          getRecipeMetadataQuery(recipes.whereEqualTo("tagIds." + tagId, true)
+                                     .whereGreaterThanOrEqualTo("timestamp", oneWeekAgo),
               SortingMethod.NONE));
     }
     List<RecipeMetadata> taggedRecipes = new ArrayList<RecipeMetadata>(metadata);

@@ -9,7 +9,7 @@ const Profile = React.lazy(() => import('./views/Profile'));
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/popular', name: 'Popular', component: FeedWithSearch, props: { feedType: 'popular' } },
-  { path: '/followed', name: 'Followed', component: Feed, props: { feedType: 'followed-tags'} },
+  { path: '/followed', name: 'Followed', component: FeedWithSort, props: { feedType: 'followed-tags'} },
   { path: '/new', name: 'New', component: FeedWithSearch, props: { feedType: 'new' } },
   { path: '/recipe', name: 'Recipe', component: Recipe },
   { path: '/addrecipe', name: 'Add Recipe', component: AddRecipe },

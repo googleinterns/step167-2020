@@ -162,14 +162,14 @@ public class RecipeServlet extends HttpServlet {
     }
 
     String tagIDs[] = request.getParameterValues("tagIDs");
-    // TODO: change sorting method tags to parameter tags 
+    // TODO: change sorting method tags to parameter tags
     boolean isFollowedTagsRequest = Boolean.parseBoolean(request.getParameter("followed-tags"));
     boolean isSavedRequest = Boolean.parseBoolean(request.getParameter("saved"));
 
     boolean isTagQuery = (tagIDs != null && tagIDs.length > 0 && !tagIDs[0].equals("None"));
     boolean isCreatorQuery = (creatorToken != null && !creatorToken.equals("None"));
     boolean isFollowedTagsQuery = (isCreatorQuery && isFollowedTagsRequest);
-    
+
     if (isFollowedTagsQuery) {
       // If the front end is requesting recipes tagged with the tags that a certain user follows,
       // then perform that query
