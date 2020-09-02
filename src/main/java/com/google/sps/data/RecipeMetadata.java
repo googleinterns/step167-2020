@@ -1,6 +1,7 @@
 package com.google.sps.meltingpot.data;
 
 import com.google.cloud.firestore.GeoPoint;
+import java.util.List;
 import java.util.Map;
 
 public class RecipeMetadata extends DBObject {
@@ -10,6 +11,7 @@ public class RecipeMetadata extends DBObject {
   public static final String VOTES_KEY = "votes";
   public static final String TIMESTAMP_KEY = "timestamp";
   public static final String TAG_IDS_KEY = "tagIds";
+  public static final String TAG_IDS_ARRAY = "tagIdsArray";
 
   public String title;
   public String creatorId;
@@ -17,7 +19,8 @@ public class RecipeMetadata extends DBObject {
   public String imageUrl;
   public long timestamp;
   public Map<String, Boolean> tagIds;
-  public long votes;
+  public List<String> tagIdsArray;
+  public long votes; 
   public GeoPoint location;
 
   public RecipeMetadata() {

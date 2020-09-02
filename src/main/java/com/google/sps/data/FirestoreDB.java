@@ -401,19 +401,21 @@ public class FirestoreDB implements DBInterface {
   public List<RecipeMetadata> recipesMatchingAnyTags(List<String> tagIds) {
     CollectionReference recipes = DBUtils.recipeMetadata();
     Set<RecipeMetadata> metadata = new HashSet<RecipeMetadata>();
-    for (String tagId : tagIds) {
+    // Testing out this line
+    List<RecipeMetadata> taggedRecipes = getRecipeMetadataQuery(recipes.whereArrayContainsAny("tagIdsArray", tagIds), SortingMethod.NONE);
+  //for (String tagId : tagIds) {
       // Get only relevant recipes from the last week.
-      Calendar calendar = Calendar.getInstance();
-      calendar.add(Calendar.WEEK_OF_YEAR, -1);
-      long oneWeekAgo =
-          calendar.getTime().getTime(); // in millis. Calendar.getTime() returns a Date.
-      metadata.addAll(
-          getRecipeMetadataQuery(recipes.whereEqualTo("tagIds." + tagId, true)
-                                     .whereGreaterThanOrEqualTo("timestamp", oneWeekAgo),
-              SortingMethod.NONE));
-    }
-    List<RecipeMetadata> taggedRecipes = new ArrayList<RecipeMetadata>(metadata);
-    taggedRecipes.addAll(metadata);
+      // Calendar calendar = Calendar.getInstance();
+      // calendar.add(Calendar.WEEK_OF_YEAR, -1);
+      //long oneWeekAgo =
+      //    calendar.getTime().getTime(); // in millis. Calendar.getTime() returns a Date.
+     // metadata.addAll(
+      //    getRecipeMetadataQuery(recipes.whereEqualTo("tagIds." + tagId, true)
+      //                               .whereGreaterThanOrEqualTo("timestamp", oneWeekAgo),
+      //        SortingMethod.NONE));
+   // }
+    //List<RecipeMetadata> taggedRecipes = new ArrayList<RecipeMetadata>(metadata);
+    //taggedRecipes.addAll(metadata);
     return taggedRecipes;
   }
 

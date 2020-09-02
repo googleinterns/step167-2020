@@ -90,7 +90,8 @@ public class RecipeServlet extends HttpServlet {
     if (uid == null) {
       return;
     }
-
+    
+    newRecipe.metadata.tagIdsArray = new ArrayList<String>(newRecipe.metadata.tagIds.keySet());
     newRecipe.metadata.creatorId = uid;
     newRecipe.metadata.votes = 0;
     newRecipe.metadata.timestamp = System.currentTimeMillis();
