@@ -90,7 +90,8 @@ public class RecipeServlet extends HttpServlet {
     if (uid == null) {
       return;
     }
-
+    
+    newRecipe.metadata.tagIdsArray = new ArrayList<String>(newRecipe.metadata.tagIds.keySet());
     newRecipe.metadata.creatorId = uid;
     newRecipe.metadata.votes = 0;
     newRecipe.metadata.timestamp = System.currentTimeMillis();
@@ -162,12 +163,25 @@ public class RecipeServlet extends HttpServlet {
     }
 
     String tagIDs[] = request.getParameterValues("tagIDs");
+    // TODO: change sorting method tags to parameter tags
+    boolean isFollowedTagsRequest = Boolean.parseBoolean(request.getParameter("followed-tags"));
     boolean isSavedRequest = Boolean.parseBoolean(request.getParameter("saved"));
 
     boolean isTagQuery = (tagIDs != null && tagIDs.length > 0 && !tagIDs[0].equals("None"));
     boolean isCreatorQuery = (creatorToken != null && !creatorToken.equals("None"));
+    boolean isFollowedTagsQuery = (isCreatorQuery && isFollowedTagsRequest);
 
-    if (isSavedRequest || (isCreatorQuery && !isTagQuery)) {
+    if (isFollowedTagsQuery) {
+      // If the front end is requesting recipes tagged with the tags that a certain user follows,
+      // then perform that query
+      String uid = Auth.getUid(creatorToken, response);
+      if (uid == null) {
+        return null;
+      }
+
+      return gson.toJson(page != null ? db.getRecipesMatchingFollowedTags(uid, sortingMethod, page)
+                                      : db.getRecipesMatchingFollowedTags(uid, sortingMethod));
+    } else if (isSavedRequest || (isCreatorQuery && !isTagQuery)) {
       // If frontend is requesting saved recipes or created recipes of a given user,
       // make sure they are authenticated
       String uid = Auth.getUid(creatorToken, response);

@@ -4,20 +4,23 @@ import 'firebase/auth';
 const requestRoute = "http://localhost:8080/";
 const mapsApiKey = "AIzaSyAe5HlFZFuhzMimXrKW1z3kglajbdHf_Rc";
 
-const getRecipes = async (feedType, page, tags) => {
+const getRecipes = async (feedType, page, tags, sortFollowed) => {
   let qs = requestRoute + "api/post?";
-  qs += (page ? "page=" + page : "");
+  qs += ((page || page === 0) ? "page=" + page : "");
   if (feedType === "saved") {
     let token = await app.auth().currentUser.getIdToken();
     qs += "&saved=true&sort=NEW&token=" + token;
   } else if (feedType === "created") {
     let token = await app.auth().currentUser.getIdToken();
     qs += "&sort=NEW&token=" + token;
+  } else if (feedType === "followed-tags") {
+    let token = await app.auth().currentUser.getIdToken();
+    qs += "&followed-tags=true&token=" + token + "&sort=" + sortFollowed;
   } else if (feedType === "popular") {
     qs += "&sort=TOP";
   } else if (feedType === "new") {
     qs += "&sort=NEW";
-  }
+  } 
   if (tags) {
     let tagsQuery = Object.keys(tags).map(id => "tagIDs=" + id);
     qs += "&" + tagsQuery.join("&");
