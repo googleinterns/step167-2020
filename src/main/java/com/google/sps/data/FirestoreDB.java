@@ -10,6 +10,7 @@ import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.Transaction;
 import com.google.cloud.firestore.WriteBatch;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -259,6 +260,19 @@ public class FirestoreDB implements DBInterface {
   public List<RecipeMetadata> getRecipesMatchingFollowedTags(
       String userId, SortingMethod sortingMethod, int page) {
     List<RecipeMetadata> followedTagsRecipes = recipesMatchingAnyTags(followedTagIds(userId));
+   
+    // Sort the results. 
+    switch (sortingMethod) {
+      case TOP:
+        Collections.sort(followedTagsRecipes, 
+            Collections.reverseOrder(Comparator.comparingLong(RecipeMetadata::getVotes)));
+        break;
+      case NEW:
+        Collections.sort(followedTagsRecipes,
+            Collections.reverseOrder(Comparator.comparingLong(RecipeMetadata::getTimestamp)));
+        break;
+    }
+
     // Return the appropriate page of recipes manually.
     try {
       return followedTagsRecipes.subList(
@@ -267,16 +281,33 @@ public class FirestoreDB implements DBInterface {
       if (page == 0) {
         return followedTagsRecipes;
       } else {
-        return null;
+        if (followedTagsRecipes.size() <= (page * RECIPES_PER_PAGE)) {
+          return null;
+        }
+        else {
+          return (followedTagsRecipes.subList((page * RECIPES_PER_PAGE), followedTagsRecipes.size()));
+        }
       }
     }
   }
 
   public List<RecipeMetadata> getRecipesMatchingFollowedTags(
       String userId, SortingMethod sortingMethod) {
-    List<String> followedTagIds = followedTagIds(userId);
-    // Query for recipes matching the followed tag Ids.
-    return recipesMatchingAnyTags(followedTagIds);
+    List<RecipeMetadata> followedTagsRecipes = recipesMatchingAnyTags(followedTagIds(userId));
+ 
+    // Sort the results. 
+    switch (sortingMethod) {
+      case TOP:
+        Collections.sort(followedTagsRecipes, 
+            Collections.reverseOrder(Comparator.comparingLong(RecipeMetadata::getVotes)));
+        break;
+      case NEW:
+        Collections.sort(followedTagsRecipes,
+            Collections.reverseOrder(Comparator.comparingLong(RecipeMetadata::getTimestamp)));
+        break;
+    }
+
+    return followedTagsRecipes;
   }
 
   public List<RecipeMetadata> getRecipesSavedBy(
@@ -317,7 +348,7 @@ public class FirestoreDB implements DBInterface {
       case NEW:
         recipesQuery = recipesQuery.orderBy(Recipe.TIMESTAMP_KEY, Query.Direction.DESCENDING);
         break;
-      default:
+      case NONE:
         break;
     }
 
@@ -343,7 +374,7 @@ public class FirestoreDB implements DBInterface {
       case NEW:
         recipesQuery = recipesQuery.orderBy(Recipe.TIMESTAMP_KEY, Query.Direction.DESCENDING);
         break;
-      default:
+      case NONE:
         break;
     }
 
@@ -371,11 +402,14 @@ public class FirestoreDB implements DBInterface {
     CollectionReference recipes = DBUtils.recipeMetadata();
     Set<RecipeMetadata> metadata = new HashSet<RecipeMetadata>();
     for (String tagId : tagIds) {
-      if (metadata.size() >= MAX_RECIPES_PER_REQUEST) {
-        break;
-      }
+      // Get only relevant recipes from the last week. 
+      Calendar calendar = Calendar.getInstance();
+      calendar.add(Calendar.WEEK_OF_YEAR, -1); 
+      long oneWeekAgo = calendar.getTime().getTime(); // in millis. Calendar.getTime() returns a Date. 
       metadata.addAll(
-          getRecipeMetadataQuery(recipes.whereEqualTo("tagIds." + tagId, true), SortingMethod.TOP));
+          getRecipeMetadataQuery(
+              recipes.whereEqualTo("tagIds." + tagId, true).whereGreaterThanOrEqualTo("timestamp", oneWeekAgo), 
+              SortingMethod.NONE));
     }
     List<RecipeMetadata> taggedRecipes = new ArrayList<RecipeMetadata>(metadata);
     taggedRecipes.addAll(metadata);
