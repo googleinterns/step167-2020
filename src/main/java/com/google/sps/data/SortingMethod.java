@@ -1,3 +1,3 @@
 package com.google.sps.meltingpot.data;
 
-public enum SortingMethod { TOP, NEW, TAGS }
+public enum SortingMethod { TOP, NEW, NONE }

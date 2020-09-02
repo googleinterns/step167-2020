@@ -14,30 +14,9 @@ import {
 } from "@coreui/react";
 import RecipeCard from "../components/RecipeCard";
 import loading from "../assets/loading.gif";
-import requestRoute, { getTags, getRecipesVote, getRecipesSaved } from "../requests";
+import { getRecipes, getTags, getVoteData, getSavedData } from "../requests";
 import app from "firebase/app";
 import "firebase/auth";
-
-const getRecipes = async (feedType, page) => {
-  let qs = requestRoute + "api/post?page=" + page;
-  if (feedType === "saved") {
-    let token = await app.auth().currentUser.getIdToken();
-    qs += "&saved=true&sort=NEW&token=" + token;
-  } else if (feedType === "created") {
-    let token = await app.auth().currentUser.getIdToken();
-    qs += "&sort=NEW&token=" + token;
-  } else if (feedType === "tags") {
-    let token = await app.auth().currentUser.getIdToken();
-    qs += "&sort=TAGS&token=" + token;
-  } else if (feedType === "popular") {
-    qs += "&sort=TOP";
-  } else if (feedType === "new") {
-    qs += "&sort=NEW";
-  }
-  let res = await fetch(qs);
-  let data = await res.json();
-  return data;
-};
 
 const Feed = props => {
   const [recipes, setRecipes] = useState([]);
@@ -51,9 +30,9 @@ const Feed = props => {
 
   const loadRecipes = useCallback(
     async (user, recipePage) => {
-      let recipeData = await getRecipes(props.feedType, recipePage);
+      let recipeData = await getRecipes(props.feedType, recipePage, props.selectedTags);
       if (user) {
-        let [voteData, savedData] = await Promise.all([getRecipesVote(recipeData), getRecipesSaved(recipeData)]);
+        let [voteData, savedData] = await Promise.all([getVoteData(recipeData), getSavedData(recipeData)]);
         recipeData.forEach((recipe, i) => {
           recipe.voted = voteData[i];
           recipe.saved = savedData[i];
@@ -61,7 +40,7 @@ const Feed = props => {
       }
       return recipeData;
     },
-    [props.feedType]
+    [props.feedType, props.selectedTags]
   );
 
   const [signedIn, setSignedIn] = useState(false);
@@ -106,11 +85,13 @@ const Feed = props => {
 
   if (!loaded) {
     return (
-      <CRow className="justify-content-center">
-        <CCol sm={2}>
-          <img src={loading} alt="loading..." />
-        </CCol>
-      </CRow>
+      <>
+        <CRow className="justify-content-center">
+          <CCol sm={2}>
+            <img src={loading} alt="loading..." />
+          </CCol>
+        </CRow>
+      </>
     );
   }
 
@@ -167,6 +148,7 @@ const Feed = props => {
 
 Feed.propTypes = {
   feedType: PropTypes.string,
+  selectedTags: PropTypes.object,
 };
 
 export default Feed;

@@ -31,7 +31,6 @@ import java.lang.Boolean;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.annotation.WebServlet;
@@ -43,7 +42,6 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/api/post")
 public class RecipeServlet extends HttpServlet {
   private Gson gson = new Gson();
-  private Date date = new Date();
   private DBInterface db;
 
   public RecipeServlet() {}
@@ -95,7 +93,7 @@ public class RecipeServlet extends HttpServlet {
 
     newRecipe.metadata.creatorId = uid;
     newRecipe.metadata.votes = 0;
-    newRecipe.metadata.timestamp = date.getTime();
+    newRecipe.metadata.timestamp = System.currentTimeMillis();
     newRecipe.metadata.creatorLdap = Auth.getUserEmail(uid);
     String recipeId = db.addRecipe(newRecipe);
 

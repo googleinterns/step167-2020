@@ -4,6 +4,35 @@ import 'firebase/auth';
 const requestRoute = "http://localhost:8080/";
 const mapsApiKey = "AIzaSyAe5HlFZFuhzMimXrKW1z3kglajbdHf_Rc";
 
+const getRecipes = async (feedType, page, tags) => {
+  let qs = requestRoute + "api/post?";
+  qs += ((page || page === 0) ? "page=" + page : "");
+  if (feedType === "saved") {
+    let token = await app.auth().currentUser.getIdToken();
+    qs += "&saved=true&sort=NEW&token=" + token;
+  } else if (feedType === "created") {
+    let token = await app.auth().currentUser.getIdToken();
+    qs += "&sort=NEW&token=" + token;
+  } else if (feedType === "followed-tags") {
+    let token = await app.auth().currentUser.getIdToken();
+    qs += "&followed-tags=true&token=" + token;
+  } else if (feedType === "popular") {
+    qs += "&sort=TOP";
+  } else if (feedType === "new") {
+    qs += "&sort=NEW";
+  } 
+  if (tags) {
+    let tagsQuery = Object.keys(tags).map(id => "tagIDs=" + id);
+    qs += "&" + tagsQuery.join("&");
+  }
+  console.log(qs);
+  let res = await fetch(qs);
+  console.log(JSON.stringify(res));
+  let data = await res.json();
+  console.log(data);
+  return data;
+};
+
 const getTags = async (tagIds) => {
   let qs;
   if (tagIds === undefined) {
@@ -20,7 +49,7 @@ const getTags = async (tagIds) => {
   return tagObj;
 }
 
-const getRecipesVote = async (recipes) => {
+const getVoteData = async (recipes) => {
   if(JSON.stringify(recipes) === "[]") {
     return [];
   }
@@ -35,7 +64,7 @@ const getRecipesVote = async (recipes) => {
   }
 }
 
-const getRecipesSaved = async (recipes) => {
+const getSavedData = async (recipes) => {
   if(JSON.stringify(recipes) === "[]") {
     return [];
   }
@@ -57,9 +86,10 @@ const createUser = async (idToken) => {
 }
 
 export {
+  getRecipes,
   getTags,
-  getRecipesVote,
-  getRecipesSaved,
+  getVoteData,
+  getSavedData,
   createUser,
   mapsApiKey
 };

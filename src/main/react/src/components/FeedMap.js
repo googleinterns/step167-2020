@@ -21,39 +21,18 @@ const FeedMap = props => {
 
   const [windows, setWindows] = useState(initialWindows());
   const [center, setCenter] = useState(null);
+  const [mapZoom, setMapZoom] = useState(2);
 
   useEffect(() => {
+    setWindows(initialWindows());
     if (props.mapCenter !== "") {
-      Geocode.setApiKey(mapsApiKey);
-      Geocode.fromAddress(props.mapCenter).then(
-        response => {
-          let newCoords = null;
-          if (response.results[0]) {
-            // If there are results, traverse the array of address components
-            // looking for a country, or, if none is found, a natural feature
-            response.results.forEach(result => {
-              console.log(result.formatted_address + JSON.stringify(result.types));
-              if (
-                result.types.includes("country") ||
-                (result.types.includes("natural_feature") && newCoords === null)
-              ) {
-                newCoords = result.geometry.location;
-              }
-            });
-          }
-          if (newCoords === null) {
-            newCoords = { lat: 0, lng: 0 };
-          }
-          setCenter(newCoords);
-        },
-        error => {
-          console.log(error);
-          setCenter({ lat: 0, lng: 0 });
-        }
-      );
+      changeCenterTo(props.mapCenter);
+    } else {
+      setCenter({ lat: 0, lng: 0 });
+      setMapZoom(2);
     }
-    setCenter({ lat: 0, lng: 0 });
-  }, [props.mapCenter]);
+    // eslint-disable-next-line
+  }, [props.mapCenter, props.recipes]);
 
   const getVisibility = recipeId => {
     if (!windows) return false;
@@ -62,6 +41,37 @@ const FeedMap = props => {
       if (window === undefined) return false;
       else return window.visible;
     }
+  };
+
+  const changeCenterTo = region => {
+    Geocode.setApiKey(mapsApiKey);
+    Geocode.fromAddress(region).then(
+      response => {
+        let newCoords = null;
+        if (response.results[0]) {
+          // If there are results, traverse the array of address components
+          // looking for a country, or, if none is found, a natural feature
+          response.results.forEach(result => {
+            if (result.types.includes("country") || (result.types.includes("natural_feature") && newCoords === null)) {
+              newCoords = result.geometry.location;
+            }
+          });
+        }
+
+        if (newCoords === null) {
+          newCoords = { lat: 0, lng: 0 };
+          setMapZoom(2);
+        } else {
+          setMapZoom(4);
+        }
+        setCenter(newCoords);
+      },
+      error => {
+        console.log(error);
+        setMapZoom(2);
+        setCenter({ lat: 0, lng: 0 });
+      }
+    );
   };
 
   const displayMarkers = () => {
@@ -120,7 +130,7 @@ const FeedMap = props => {
   };
 
   return (
-    <Map google={props.google} zoom={props.mapCenter ? 4 : 2} style={mapStyles} center={center} onClick={mapClicked}>
+    <Map google={props.google} zoom={mapZoom} style={mapStyles} center={center} onClick={mapClicked}>
       {displayMarkers()}
       {displayWindows()}
     </Map>
